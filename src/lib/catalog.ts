@@ -88,7 +88,7 @@ const p = (slug: string, category: string, name: string, type: string, sizes: st
 
 export const PRODUCTS: Product[] = [
   p('polo-pegaso', 'polos-personnalises', 'Polo Pegaso', 'Polo piqué premium', 'S–5XL', 9.9, 'polo', ALL, '65 % polyester, 35 % coton · 210 g/m²', true),
-  p('polo-montreal', 'polos-personnalises', 'Polo Montreal', 'Polo bords contrastés', 'S–2XL', 12.5, 'polo', ['#151a2d', '#1d2a5c', '#ffffff', '#c8302f'], '100 % coton piqué · 220 g/m²'),
+  p('polo-montreal', 'polos-personnalises', 'Polo Montreal', 'Polo bords contrastés', 'S–XXL', 12.5, 'polo', ['#151a2d', '#1d2a5c', '#ffffff', '#c8302f'], '100 % coton piqué · 220 g/m²'),
   p('polo-estrella', 'polos-personnalises', 'Polo Estrella', 'Manches longues', 'S–4XL', 13.9, 'polols', ['#3a5bd0', '#151a2d', '#c8302f', '#ffffff', '#2f8a4d'], '100 % coton · 210 g/m²'),
   p('t-shirt-dogo', 't-shirts-personnalises', 'T-shirt Dogo', 'Coton premium col rond', 'S–5XL', 4.9, 'tee', ALL, '100 % coton peigné · 180 g/m²', true),
   p('t-shirt-atomic-150', 't-shirts-personnalises', 'T-shirt Atomic 150', 'Le plus économique', 'S–5XL', 3.6, 'tee', ['#ffffff', '#f2d33b', '#c8302f', '#3a5bd0', '#2f8a4d', '#151a2d'], '100 % coton · 150 g/m²'),
