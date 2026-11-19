@@ -53,7 +53,7 @@ export default function Home() {
           <div><b>Vous choisissez</b><p>Le vêtement, la couleur et les emplacements du logo.</p></div>
           <div><b>Vous déposez votre logo</b><p>Tout format accepté. Pas de logo ? On le crée.</p></div>
           <div><b>Vous validez le visuel</b><p>Envoyé sous 24 h par un graphiste, avant toute production.</p></div>
-          <div><b>On produit et on livre</b><p>Impression DTF ou broderie, livraison en 7 jours ouvrés.</p></div>
+          <div><b>On produit et on livre</b><p>Impression DTF haute définition, livraison en 7 jours ouvrés.</p></div>
         </div>
       </div></section>
 

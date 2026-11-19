@@ -36,7 +36,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <dt>Composition</dt><dd>{p.composition}</dd>
               <dt>Tailles</dt><dd>{p.sizes === 'TU' ? 'Taille unique réglable' : p.sizes}</dd>
               <dt>Coloris</dt><dd>{p.colors.map((x) => COLOR_NAMES[x]).join(', ')}</dd>
-              <dt>Marquage</dt><dd>Impression DTF haute définition ou broderie</dd>
+              <dt>Marquage</dt><dd>Impression DTF haute définition : couleurs vives, dégradés, tous textiles</dd>
               <dt>Entretien</dt><dd>Lavage 40 °C sur l&apos;envers, pas de sèche-linge</dd>
             </dl>
             <h2 className="mt">Questions sur ce produit</h2>
