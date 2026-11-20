@@ -123,11 +123,13 @@ export const ZONES: Zone[] = [
   { id: 'shoulder-left', name: 'Épaule gauche', view: 'front', x: 81, y: 32, w: 9, size: '8 × 8 cm', price: 2.5 },
   { id: 'back', name: 'Dos', view: 'back', x: 50, y: 44, w: 46, size: '26 × 26 cm', price: 6 },
   { id: 'neck', name: 'Nuque', view: 'back', x: 50, y: 22, w: 14, size: '8 × 4 cm', price: 2.5 },
+  // Tabliers uniquement : logo sur la poche (même gabarit et même prix que le cœur, à confirmer).
+  { id: 'pocket', name: 'Poche', view: 'front', x: 50, y: 74, w: 22, size: '10 × 10 cm', price: 4 },
 ];
 /** Au-delà de ce prix de vente HT du textile, le marquage cœur et le marquage dos passent à un prix unique. */
 export const PREMIUM_PRICE = 25, PREMIUM_MARK = 5, PREMIUM_ZONES = ['heart', 'back'];
 /** Zones qui se recouvrent : en choisir une retire les autres. */
-export const CLASH: Record<string, string[]> = { chest: ['heart', 'antiheart'], heart: ['chest'], antiheart: ['chest'] };
+export const CLASH: Record<string, string[]> = { chest: ['heart', 'antiheart', 'pocket'], heart: ['chest'], antiheart: ['chest'], pocket: ['chest'] };
 
 /** Remise sur le marquage uniquement : [pièces minimum, remise]. Le vêtement n'a pas de remise. */
 export const TIERS: [number, number][] = [[1, 0], [5, 0.15], [10, 0.2], [30, 0.4]];
@@ -185,12 +187,18 @@ export function zonesFor(prod: Product): Zone[] {
   const priced = (z: Zone): Zone => prod.price > PREMIUM_PRICE && PREMIUM_ZONES.includes(z.id) ? { ...z, price: PREMIUM_MARK } : z;
   const shoulders = ['shoulder-right', 'shoulder-left'];
   let list: Zone[];
+  const notApron = ZONES.filter((z) => z.id !== 'pocket');
   if (prod.shape === 'cap') list = [{ ...ZONES[0], name: 'Face', x: 50, y: 45, w: 30 }];
-  else if (prod.shape === 'apron') list = ZONES.filter((z) => z.view === 'front' && !shoulders.includes(z.id));
-  else if (prod.shape === 'hv') list = ZONES.filter((z) => !shoulders.includes(z.id)); // gilet sans manches
-  else list = ZONES;
+  // Tablier : poche ou grand devant, l'un ou l'autre (la poche en premier : c'est le prix « dès »).
+  else if (prod.shape === 'apron') list = ['pocket', 'chest'].map((id) => ZONES.find((z) => z.id === id)!);
+  else if (prod.shape === 'hv') list = notApron.filter((z) => !shoulders.includes(z.id)); // gilet sans manches
+  else if (prod.shape === 'shirt') list = notApron.filter((z) => z.id !== 'chest'); // chemise : pas de grand devant (boutonnage)
+  else list = notApron;
   return list.map(priced);
 }
+/** Emplacement proposé par défaut (cœur, face de casquette, poche de tablier). */
+export const defaultZone = (prod: Product) => zonesFor(prod)[0].id;
+
 export function sizesFor(prod: Product): string[] {
   if (prod.sizes === 'TU') return ['Taille unique'];
   const all = ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'];

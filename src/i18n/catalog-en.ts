@@ -9,7 +9,7 @@ export const COLOR_EN: Record<string, string> = {
 
 export const ZONE_EN: Record<string, string> = {
   heart: 'Left chest', antiheart: 'Right chest', chest: 'Large front', 'shoulder-right': 'Right sleeve',
-  'shoulder-left': 'Left sleeve', back: 'Back', neck: 'Nape', face: 'Front',
+  'shoulder-left': 'Left sleeve', back: 'Back', neck: 'Nape', face: 'Front', pocket: 'Pocket',
 };
 
 export const GENERAL_FAQ_EN: [string, string][] = [

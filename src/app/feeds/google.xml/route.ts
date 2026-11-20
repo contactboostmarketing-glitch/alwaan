@@ -1,4 +1,4 @@
-import { COLOR_NAMES, PRODUCTS, SHIPPING_HT, VAT, getCategory } from '@/lib/catalog';
+import { COLOR_NAMES, PRODUCTS, defaultZone, SHIPPING_HT, VAT, getCategory } from '@/lib/catalog';
 import { unitAt } from '@/lib/pricing';
 import { SITE_URL } from '@/lib/site';
 
@@ -16,7 +16,7 @@ export function GET() {
   const items: string[] = [];
   for (const p of PRODUCTS) {
     const c = getCategory(p.category)!;
-    const price = unitAt({ slug: p.slug, zones: ['heart'] }, 1) * (1 + VAT);
+    const price = unitAt({ slug: p.slug, zones: [defaultZone(p)] }, 1) * (1 + VAT);
     for (const hex of p.colors) {
       const color = COLOR_NAMES[hex] || hex;
       const h = hex.slice(1);

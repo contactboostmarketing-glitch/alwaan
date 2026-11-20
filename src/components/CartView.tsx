@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useState } from 'react';
-import { CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor } from '@/lib/catalog';
+import { CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor, defaultZone } from '@/lib/catalog';
 import { attributionForCheckout, track } from '@/lib/track';
 import { deliveryDate, fmtDay } from '@/lib/delivery';
 import { cartTotals, eur, lineTotal, logoKey, pools, qtyOf, unitAt, unitPrice, type LineConfig } from '@/lib/pricing';
@@ -38,7 +38,7 @@ export function CartView() {
     const sizes = sizesFor(p), q = qtyOf(first);
     let qty: Record<string, number> = sizes.length === 1 ? { [sizes[0]]: q } : Object.fromEntries(sizes.map((s) => [s, first.qty[s] || 0]));
     if (!Object.values(qty).some(Boolean)) qty = { [sizes[0]]: q };
-    add({ slug, color: p.colors.includes(first.color) ? first.color : defaultColor(p), zones: ['heart'], qty, logo: first.logo, logoName: first.logoName, logoId: first.logoId, logoSourceId: first.logoSourceId, logoCut: first.logoCut, logoRework: first.logoRework, logoStatus: first.logoStatus, text: first.text, pack: true });
+    add({ slug, color: p.colors.includes(first.color) ? first.color : defaultColor(p), zones: [defaultZone(p)], qty, logo: first.logo, logoName: first.logoName, logoId: first.logoId, logoSourceId: first.logoSourceId, logoCut: first.logoCut, logoRework: first.logoRework, logoStatus: first.logoStatus, text: first.text, pack: true });
   };
   const applyCode = () => {
     const c = code.trim().toUpperCase();
@@ -91,10 +91,10 @@ export function CartView() {
               <div className="ups">
                 {ups.map((s) => {
                   const p = getProduct(s)!, q = qtyOf(first), color = p.colors.includes(first.color) ? first.color : defaultColor(p);
-                  const u = unitAt({ slug: s, zones: ['heart'] }, firstPool + q);
+                  const u = unitAt({ slug: s, zones: [defaultZone(p)] }, firstPool + q);
                   return (
                     <div className="up" key={s}>
-                      <div className="img"><Garment slug={s} color={color} zones={['heart']} logo={first.logo} /></div>
+                      <div className="img"><Garment slug={s} color={color} zones={[defaultZone(p)]} logo={first.logo} /></div>
                       <div><strong>{productL(lang, p).name}</strong><small>{tx('{q} pièces avec votre logo', { q })} · <Price ht={u} />/pc</small></div>
                       <button className="btn line small" onClick={() => addUp(s)}>{tx('Ajouter')}</button>
                     </div>

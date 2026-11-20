@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CATEGORIES, GENERAL_FAQ, PRODUCTS, SECTORS, defaultColor, fromPrice, productsIn } from '@/lib/catalog';
+import { CATEGORIES, GENERAL_FAQ, PRODUCTS, SECTORS, defaultColor, fromPrice, productsIn, defaultZone } from '@/lib/catalog';
 import { Garment } from '@/components/Garment';
 import { Price } from '@/components/Price';
 import { Faq, Icon, MoreInfo, Perks, ProductCard } from '@/components/ui';
@@ -26,7 +26,7 @@ export function HomeView({ lang }: { lang: Lang }) {
           <Perks items={[['eye', t('Maquette en direct')], ['one', t('Dès 1 pièce')], ['tag', t('-40 % dès 30 pièces')]]} />
         </div>
         <div className="hero-vis">
-          {hero.map((s) => { const p = PRODUCTS.find((x) => x.slug === s)!; return <div key={s}><Garment slug={s} color={defaultColor(p)} zones={['heart']} /></div>; })}
+          {hero.map((s) => { const p = PRODUCTS.find((x) => x.slug === s)!; return <div key={s}><Garment slug={s} color={defaultColor(p)} zones={[defaultZone(p)]} /></div>; })}
         </div>
       </div></section>
 

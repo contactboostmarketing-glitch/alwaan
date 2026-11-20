@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og';
-import { getProduct } from '@/lib/catalog';
+import { defaultZone, getProduct } from '@/lib/catalog';
 import { Garment } from '@/components/Garment';
 
 /**
@@ -15,7 +15,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ file: stri
   if (p.photos?.[color]) return Response.redirect(p.photos[color], 302);
   return new ImageResponse(
     (<div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f6fb' }}>
-      <div style={{ display: 'flex', width: 1040, height: 1000 }}><Garment slug={p.slug} color={color} zones={['heart']} width={1040} height={1000} /></div>
+      <div style={{ display: 'flex', width: 1040, height: 1000 }}><Garment slug={p.slug} color={color} zones={[defaultZone(p)]} width={1040} height={1000} /></div>
     </div>),
     { width: 1200, height: 1200, headers: { 'Cache-Control': 'public, max-age=86400, s-maxage=604800' } },
   );

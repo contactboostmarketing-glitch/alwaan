@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CATEGORIES, CLASH, COLOR_NAMES, MAX_DISCOUNT, PRODUCTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor } from '@/lib/catalog';
+import { CATEGORIES, CLASH, COLOR_NAMES, MAX_DISCOUNT, PRODUCTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor, defaultZone } from '@/lib/catalog';
 import { lineTotal, logoKey, qtyOf, unitAt, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
@@ -19,7 +19,7 @@ function initial(slug: string): LineConfig {
   const p = getProduct(slug)!;
   const sizes = sizesFor(p);
   return {
-    slug, color: defaultColor(p), zones: ['heart'],
+    slug, color: defaultColor(p), zones: [defaultZone(p)],
     // Quantités à zéro : le client choisit lui-même (un total pré-rempli ferait croire à un prix unitaire).
     qty: Object.fromEntries(sizes.map((s) => [s, 0])),
     logoStatus: 'uploaded', text: '',
@@ -271,7 +271,7 @@ function SameLogo({ current, logo }: { current: string; logo?: string }) {
       <div className="samegrid">
         {picks.map((x) => (
           <Link key={x.slug} className="pcard" href={`${l(`/produits/${x.slug}`)}?meme-logo=1`}>
-            <div className="img"><Garment slug={x.slug} color={defaultColor(x)} zones={['heart']} logo={logo} /></div>
+            <div className="img"><Garment slug={x.slug} color={defaultColor(x)} zones={[defaultZone(x)]} logo={logo} /></div>
             <strong>{categoryL(lang, CATEGORIES.find((c) => c.slug === x.category)!).name}</strong>
             <small>{productL(lang, x).name}</small>
           </Link>
