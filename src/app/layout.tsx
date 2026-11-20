@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: { default: `${SITE_NAME} · ${TAGLINE}`, template: `%s · ${SITE_NAME}` },
   description: 'Polos, t-shirts, tabliers, casquettes et haute visibilité à votre logo. Dès 1 pièce, maquette en direct avec votre logo, livraison en 7 jours.',
   openGraph: { siteName: SITE_NAME, locale: 'fr_FR', type: 'website' },
-  alternates: { canonical: '/' },
+  alternates: { canonical: '/', languages: { 'fr-FR': '/', 'fr-BE': '/', 'x-default': '/' } },
 };
 export const viewport: Viewport = { themeColor: '#ffffff', viewportFit: 'cover' };
 
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Footer />
           <CookieBanner />
         </CartProvider>
-        <JsonLd data={{ '@context': 'https://schema.org', '@type': 'Organization', name: SITE_NAME, url: SITE_URL, description: TAGLINE }} />
+        <JsonLd data={{ '@context': 'https://schema.org', '@type': 'Organization', name: SITE_NAME, url: SITE_URL, description: TAGLINE, areaServed: [{ '@type': 'Country', name: 'France' }, { '@type': 'Country', name: 'Belgique' }], knowsAbout: ['vêtements personnalisés', 'impression DTF', 'vêtements de travail', 'haute visibilité EN ISO 20471'] }} />
       </body>
     </html>
   );

@@ -7,7 +7,7 @@ export function Footer() {
       <div className="fcols">
         <div><b>Vêtements</b>{CATEGORIES.map((c) => <Link key={c.slug} href={`/vetements/${c.slug}`}>{c.name} personnalisés</Link>)}</div>
         <div><b>Métiers</b>{SECTORS.map((s) => <Link key={s.slug} href={`/metiers/${s.slug}`}>{s.name}</Link>)}</div>
-        <div><b>Aide</b><Link href="/livraison">Livraison et délais</Link><Link href="/retours">Retours et rétractation</Link><Link href="/faq">Questions fréquentes</Link><Link href="/devis">Demander un devis</Link></div>
+        <div><b>Aide</b><Link href="/livraison">Livraison et délais</Link><Link href="/retours">Retours et rétractation</Link><Link href="/guides">Guides et conseils</Link><Link href="/faq">Questions fréquentes</Link><Link href="/a-propos">À propos</Link><Link href="/devis">Demander un devis</Link></div>
         <div><b>Informations légales</b><Link href="/cgv">CGV</Link><Link href="/mentions-legales">Mentions légales</Link><Link href="/confidentialite">Confidentialité</Link><Link href="/cookies">Cookies</Link><Link href="/mediation">Médiation</Link></div>
       </div>
       <div className="fbot"><span>alwaan · tenues professionnelles personnalisées</span><span>Paiement sécurisé · CB, Apple Pay, Google Pay</span></div>

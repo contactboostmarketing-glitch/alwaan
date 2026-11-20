@@ -11,6 +11,7 @@ export type Category = {
   title: string; // balise <title>
   intro: string;
   faq: [string, string][];
+  details?: string[]; // texte de la page catégorie (SEO)
 };
 
 export type Sector = {
@@ -122,6 +123,41 @@ export const FREE_SHIPPING_HT = 150;
 export const SHIPPING_HT = 9.9;
 export const VAT = 0.2;
 export const PROMO_CODES: Record<string, number> = { BIENVENUE: 0.1 };
+
+// Textes détaillés des pages catégories (page mère du cocon sémantique).
+const DETAILS: Record<string, string[]> = {
+ "polos-personnalises": [
+  "Le polo est la tenue professionnelle la plus polyvalente : plus habillé qu'un t-shirt, plus pratique qu'une chemise. Il convient à la restauration, à l'accueil, au commerce, aux artisans et aux équipes terrain.",
+  "Pour un usage quotidien, visez un piqué de 200 à 220 g/m² : il garde sa forme et résiste aux lavages fréquents. Les mélanges polyester-coton sèchent plus vite et boulochent moins que le 100 % coton.",
+  "Le logo se place le plus souvent au cœur, complété d'un grand marquage au dos pour être visible de loin. Les coupes femme, plus ajustées, permettent d'habiller toute l'équipe avec le même modèle."
+ ],
+ "t-shirts-personnalises": [
+  "Le t-shirt personnalisé est la solution la plus économique pour habiller une équipe, un club ou les participants d'un événement. Il se décline en coton classique, en coton bio ou en tissu technique respirant pour le sport.",
+  "Le grammage fait la différence : 150 g/m² pour un événement ponctuel, 180 g/m² et plus pour un t-shirt porté toute l'année. Les modèles sans couture latérale tombent mieux et restent plus confortables.",
+  "L'impression DTF permet d'imprimer un logo en couleurs, une photo ou un visuel d'événement, dès 1 pièce et sans frais de préparation."
+ ],
+ "chemises-personnalisees": [
+  "La chemise personnalisée apporte une image soignée aux métiers de l'accueil, de l'hôtellerie, de la réception et du conseil. Un logo discret au cœur suffit à identifier votre équipe.",
+  "Privilégiez un tissu avec un peu d'élasthanne et un traitement facile à repasser : la chemise reste confortable sur une journée entière et garde un aspect net après lavage.",
+  "Les coupes homme et femme existent dans le même coloris, pour une tenue cohérente."
+ ],
+ "tabliers-personnalises": [
+  "Le tablier est souvent la pièce la plus visible d'une tenue de restaurant, de boulangerie, de bar ou de café. Il protège la tenue et porte votre logo en grand, à hauteur des yeux du client.",
+  "Le tablier bavette convient à la cuisine et au comptoir, le tablier mi-long au service en salle, le tablier en denim aux établissements au style plus tendance.",
+  "Tous nos tabliers sont en taille unique avec des liens réglables : une seule référence pour toute l'équipe."
+ ],
+ "casquettes-personnalisees": [
+  "La casquette personnalisée est un support de visibilité simple et économique : en cuisine, en vente à emporter, sur un salon, un chantier ou un événement en extérieur.",
+  "Toutes nos casquettes sont réglables : une seule taille convient à toute l'équipe, ce qui simplifie la commande.",
+  "Le logo se place sur l'avant, la zone la plus visible. Les modèles techniques légers conviennent au sport et à l'été, les modèles en coton à un usage quotidien."
+ ],
+ "haute-visibilite-personnalisee": [
+  "Les vêtements haute visibilité protègent les personnes exposées à la circulation ou aux engins : BTP, voirie, logistique, entrepôts, sécurité. Ils doivent être conformes à la norme EN ISO 20471.",
+  "La norme définit trois classes selon la surface de matière fluorescente et de bandes rétroréfléchissantes. Un gilet de classe 2 couvre la plupart des usages ; la classe 3 s'impose pour les interventions les plus exposées.",
+  "Votre logo peut être ajouté sans perdre la conformité, à condition de ne pas recouvrir les bandes et de respecter la surface fluorescente minimale : nous plaçons le marquage en conséquence."
+ ]
+};
+for (const c of CATEGORIES) c.details = DETAILS[c.slug];
 
 export const getProduct = (slug: string) => PRODUCTS.find((x) => x.slug === slug);
 export const getCategory = (slug: string) => CATEGORIES.find((x) => x.slug === slug);

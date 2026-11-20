@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { CATEGORIES, GENERAL_FAQ, SECTORS, getCategory, productsIn } from '@/lib/catalog';
 import { Breadcrumbs, Checks, Faq, ProductCard } from '@/components/ui';
+import { guidesFor } from '@/lib/guides';
 
 export const dynamicParams = false;
 export const generateStaticParams = () => CATEGORIES.map((c) => ({ slug: c.slug }));
@@ -28,9 +29,11 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         <p className="muted small mb">{list.length} modèles · prix dès 250 pièces, logo compris</p>
         <div className="grid">{list.map((p) => <ProductCard key={p.slug} p={p} />)}</div>
         <div className="seo">
-          <div className="txt"><h2>Bien choisir son {c.singular} personnalisé</h2><Faq items={[...c.faq, ...GENERAL_FAQ.slice(0, 2)]} /></div>
+          <div className="txt"><h2>Bien choisir son {c.singular} personnalisé</h2>{c.details?.map((d) => <p key={d.slice(0, 30)}>{d}</p>)}<h2 className="mt">Questions fréquentes</h2><Faq items={[...c.faq, ...GENERAL_FAQ.slice(0, 2)]} /></div>
           <div className="related">
-            <b>Par métier</b>
+            {guidesFor(c.slug).length > 0 && <b>Nos guides</b>}
+            {guidesFor(c.slug).map((g) => <Link key={g.slug} href={`/guides/${g.slug}`}>{g.title}</Link>)}
+            <b className="mt">Par métier</b>
             {sectors.map((s) => <Link key={s.slug} href={`/metiers/${s.slug}`}>{c.name} pour la {s.name.toLowerCase()}</Link>)}
             <b className="mt">Autres vêtements</b>
             {CATEGORIES.filter((o) => o.slug !== c.slug).map((o) => <Link key={o.slug} href={`/vetements/${o.slug}`}>{o.name} personnalisés</Link>)}

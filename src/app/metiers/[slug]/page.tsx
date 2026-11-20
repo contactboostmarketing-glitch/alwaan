@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { SECTORS, getCategory, getSector, productsIn } from '@/lib/catalog';
 import { Breadcrumbs, Checks, ProductCard } from '@/components/ui';
+import { guidesForSector } from '@/lib/guides';
 
 export const dynamicParams = false;
 export const generateStaticParams = () => SECTORS.map((s) => ({ slug: s.slug }));
@@ -33,6 +34,9 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
             </div>
           );
         })}
+        {guidesForSector(s.slug).length > 0 && (
+          <div className="guide-links"><b>Nos conseils</b>{guidesForSector(s.slug).map((g) => <Link key={g.slug} href={`/guides/${g.slug}`}>{g.title}</Link>)}</div>
+        )}
       </section>
     </>
   );

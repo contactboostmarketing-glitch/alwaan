@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { CATEGORIES, PRODUCTS, SECTORS } from '@/lib/catalog';
 import { LEGAL_PAGES, SITE_URL } from '@/lib/site';
+import { GUIDES } from '@/lib/guides';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const u = (path: string, priority: number) => ({ url: SITE_URL + path, lastModified: new Date(), priority });
@@ -9,7 +10,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...CATEGORIES.map((c) => u(`/vetements/${c.slug}`, 0.9)),
     ...SECTORS.map((s) => u(`/metiers/${s.slug}`, 0.8)),
     ...PRODUCTS.map((p) => u(`/produits/${p.slug}`, 0.7)),
-    u('/assistant', 0.8), u('/faq', 0.6), u('/devis', 0.5),
+    u('/assistant', 0.8), u('/guides', 0.7), u('/a-propos', 0.4),
+    ...GUIDES.map((g) => u(`/guides/${g.slug}`, 0.7)), u('/faq', 0.6), u('/devis', 0.5),
     ...Object.keys(LEGAL_PAGES).map((k) => u(`/${k}`, 0.2)),
   ];
 }
