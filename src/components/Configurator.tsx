@@ -9,6 +9,8 @@ import { Garment } from './Garment';
 import { Price } from './Price';
 import { CutoutChoice, ReworkOption, useLogo } from './LogoCutout';
 import { Perks } from './ui';
+import { useT } from '@/i18n/client';
+import { categoryL, colorName, productL, zonesL } from '@/i18n';
 import { snapshot, uploadMockup } from '@/lib/mockup';
 import { track } from '@/lib/track';
 import { deliveryDate, fmtDay } from '@/lib/delivery';
@@ -49,7 +51,10 @@ export async function preview(file: File): Promise<string> {
 
 export function Configurator({ slug }: { slug: string }) {
   const p = getProduct(slug)!;
-  const zones = zonesFor(p);
+  const { t, l, lang } = useT();
+  const pL = productL(lang, p);
+  const zones = zonesL(lang, p);
+  const pcs = (n: number) => t(n > 1 ? '{n} pièces' : '{n} pièce', { n });
   const { add, update, lines } = useCart();
   const router = useRouter();
   const params = useSearchParams();
@@ -118,30 +123,30 @@ export function Configurator({ slug }: { slug: string }) {
     await pick(f);
   };
   const submit = async () => {
-    if (!q) { flash('Indiquez au moins une pièce'); return; }
-    if (!cfg.zones.length) { flash('Choisissez au moins un emplacement'); return; }
-    if (uploading) { flash('Envoi du logo en cours, un instant…'); return; }
-    if (cfg.logoStatus === 'uploaded' && lg?.hasBg && !lg.decided && !cfg.logoRework) { flash('Votre logo a un fond : choisissez avec ou sans fond.'); return; }
-    if (cfg.logoStatus === 'uploaded' && !cfg.logoId) { flash('Ajoutez votre logo, ou choisissez « Texte seul ».'); return; }
-    if (cfg.logoStatus === 'text' && !cfg.text?.trim()) { flash('Écrivez le texte à imprimer.'); return; }
-    if (!approved) { flash('Cochez la validation de votre maquette.'); return; }
+    if (!q) { flash(t('Indiquez au moins une pièce')); return; }
+    if (!cfg.zones.length) { flash(t('Choisissez au moins un emplacement')); return; }
+    if (uploading) { flash(t('Envoi du logo en cours, un instant…')); return; }
+    if (cfg.logoStatus === 'uploaded' && lg?.hasBg && !lg.decided && !cfg.logoRework) { flash(t('Votre logo a un fond : choisissez avec ou sans fond.')); return; }
+    if (cfg.logoStatus === 'uploaded' && !cfg.logoId) { flash(t('Ajoutez votre logo, ou choisissez « Texte seul ».')); return; }
+    if (cfg.logoStatus === 'text' && !cfg.text?.trim()) { flash(t('Écrivez le texte à imprimer.')); return; }
+    if (!approved) { flash(t('Cochez la validation de votre maquette.')); return; }
     // La maquette validée est figée en image et jointe à la commande (BAT).
     setSaving(true);
     const svgs = Array.from(shots.current?.querySelectorAll('svg') ?? []) as SVGSVGElement[];
-    const png = await snapshot(svgs, `${p.name} · ${COLOR_NAMES[cfg.color]} · ${cfg.zones.map((z) => zones.find((x) => x.id === z)?.name).join(' + ')}`).catch(() => null);
+    const png = await snapshot(svgs, `${p.name} · ${COLOR_NAMES[cfg.color]} · ${zonesFor(p).filter((z) => cfg.zones.includes(z.id)).map((z) => z.name).join(' + ')}`).catch(() => null);
     const mockupId = png ? await uploadMockup(png) : null;
     setSaving(false);
-    if (!mockupId) { flash('Enregistrement de la maquette impossible. Réessayez.'); return; }
+    if (!mockupId) { flash(t('Enregistrement de la maquette impossible. Réessayez.')); return; }
     const item = { ...cfg, mockupId, approvedAt: new Date().toISOString() };
-    if (editIndex !== null) { update(editIndex, item); router.push('/panier'); return; }
+    if (editIndex !== null) { update(editIndex, item); router.push(l('/panier')); return; }
     add(item);
     track('add_to_cart', { value: lineTotal(item, pool), items: [{ item_id: p.slug, item_name: p.name, quantity: qtyOf(item) }] });
     setApproved(false);
     setAdded(true);
-    flash(`${q} × ${p.name} ajoutés au panier`);
+    flash(t('{q} × {name} ajoutés au panier', { q, name: pL.name }));
   };
   const hasBack = zones.some((z) => z.view === 'back');
-  const logoLabel = cfg.logoStatus === 'text' ? 'Texte seul (sans logo)' : cfg.logo ? 'Logo ajouté' : 'Déposez votre logo';
+  const logoLabel = t(cfg.logoStatus === 'text' ? 'Texte seul (sans logo)' : cfg.logo ? 'Logo ajouté' : 'Déposez votre logo');
 
   return (
     <div className="pdp">
@@ -149,8 +154,8 @@ export function Configurator({ slug }: { slug: string }) {
         <div className="stage"><Garment slug={slug} color={cfg.color} view={view} zones={cfg.zones} logo={cfg.logo} text={cfg.text} /></div>
         {hasBack && (
           <div className="seg" role="group" aria-label="Vue">
-            <button aria-pressed={view === 'front'} onClick={() => setView('front')}>Face</button>
-            <button aria-pressed={view === 'back'} onClick={() => setView('back')}>Dos</button>
+            <button aria-pressed={view === 'front'} onClick={() => setView('front')}>{t('Face')}</button>
+            <button aria-pressed={view === 'back'} onClick={() => setView('back')}>{t('Dos')}</button>
           </div>
         )}
         <div ref={shots} className="offscreen" aria-hidden="true">
@@ -161,36 +166,36 @@ export function Configurator({ slug }: { slug: string }) {
 
       <div className="buy">
         <div>
-          <h1 className="pdp-title">{p.name}</h1>
-          <p className="muted">{p.type} · {p.composition}</p>
-          <p className="from">dès <b><Price ht={at(TIERS[TIERS.length - 1][0])} /></b> la pièce, logo compris</p>
+          <h1 className="pdp-title">{pL.name}</h1>
+          <p className="muted">{pL.type} · {pL.composition}</p>
+          <p className="from">{t('dès')} <b><Price ht={at(TIERS[TIERS.length - 1][0])} /></b> {t('la pièce, logo compris')}</p>
         </div>
 
         <div className="blk">
-          <div className="lbl">Couleur <span>{COLOR_NAMES[cfg.color]}</span></div>
+          <div className="lbl">{t('Couleur')} <span>{colorName(lang, cfg.color)}</span></div>
           <div className="swatches">
-            {p.colors.map((c) => <button key={c} className="sw" style={{ background: c }} aria-label={COLOR_NAMES[c]} aria-pressed={c === cfg.color} onClick={() => set({ color: c })} />)}
+            {p.colors.map((c) => <button key={c} className="sw" style={{ background: c }} aria-label={colorName(lang, c)} aria-pressed={c === cfg.color} onClick={() => set({ color: c })} />)}
           </div>
         </div>
 
         <div className="blk">
-          <div className="lbl">Votre logo</div>
+          <div className="lbl">{t('Votre logo')}</div>
           <label className={`drop ${cfg.logoId || cfg.logoStatus === 'text' ? 'has' : ''}`} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); onFile(e.dataTransfer.files[0]); }}>
             <strong>{logoLabel}</strong>
-            <small>{uploading ? 'Préparation du logo…' : cfg.logoStatus === 'uploaded' ? 'Touchez pour remplacer' : 'PNG, JPG ou SVG'}</small>
+            <small>{t(uploading ? 'Préparation du logo…' : cfg.logoStatus === 'uploaded' && cfg.logo ? 'Touchez pour remplacer' : 'PNG, JPG ou SVG')}</small>
             <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onChange={(e) => onFile(e.target.files?.[0])} />
           </label>
           <div className="opts">
             <CutoutChoice logo={cfg.logoStatus === 'uploaded' ? lg : null} choose={choose} />
             <ReworkOption logo={cfg.logoStatus === 'uploaded' ? lg : null} on={!!cfg.logoRework} set={(v) => set({ logoRework: v })} />
-            <button className="link" onClick={() => { setApproved(false); set({ logo: undefined, logoName: undefined, logoId: undefined, logoLowRes: false, logoStatus: 'text' }); }}>Je n&apos;ai pas de logo : imprimer seulement un texte</button>
-            {cfg.logoLowRes && <p className="warnline">Logo peu net : envoyez une version plus grande, ou confiez-le au graphiste.</p>}
+            <button className="link" onClick={() => { setApproved(false); set({ logo: undefined, logoName: undefined, logoId: undefined, logoLowRes: false, logoStatus: 'text' }); }}>{t('Je n\'ai pas de logo : imprimer seulement un texte')}</button>
+            {cfg.logoLowRes && <p className="warnline">{t('Logo peu net : envoyez une version plus grande, ou confiez-le au graphiste.')}</p>}
           </div>
-          <input type="text" value={cfg.text} maxLength={24} placeholder={cfg.logoStatus === 'text' ? 'Texte à imprimer (nom, slogan…)' : 'Texte facultatif sous le logo'} aria-label="Texte sous le logo" onChange={(e) => set({ text: e.target.value })} />
+          <input type="text" value={cfg.text} maxLength={24} placeholder={t(cfg.logoStatus === 'text' ? 'Texte à imprimer (nom, slogan…)' : 'Texte facultatif sous le logo')} aria-label={t('Texte sous le logo')} onChange={(e) => set({ text: e.target.value })} />
         </div>
 
         <div className="blk">
-          <div className="lbl">Emplacements</div>
+          <div className="lbl">{t('Emplacements')}</div>
           <div className="zones">
             {zones.map((z) => {
               const on = cfg.zones.includes(z.id);
@@ -204,70 +209,71 @@ export function Configurator({ slug }: { slug: string }) {
             })}
           </div>
           {hasBack && !cfg.zones.includes('back') && (
-            <div className="nudge"><span>Visible de loin ?</span><button className="btn line small" onClick={() => toggleZone('back')}>+ Logo au dos</button></div>
+            <div className="nudge"><span>{t('Visible de loin ?')}</span><button className="btn line small" onClick={() => toggleZone('back')}>{t('+ Logo au dos')}</button></div>
           )}
         </div>
 
         <div className="blk">
-          <div className="lbl">Quantités {sizesFor(p).length > 1 && <span><Link className="link" href="/faq#tailles">Guide des tailles</Link></span>}</div>
+          <div className="lbl">{t('Quantités')} {sizesFor(p).length > 1 && <span><Link className="link" href={`${l('/faq')}#tailles`}>{t('Guide des tailles')}</Link></span>}</div>
           <div className="sizes">
             {Object.keys(cfg.qty).map((s) => (
               <div className="sz" key={s}>
                 <b>{s}</b>
                 <div className="ctr">
-                  <button aria-label={`Retirer ${s}`} onClick={() => setQty(s, cfg.qty[s] - 1)}>−</button>
-                  <input type="number" inputMode="numeric" min={0} value={cfg.qty[s]} aria-label={`Quantité ${s}`} onChange={(e) => setQty(s, Number(e.target.value))} />
-                  <button aria-label={`Ajouter ${s}`} onClick={() => setQty(s, cfg.qty[s] + 1)}>+</button>
+                  <button aria-label={t('Retirer {s}', { s })} onClick={() => setQty(s, cfg.qty[s] - 1)}>−</button>
+                  <input type="number" inputMode="numeric" min={0} value={cfg.qty[s]} aria-label={t('Quantité {s}', { s })} onChange={(e) => setQty(s, Number(e.target.value))} />
+                  <button aria-label={t('Ajouter {s}', { s })} onClick={() => setQty(s, cfg.qty[s] + 1)}>+</button>
                 </div>
               </div>
             ))}
           </div>
-          {others > 0 && <p className="muted small">+ {others} pièce{others > 1 ? 's' : ''} avec ce logo déjà dans le panier, comptée{others > 1 ? 's' : ''} pour la remise.</p>}
+          {others > 0 && <p className="muted small">{t('+ {n} avec ce logo déjà dans le panier, comptées pour la remise.', { n: pcs(others) })}</p>}
           {q > 0 && zones.some((z) => cfg.zones.includes(z.id) && !z.fixed) && (nt ? (
-            <div className="nudge"><span>+{nt[0] - pool} pièce{nt[0] - pool > 1 ? 's' : ''} = marquage <b>-{Math.round(nt[1] * 100)} %</b></span><button className="btn line small" onClick={reachTier}>Passer à {nt[0] - others}</button></div>
-          ) : cur[1] === MAX_DISCOUNT ? <div className="nudge ok">✓ Marquage -{Math.round(MAX_DISCOUNT * 100)} %</div> : null)}
+            <div className="nudge"><span>+{pcs(nt[0] - pool)} = {t('marquage')} <b>-{Math.round(nt[1] * 100)} %</b></span><button className="btn line small" onClick={reachTier}>{t('Passer à {n}', { n: nt[0] - others })}</button></div>
+          ) : cur[1] === MAX_DISCOUNT ? <div className="nudge ok">✓ {t('Marquage')} -{Math.round(MAX_DISCOUNT * 100)} %</div> : null)}
           <div className="tiers">
-            {TIERS.map(([m, d]) => <div key={m} className={m === cur[0] ? 'on' : ''}><b><Price ht={at(m)} suffix={false} /></b>{m}+ pcs{d ? <small>marquage -{Math.round(d * 100)} %</small> : null}</div>)}
+            {TIERS.map(([m, d]) => <div key={m} className={m === cur[0] ? 'on' : ''}><b><Price ht={at(m)} suffix={false} /></b>{m}+ pcs{d ? <small>{t('marquage')} -{Math.round(d * 100)} %</small> : null}</div>)}
           </div>
         </div>
 
         <div className="addrow">
           <div>
             {q ? (<>
-              <small className="muted">{q} pièce{q > 1 ? 's' : ''} · <Price ht={at(pool)} /> / pièce</small>
+              <small className="muted">{pcs(q)} · <Price ht={at(pool)} /> / {t('pièce')}</small>
               <div className="tot"><Price ht={lineTotal(cfg, pool)} /></div>
             </>) : (<>
-              <div className="tot"><Price ht={at(pool)} /> <small className="muted">/ pièce</small></div>
-              <small className="muted">Choisissez vos tailles</small>
+              <div className="tot"><Price ht={at(pool)} /> <small className="muted">/ {t('pièce')}</small></div>
+              <small className="muted">{t('Choisissez vos tailles')}</small>
             </>)}
-            <p className="eta">🚚 Reçu vers le {fmtDay(deliveryDate())}</p>
+            <p className="eta">🚚 {t('Reçu vers le {d}', { d: fmtDay(deliveryDate(), lang) })}</p>
           </div>
-          <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /><span>Je valide ma maquette <b>(bon à tirer)</b></span></label>
-          <button className="btn cta" onClick={submit} disabled={saving}>{saving ? 'Enregistrement de la maquette…' : editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier'}</button>
+          <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /><span>{t('Je valide ma maquette')} <b>{t('(bon à tirer)')}</b></span></label>
+          <button className="btn cta" onClick={submit} disabled={saving}>{t(saving ? 'Enregistrement de la maquette…' : editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier')}</button>
         </div>
-        <Perks items={[['eye', 'Imprimé comme la maquette'], ['lock', 'Paiement sécurisé'], ['redo', 'Défaut refait'], ['truck', '7 jours']]} />
+        <Perks items={[['eye', t('Imprimé comme la maquette')], ['lock', t('Paiement sécurisé')], ['redo', t('Défaut refait')], ['truck', t('7 jours')]]} />
       </div>
       {added && <SameLogo current={p.category} logo={cfg.logo} />}
-      {toast && <div className="toast" role="status">{toast} {toast.includes('ajoutés') && <Link href="/panier">Voir le panier</Link>}</div>}
+      {toast && <div className="toast" role="status">{toast} {added && <Link href={l('/panier')}>{t('Voir le panier')}</Link>}</div>}
     </div>
   );
 }
 
 /** Après l'ajout : proposer les autres types de vêtements avec le même logo, en un tap. */
 function SameLogo({ current, logo }: { current: string; logo?: string }) {
+  const { t, l, lang } = useT();
   const picks = CATEGORIES.filter((c) => c.slug !== current)
     .map((c) => PRODUCTS.find((x) => x.category === c.slug && x.bestseller) ?? PRODUCTS.find((x) => x.category === c.slug)!)
     .filter(Boolean);
   return (
-    <section className="samelogo" aria-label="Même logo sur un autre vêtement">
-      <div className="sec-head"><h2>Même logo sur un autre vêtement ?</h2><Link className="btn cta small" href="/panier">Voir le panier</Link></div>
-      <p className="muted small">Votre logo et vos emplacements sont repris automatiquement : choisissez juste la couleur et les quantités.</p>
+    <section className="samelogo" aria-label={t('Même logo sur un autre vêtement ?')}>
+      <div className="sec-head"><h2>{t('Même logo sur un autre vêtement ?')}</h2><Link className="btn cta small" href={l('/panier')}>{t('Voir le panier')}</Link></div>
+      <p className="muted small">{t('Logo et emplacements repris : choisissez la couleur et les quantités.')}</p>
       <div className="samegrid">
         {picks.map((x) => (
-          <Link key={x.slug} className="pcard" href={`/produits/${x.slug}?meme-logo=1`}>
+          <Link key={x.slug} className="pcard" href={`${l(`/produits/${x.slug}`)}?meme-logo=1`}>
             <div className="img"><Garment slug={x.slug} color={defaultColor(x)} zones={['heart']} logo={logo} /></div>
-            <strong>{CATEGORIES.find((c) => c.slug === x.category)!.name}</strong>
-            <small>{x.name}</small>
+            <strong>{categoryL(lang, CATEGORIES.find((c) => c.slug === x.category)!).name}</strong>
+            <small>{productL(lang, x).name}</small>
           </Link>
         ))}
       </div>

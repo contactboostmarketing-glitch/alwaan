@@ -87,4 +87,4 @@ export function cartTotals(lines: LineConfig[], promo?: string | null) {
 }
 
 export const round = (n: number) => Math.round(n * 100) / 100;
-export const eur = (n: number) => n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
+export const eur = (n: number, lang: 'fr' | 'en' = 'fr') => n.toLocaleString(lang === 'en' ? 'en-IE' : 'fr-FR', { style: 'currency', currency: 'EUR' });

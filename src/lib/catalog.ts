@@ -35,6 +35,7 @@ export type Product = {
   colors: string[];
   composition: string;
   bestseller?: boolean;
+  photos?: Record<string, string>; // vraies photos par coloris (#hex → URL), prioritaires sur le dessin (Google Shopping, pages)
 };
 
 export const COLOR_NAMES: Record<string, string> = {

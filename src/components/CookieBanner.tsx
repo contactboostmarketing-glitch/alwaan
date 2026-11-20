@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useT } from '@/i18n/client';
 
 const KEY = 'alwaan-consent-v1';
 type Consent = { ads: boolean; analytics: boolean; date: string };
@@ -19,6 +20,7 @@ function apply(c: Consent) {
 }
 
 export function CookieBanner() {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const [custom, setCustom] = useState(false);
   const [ads, setAds] = useState(false);
@@ -42,19 +44,19 @@ export function CookieBanner() {
   };
   if (!open) return null;
   return (
-    <div className="cookie" role="dialog" aria-label="Choix des cookies">
-      <div><b>Cookies</b><p className="muted">Nous utilisons des cookies pour mesurer l&apos;audience et l&apos;efficacité de nos publicités (Google, Meta). Vous pouvez accepter, refuser ou choisir. <Link href="/cookies">En savoir plus</Link></p></div>
+    <div className="cookie" role="dialog" aria-label={t('Choix des cookies')}>
+      <div><b>Cookies</b><p className="muted">{t('Nous utilisons des cookies pour mesurer l\'audience et l\'efficacité de nos publicités (Google, Meta). Vous pouvez accepter, refuser ou choisir.')} <Link href="/cookies">{t('En savoir plus')}</Link></p></div>
       {custom && (
         <div className="cookie-opts">
-          <label><input type="checkbox" checked disabled /> Nécessaires (panier, sécurité)</label>
-          <label><input type="checkbox" checked={analytics} onChange={(e) => setAnalytics(e.target.checked)} /> Mesure d&apos;audience</label>
-          <label><input type="checkbox" checked={ads} onChange={(e) => setAds(e.target.checked)} /> Publicité (Google Ads, Meta)</label>
+          <label><input type="checkbox" checked disabled /> {t('Nécessaires (panier, sécurité)')}</label>
+          <label><input type="checkbox" checked={analytics} onChange={(e) => setAnalytics(e.target.checked)} /> {t('Mesure d\'audience')}</label>
+          <label><input type="checkbox" checked={ads} onChange={(e) => setAds(e.target.checked)} /> {t('Publicité (Google Ads, Meta)')}</label>
         </div>
       )}
       <div className="ctas">
-        {custom ? <button className="btn line" onClick={() => decide(ads, analytics)}>Enregistrer</button> : <button className="btn line" onClick={() => setCustom(true)}>Personnaliser</button>}
-        <button className="btn dark" onClick={() => decide(false, false)}>Tout refuser</button>
-        <button className="btn dark" onClick={() => decide(true, true)}>Tout accepter</button>
+        {custom ? <button className="btn line" onClick={() => decide(ads, analytics)}>{t('Enregistrer')}</button> : <button className="btn line" onClick={() => setCustom(true)}>{t('Personnaliser')}</button>}
+        <button className="btn dark" onClick={() => decide(false, false)}>{t('Tout refuser')}</button>
+        <button className="btn dark" onClick={() => decide(true, true)}>{t('Tout accepter')}</button>
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: 'Polos, t-shirts, tabliers, casquettes et haute visibilité à votre logo. Dès 1 pièce, maquette en direct avec votre logo, livraison en 7 jours.',
   openGraph: { siteName: SITE_NAME, locale: 'fr_FR', type: 'website' },
   robots: INDEXABLE ? undefined : { index: false, follow: false },
-  alternates: { canonical: '/', languages: { 'fr-FR': '/', 'fr-BE': '/', 'x-default': '/' } },
+  alternates: { canonical: '/', languages: { 'fr-FR': '/', 'fr-BE': '/', en: '/en', 'x-default': '/' } },
 };
 export const viewport: Viewport = { themeColor: '#ffffff', viewportFit: 'cover' };
 

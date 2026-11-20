@@ -1,16 +1,21 @@
+'use client';
 import Link from 'next/link';
 import { CATEGORIES, SECTORS } from '@/lib/catalog';
+import { categoryL, sectorL } from '@/i18n';
+import { useT } from '@/i18n/client';
 
 export function Footer() {
+  const { t, l, lang } = useT();
+  const fr = lang === 'en' ? ' (FR)' : '';
   return (
     <footer className="site"><div className="wrap">
       <div className="fcols">
-        <div><b>Vêtements</b>{CATEGORIES.map((c) => <Link key={c.slug} href={`/vetements/${c.slug}`}>{c.name} personnalisés</Link>)}</div>
-        <div><b>Métiers</b>{SECTORS.map((s) => <Link key={s.slug} href={`/metiers/${s.slug}`}>{s.name}</Link>)}</div>
-        <div><b>Aide</b><Link href="/livraison">Livraison et délais</Link><Link href="/retours">Retours et rétractation</Link><Link href="/guides">Guides et conseils</Link><Link href="/faq">Questions fréquentes</Link><Link href="/a-propos">À propos</Link><Link href="/devis">Demander un devis</Link></div>
-        <div><b>Informations légales</b><Link href="/cgv">CGV</Link><Link href="/mentions-legales">Mentions légales</Link><Link href="/confidentialite">Confidentialité</Link><Link href="/cookies">Cookies</Link><Link href="/mediation">Médiation</Link></div>
+        <div><b>{t('Vêtements')}</b>{CATEGORIES.map((c) => <Link key={c.slug} href={l(`/vetements/${c.slug}`)}>{lang === 'en' ? `Custom ${categoryL(lang, c).name.toLowerCase()}` : `${c.name} personnalisés`}</Link>)}</div>
+        <div><b>{t('Métiers')}</b>{SECTORS.map((s) => <Link key={s.slug} href={l(`/metiers/${s.slug}`)}>{sectorL(lang, s).name}</Link>)}</div>
+        <div><b>{t('Aide')}</b><Link href="/livraison">{t('Livraison et délais')}{fr}</Link><Link href="/retours">{t('Retours et rétractation')}{fr}</Link>{lang === 'fr' && <Link href="/guides">Guides et conseils</Link>}<Link href={l('/faq')}>{t('Questions fréquentes')}</Link><Link href="/a-propos">{t('À propos')}{fr}</Link><Link href={l('/devis')}>{t('Demander un devis')}</Link></div>
+        <div><b>{t('Informations légales')}</b><Link href="/cgv">{t('CGV')}{fr}</Link><Link href="/mentions-legales">{t('Mentions légales')}{fr}</Link><Link href="/confidentialite">{t('Confidentialité')}{fr}</Link><Link href="/cookies">{t('Cookies')}{fr}</Link><Link href="/mediation">{t('Médiation')}{fr}</Link></div>
       </div>
-      <div className="fbot"><span>alwaan · tenues professionnelles personnalisées</span><span>Paiement sécurisé · CB, Apple Pay, Google Pay</span></div>
+      <div className="fbot"><span>{t('alwaan · tenues professionnelles personnalisées')}</span><span>{t('Paiement sécurisé · CB, Apple Pay, Google Pay')}</span></div>
     </div></footer>
   );
 }

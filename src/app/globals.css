@@ -415,3 +415,5 @@ footer.site{background:var(--soft);margin-top:40px;padding-block:32px;font-size:
 .prod-sizes{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0}
 .prod-sizes span{background:var(--soft);border-radius:8px;padding:3px 8px;font-size:13px}
 @media print{header.site,footer.site,.cookie,.wa-float,.no-print,.topbar{display:none!important}.prod-card{border:1px solid #999}}
+.langsw{margin-left:auto;margin-right:8px;font-weight:700;font-size:13px;padding:6px 9px;border-radius:999px;border:1.5px solid var(--line);text-decoration:none;color:var(--ink)}
+.langsw + .mode{margin-left:0}

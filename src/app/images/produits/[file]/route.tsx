@@ -11,6 +11,8 @@ export async function GET(_: Request, { params }: { params: Promise<{ file: stri
   const p = m && getProduct(m[1]);
   if (!p) return new Response('Introuvable', { status: 404 });
   const color = m[2] && p.colors.includes(`#${m[2]}`) ? `#${m[2]}` : p.colors[0];
+  // Vraie photo disponible (Roly) : elle remplace le dessin.
+  if (p.photos?.[color]) return Response.redirect(p.photos[color], 302);
   return new ImageResponse(
     (<div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f6fb' }}>
       <div style={{ display: 'flex', width: 1040, height: 1000 }}><Garment slug={p.slug} color={color} zones={['heart']} width={1040} height={1000} /></div>

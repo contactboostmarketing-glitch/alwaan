@@ -9,4 +9,4 @@ export function addBusinessDays(d: Date, n: number): Date {
   return r;
 }
 export const deliveryDate = (from = new Date()) => addBusinessDays(from, PRODUCTION_DAYS + TRANSIT_DAYS);
-export const fmtDay = (d: Date) => d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+export const fmtDay = (d: Date, lang: 'fr' | 'en' = 'fr') => d.toLocaleDateString(lang === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });

@@ -2,21 +2,14 @@
 // et lien pour reprendre le devis et payer en ligne (carte ou virement).
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { COLOR_NAMES, REWORK_FEE, getProduct, zonesFor } from './catalog';
+import { COMPANY } from './site';
 import { cartTotals, pools, qtyOf, reworkLogos, unitPrice, type LineConfig } from './pricing';
 
 // Polices standard PDF (WinAnsi) : on remplace les caractères qu'elles ne savent pas écrire.
 const clean = (s: string) => s.replace(/[  ]/g, ' ').replace(/[–—]/g, '-').replace(/[’]/g, "'").replace(/[^\x20-\x7e -ÿ€œŒ×•]/g, '');
 const eur = (n: number) => clean(n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' }));
 
-export const COMPANY = {
-  name: process.env.COMPANY_NAME || 'alwaan',
-  address: process.env.COMPANY_ADDRESS || '',
-  siret: process.env.COMPANY_SIRET || '',
-  vat: process.env.COMPANY_VAT || '',
-  email: process.env.COMPANY_EMAIL || '',
-  phone: process.env.NEXT_PUBLIC_PHONE || '',
-  iban: process.env.COMPANY_IBAN || '',
-};
+export { COMPANY };
 
 export async function quotePdf(o: { number: string; date: Date; validUntil: Date; lines: LineConfig[]; promo?: string | null; company?: string; email?: string; link: string }): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
@@ -29,8 +22,8 @@ export async function quotePdf(o: { number: string; date: Date; validUntil: Date
   const right = (s: string, xr: number, size = 10, f = font) => { const t = clean(s); page.drawText(t, { x: xr - f.widthOfTextAtSize(t, size), y, size, font: f, color: ink }); };
   const newPageIfNeeded = (h: number) => { if (y - h < 90) { page = doc.addPage([595, 842]); y = 790; } };
 
-  text(COMPANY.name, 40, 22, bold); right(`DEVIS ${o.number}`, 555, 14, bold); y -= 16;
-  for (const l of [COMPANY.address, COMPANY.siret && `SIRET ${COMPANY.siret}`, COMPANY.vat && `TVA ${COMPANY.vat}`, COMPANY.email, COMPANY.phone].filter(Boolean) as string[]) { text(l, 40, 9, font, muted); y -= 12; }
+  text(COMPANY.brand, 40, 22, bold); y -= 14; text(`${COMPANY.name}`, 40, 9, bold, muted); right(`DEVIS ${o.number}`, 555, 14, bold); y -= 16;
+  for (const l of [COMPANY.address, `${COMPANY.legalForm} · SIRET ${COMPANY.siret} · ${COMPANY.rcs}`, `TVA ${COMPANY.vat}`, COMPANY.email, COMPANY.phone].filter(Boolean) as string[]) { text(l, 40, 9, font, muted); y -= 12; }
   y = 758; right(`Date : ${o.date.toLocaleDateString('fr-FR')}`, 555, 9); y -= 12; right(`Valable jusqu'au ${o.validUntil.toLocaleDateString('fr-FR')}`, 555, 9);
   y = 700;
   if (o.company || o.email) { text('Client', 40, 9, bold, muted); y -= 13; if (o.company) { text(o.company, 40, 11, bold); y -= 13; } if (o.email) { text(o.email, 40, 9); y -= 13; } y -= 8; }

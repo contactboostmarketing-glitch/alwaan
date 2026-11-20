@@ -1,43 +1,7 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { SECTORS, getCategory, getSector, productsIn } from '@/lib/catalog';
-import { Breadcrumbs, LinkChips, Perks, ProductCard } from '@/components/ui';
-import { guidesForSector } from '@/lib/guides';
+import { SECTORS } from '@/lib/catalog';
+import { SectorView, sectorMeta } from '@/views/SectorView';
 
 export const dynamicParams = false;
 export const generateStaticParams = () => SECTORS.map((s) => ({ slug: s.slug }));
-
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const s = getSector((await params).slug)!;
-  return { title: s.h1, description: s.intro, alternates: { canonical: `/metiers/${s.slug}` } };
-}
-
-/** Pages métier : SEO local au métier et pages d'arrivée des campagnes Google Ads / Meta. */
-export default async function SectorPage({ params }: { params: Promise<{ slug: string }> }) {
-  const s = getSector((await params).slug);
-  if (!s) notFound();
-  return (
-    <>
-      <Breadcrumbs items={[['Métiers'], [s.name]]} />
-      <section className="wrap">
-        <div className="cat-head">
-          <div><h1>{s.h1}</h1><p className="mt8">{s.intro}</p></div>
-          <Perks items={[['one', 'Dès 1 pièce'], ['eye', 'Maquette en direct'], ['truck', '7 jours']]} />
-        </div>
-        {s.categories.map((ck) => {
-          const c = getCategory(ck)!;
-          return (
-            <div key={ck}>
-              <div className="sec-head mt"><h2>{c.name}</h2><Link className="link" href={`/vetements/${ck}`}>Tous les {c.name.toLowerCase()}</Link></div>
-              <div className="grid">{productsIn(ck).map((p) => <ProductCard key={p.slug} p={p} />)}</div>
-            </div>
-          );
-        })}
-        {guidesForSector(s.slug).length > 0 && (
-          <LinkChips title="Nos conseils" links={guidesForSector(s.slug).map((g) => [g.title, `/guides/${g.slug}`])} />
-        )}
-      </section>
-    </>
-  );
-}
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) { return sectorMeta('fr', (await params).slug); }
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) { return <SectorView lang="fr" slug={(await params).slug} />; }

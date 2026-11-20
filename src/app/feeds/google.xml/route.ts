@@ -26,7 +26,7 @@ export function GET() {
 <g:title>${esc(`${p.name} personnalisé à votre logo · ${color}`)}</g:title>
 <g:description>${esc(`${p.type}. ${p.composition}. Impression DTF de votre logo, maquette en direct, dès 1 pièce. Marquage -40 % dès 30 pièces. ${c.intro}`)}</g:description>
 <g:link>${SITE_URL}/produits/${p.slug}?couleur=${h}</g:link>
-<g:image_link>${SITE_URL}/images/produits/${p.slug}-${h}.png</g:image_link>
+<g:image_link>${esc(p.photos?.[hex] || `${SITE_URL}/images/produits/${p.slug}-${h}.png`)}</g:image_link>
 <g:availability>in_stock</g:availability>
 <g:price>${money(price)}</g:price>
 <g:brand>alwaan</g:brand>

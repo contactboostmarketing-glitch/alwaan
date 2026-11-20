@@ -4,6 +4,8 @@ import { usePathname } from 'next/navigation';
 import { CATEGORIES } from '@/lib/catalog';
 import { qtyOf } from '@/lib/pricing';
 import { useCart } from './CartProvider';
+import { useT } from '@/i18n/client';
+import { categoryL, frPath, href } from '@/i18n';
 
 export function Logo() {
   return (
@@ -18,24 +20,27 @@ export function Header() {
   const { pro, setPro, lines } = useCart();
   const path = usePathname();
   const count = lines.reduce((a, l) => a + qtyOf(l), 0);
+  const { t, l, lang } = useT();
+  const other = lang === 'en' ? frPath(path) : href('en', path);
   return (
     <>
-      <div className="promo">Livraison offerte dès 150 € · Maquette en direct avec votre logo · Dès 1 pièce</div>
+      <div className="promo">{t('Livraison offerte dès 150 € · Maquette en direct avec votre logo · Dès 1 pièce')}</div>
       <header className="site">
         <div className="wrap hd">
-          <Link className="logo" href="/" aria-label="alwaan, accueil"><Logo /><b>alwaan</b></Link>
-          <div className="mode" role="group" aria-label="Affichage des prix">
-            <button aria-pressed={pro} onClick={() => setPro(true)}>Pro <span className="opt">· HT</span></button>
-            <button aria-pressed={!pro} onClick={() => setPro(false)}>Particulier <span className="opt">· TTC</span></button>
+          <Link className="logo" href={l('/')} aria-label={t('alwaan, accueil')}><Logo /><b>alwaan</b></Link>
+          <Link className="langsw" href={other} hrefLang={lang === 'en' ? 'fr' : 'en'} aria-label={lang === 'en' ? 'Version française' : 'English version'}>{lang === 'en' ? 'FR' : 'EN'}</Link>
+          <div className="mode" role="group" aria-label={t('Affichage des prix')}>
+            <button aria-pressed={pro} onClick={() => setPro(true)}>Pro <span className="opt">· {t('HT')}</span></button>
+            <button aria-pressed={!pro} onClick={() => setPro(false)}>{t('Particulier')} <span className="opt">· {t('TTC')}</span></button>
           </div>
-          <Link className="cartlink" href="/panier" aria-label={`Panier, ${count} pièces`}><span className="opt">Panier</span> <i>{count}</i></Link>
+          <Link className="cartlink" href={l('/panier')} aria-label={t('Panier, {n} pièces', { n: count })}><span className="opt">{t('Panier')}</span> <i>{count}</i></Link>
         </div>
-        <nav className="wrap menu" aria-label="Catégories">
+        <nav className="wrap menu" aria-label={t('Catégories')}>
           {CATEGORIES.map((c) => (
-            <Link key={c.slug} href={`/vetements/${c.slug}`} aria-current={path === `/vetements/${c.slug}` ? 'page' : undefined}>{c.name}</Link>
+            <Link key={c.slug} href={l(`/vetements/${c.slug}`)} aria-current={path === l(`/vetements/${c.slug}`) ? 'page' : undefined}>{categoryL(lang, c).name}</Link>
           ))}
-          <Link href="/devis" aria-current={path === '/devis' ? 'page' : undefined}>Devis</Link>
-          <Link className="menu-cta" href="/assistant" aria-current={path === '/assistant' ? 'page' : undefined}>Créer ma tenue en 1 min</Link>
+          <Link href={l('/devis')} aria-current={path === l('/devis') ? 'page' : undefined}>{t('Devis')}</Link>
+          <Link className="menu-cta" href={l('/assistant')} aria-current={path === l('/assistant') ? 'page' : undefined}>{t('Créer ma tenue en 1 min')}</Link>
         </nav>
       </header>
     </>

@@ -34,7 +34,9 @@ export async function POST(req: Request) {
       if (ip) attr._ip = ip.slice(0, 64);
       const ua = req.headers.get('user-agent'); if (ua) attr._ua = ua.slice(0, 250);
       if (saved) { attr._panier = saved.id; attr._recommander = `${origin}/recommander/${saved.id}`; }
-      const url = await createShopifyCheckout(lines, { promo, note: body?.pro ? 'Client professionnel' : 'Client particulier', origin, attributes: attr });
+      const lang = body?.lang === 'en' ? 'en' : 'fr';
+      if (lang === 'en') attr._langue = 'en';
+      const url = await createShopifyCheckout(lines, { promo, note: (body?.pro ? 'Client professionnel' : 'Client particulier') + (lang === 'en' ? ' · anglophone' : ''), origin, attributes: attr, lang });
       return NextResponse.json({ url });
     } catch (e) {
       console.error('[checkout shopify]', e);
@@ -76,7 +78,7 @@ export async function POST(req: Request) {
   if (t.rework) line_items.push({ quantity: 1, price_data: { currency: 'eur', tax_behavior: 'exclusive', unit_amount: cents(t.rework), product_data: { name: 'Retouche du logo par notre graphiste' } } });
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
-    locale: 'fr',
+    locale: body?.lang === 'en' ? 'en' : 'fr',
     line_items,
     automatic_tax: { enabled: process.env.STRIPE_AUTOMATIC_TAX === 'true' },
     ...(promo ? { discounts: [{ coupon: await coupon(stripe, promo) }] } : {}),

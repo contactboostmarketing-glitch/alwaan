@@ -4,6 +4,8 @@
 import { useRef, useState } from 'react';
 import { analyze, cutout, uploadFile, type Analysis, type CutMode } from '@/lib/cutout';
 import { REWORK_FEE } from '@/lib/catalog';
+import { eur } from '@/lib/pricing';
+import { useT } from '@/i18n/client';
 
 export const LOW_RES = 800;
 
@@ -22,6 +24,7 @@ export type LogoState = {
 };
 
 export function useLogo(onChange?: (l: LogoState) => void) {
+  const { t } = useT();
   const [logo, setLogoState] = useState<LogoState | null>(null);
   const job = useRef(0);
   const ana = useRef<{ a: Analysis; file: File } | null>(null);
@@ -42,11 +45,11 @@ export function useLogo(onChange?: (l: LogoState) => void) {
       set({ ...base, mode, preview, busy: true, id: undefined });
       const up = keep && base.sourceId ? { id: base.sourceId } : await uploadFile(cut ? cut.blob : file, keep ? file.name : `${file.name.replace(/\.[a-z0-9]+$/i, '')}-detoure.png`);
       if (n !== job.current) return null;
-      const done = { ...base, mode, preview, busy: false, id: up.id, error: up.error };
+      const done = { ...base, mode, preview, busy: false, id: up.id, error: up.error && t(up.error) };
       set(done);
       return done;
     } catch {
-      if (n === job.current) set({ ...base, mode, busy: false, error: 'Ce fichier ne s\'ouvre pas. Essayez un PNG ou un JPG.' });
+      if (n === job.current) set({ ...base, mode, busy: false, error: t('Ce fichier ne s\'ouvre pas. Essayez un PNG ou un JPG.') });
       return null;
     }
   };
@@ -54,7 +57,7 @@ export function useLogo(onChange?: (l: LogoState) => void) {
   /** Nouveau fichier : analyse du fond, détourage par défaut si un fond uni est détecté. */
   const pick = async (file: File): Promise<LogoState | null> => {
     if (!file.type.startsWith('image/')) {
-      set({ name: file.name, hasBg: false, decided: true, mode: 'none', lowRes: false, busy: false, error: 'Envoyez votre logo en PNG, JPG ou SVG pour le voir sur la maquette.' });
+      set({ name: file.name, hasBg: false, decided: true, mode: 'none', lowRes: false, busy: false, error: t('Envoyez votre logo en PNG, JPG ou SVG pour le voir sur la maquette.') });
       return null;
     }
     const n = ++job.current;
@@ -73,7 +76,7 @@ export function useLogo(onChange?: (l: LogoState) => void) {
       if (n !== job.current) return null;
       return await render(base.mode, base, n);
     } catch {
-      if (n === job.current) set({ name: file.name, hasBg: false, decided: true, mode: 'none', lowRes: false, busy: false, error: 'Ce fichier ne s\'ouvre pas. Essayez un PNG ou un JPG.' });
+      if (n === job.current) set({ name: file.name, hasBg: false, decided: true, mode: 'none', lowRes: false, busy: false, error: t('Ce fichier ne s\'ouvre pas. Essayez un PNG ou un JPG.') });
       return null;
     }
   };
@@ -90,6 +93,7 @@ export function useLogo(onChange?: (l: LogoState) => void) {
 
 /** Question posée au client quand son logo a un fond : deux images, un tap. */
 export function CutoutChoice({ logo, choose }: { logo: LogoState | null; choose: (m: CutMode) => void }) {
+  const { t } = useT();
   if (!logo?.hasBg) return null;
   const pv = logo.previews || {};
   const cut = logo.mode === 'all' ? pv.all : pv.edges;
@@ -100,15 +104,15 @@ export function CutoutChoice({ logo, choose }: { logo: LogoState | null; choose:
     </button>
   );
   return (
-    <div className={`cutout ${logo.decided ? '' : 'ask'}`} role="group" aria-label="Fond du logo">
-      <p><b>Votre logo a un fond. On le garde ?</b></p>
+    <div className={`cutout ${logo.decided ? '' : 'ask'}`} role="group" aria-label={t('Fond du logo')}>
+      <p><b>{t('Votre logo a un fond. On le garde ?')}</b></p>
       <div className="cut-opts">
-        {tile(logo.mode === 'all' ? 'all' : 'edges', cut, 'Sans fond')}
-        {tile('none', pv.none, 'Avec fond')}
+        {tile(logo.mode === 'all' ? 'all' : 'edges', cut, t('Sans fond'))}
+        {tile('none', pv.none, t('Avec fond'))}
       </div>
       {logo.decided && logo.mode !== 'none' && (
         <button className="link small" disabled={logo.busy} onClick={() => choose(logo.mode === 'all' ? 'edges' : 'all')}>
-          {logo.mode === 'all' ? 'Garder l\'intérieur du logo' : 'Retirer aussi le fond dans les lettres'}
+          {t(logo.mode === 'all' ? 'Garder l\'intérieur du logo' : 'Retirer aussi le fond dans les lettres')}
         </button>
       )}
     </div>
@@ -117,12 +121,13 @@ export function CutoutChoice({ logo, choose }: { logo: LogoState | null; choose:
 
 /** Option payante : notre graphiste retravaille le logo (fond, netteté). Mise en avant si le logo pose problème. */
 export function ReworkOption({ logo, on, set }: { logo: LogoState | null; on: boolean; set: (v: boolean) => void }) {
+  const { t, lang } = useT();
   if (!logo || !logo.preview) return null;
   const hint = logo.lowRes || logo.hasBg;
   return (
     <label className={`rework ${on ? 'on' : ''} ${hint ? 'hint' : ''}`}>
       <input type="checkbox" checked={on} onChange={(e) => set(e.target.checked)} />
-      <span><b>Logo pas net ? Notre graphiste le retravaille</b><small>+{REWORK_FEE.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} € HT · maquette renvoyée avant impression</small></span>
+      <span><b>{t('Logo pas net ? Notre graphiste le retravaille')}</b><small>+{eur(REWORK_FEE, lang)} {t('HT')} · {t('maquette renvoyée avant impression')}</small></span>
     </label>
   );
 }

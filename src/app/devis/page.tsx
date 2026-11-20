@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { Breadcrumbs } from '@/components/ui';
 import { QuoteForm } from './QuoteForm';
+import { alternates } from '@/i18n/seo';
 
-export const metadata: Metadata = { title: 'Demander un devis', description: 'Plus de 250 pièces, plusieurs modèles ou une échéance précise : devis gratuit sous 2 h ouvrées.', alternates: { canonical: '/devis' } };
+export const metadata: Metadata = { title: 'Demander un devis', description: 'Plus de 250 pièces, plusieurs modèles ou une échéance précise : devis gratuit sous 2 h ouvrées.', alternates: alternates('fr', '/devis') };
 export default function QuotePage() {
   return (
     <>

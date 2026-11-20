@@ -1,7 +1,8 @@
 // Petits composants partagés (serveur sauf mention).
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { COLOR_NAMES, defaultColor, fromPrice, type Product } from '@/lib/catalog';
+import { defaultColor, fromPrice, type Product } from '@/lib/catalog';
+import { colorName, href, productL, tr, type Lang } from '@/i18n';
 import { SITE_URL } from '@/lib/site';
 import { Garment } from './Garment';
 import { Price } from './Price';
@@ -11,10 +12,10 @@ export function JsonLd({ data }: { data: object }) {
 }
 
 /** Fil d'Ariane visible + balisage BreadcrumbList. */
-export function Breadcrumbs({ items }: { items: [string, string?][] }) {
-  const all: [string, string?][] = [['Accueil', '/'], ...items];
+export function Breadcrumbs({ items, lang = 'fr' }: { items: [string, string?][]; lang?: Lang }) {
+  const all: [string, string?][] = [[tr(lang, 'Accueil'), href(lang, '/')], ...items];
   return (
-    <nav className="crumbs wrap" aria-label="Fil d'Ariane">
+    <nav className="crumbs wrap" aria-label={tr(lang, 'Fil d\'Ariane')}>
       {all.map(([label, href], i) => (
         <span key={i}>{href && i < all.length - 1 ? <Link href={href}>{label}</Link> : <span aria-current="page">{label}</span>}</span>
       ))}
@@ -27,10 +28,10 @@ export function Breadcrumbs({ items }: { items: [string, string?][] }) {
 }
 
 /** FAQ visible + balisage FAQPage (utile au SEO et aux moteurs IA). */
-export function Faq({ items, withSchema = true }: { items: [string, string][]; withSchema?: boolean }) {
+export function Faq({ items, withSchema = true, schemaOnly = false }: { items: [string, string][]; withSchema?: boolean; schemaOnly?: boolean }) {
   return (
     <div className="faq">
-      {items.map(([q, a]) => (
+      {!schemaOnly && items.map(([q, a]) => (
         <details key={q}><summary>{q}</summary><p>{a}</p></details>
       ))}
       {withSchema && <JsonLd data={{
@@ -41,16 +42,17 @@ export function Faq({ items, withSchema = true }: { items: [string, string][]; w
   );
 }
 
-export function ProductCard({ p }: { p: Product }) {
+export function ProductCard({ p: base, lang = 'fr' }: { p: Product; lang?: Lang }) {
+  const p = productL(lang, base);
   return (
-    <Link className="pcard" href={`/produits/${p.slug}`}>
+    <Link className="pcard" href={href(lang, `/produits/${p.slug}`)}>
       {p.bestseller && <span className="flag">Best-seller</span>}
       <div className="img"><Garment slug={p.slug} color={defaultColor(p)} /></div>
       <strong>{p.name}</strong>
       <small>{p.type}</small>
-      <span className="price">dès <Price ht={fromPrice(p)} /></span>
-      <span className="dots" aria-label={`${p.colors.length} coloris`}>
-        {p.colors.slice(0, 6).map((c) => <i key={c} style={{ background: c }} title={COLOR_NAMES[c]} />)}
+      <span className="price">{tr(lang, 'dès')} <Price ht={fromPrice(p)} /></span>
+      <span className="dots" aria-label={tr(lang, '{n} coloris', { n: p.colors.length })}>
+        {p.colors.slice(0, 6).map((c) => <i key={c} style={{ background: c }} title={colorName(lang, c)} />)}
         {p.colors.length > 6 && <small>+{p.colors.length - 6}</small>}
       </span>
     </Link>

@@ -1,0 +1,40 @@
+// Langues du site : français (par défaut, à la racine) et anglais (/en).
+// Les textes sont écrits en français dans le code ; t() renvoie la traduction anglaise du dictionnaire.
+import { COLOR_NAMES, getCategory, getSector, zonesFor, type Category, type Product, type Sector, type Zone } from '@/lib/catalog';
+import { CATEGORIES_EN, COLOR_EN, GENERAL_FAQ_EN, PRODUCTS_EN, SECTORS_EN, ZONE_EN } from './catalog-en';
+import { EN } from './en';
+
+export type Lang = 'fr' | 'en';
+export const langOf = (path: string | null | undefined): Lang => (path === '/en' || path?.startsWith('/en/') ? 'en' : 'fr');
+
+/** Traduction d'un texte (clé = texte français), avec variables {nom}. */
+export function tr(lang: Lang, fr: string, vars?: Record<string, string | number>): string {
+  let s = lang === 'en' ? EN[fr] ?? fr : fr;
+  if (vars) for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, String(v));
+  return s;
+}
+
+// Correspondance des adresses françaises → anglaises. Les pages non traduites (guides, CGV…) restent en français.
+const MAP: [string, string][] = [['/vetements/', '/en/clothing/'], ['/produits/', '/en/products/'], ['/metiers/', '/en/industries/'], ['/panier', '/en/cart'], ['/assistant', '/en/assistant'], ['/faq', '/en/faq'], ['/devis', '/en/quote']];
+export function href(lang: Lang, fr: string): string {
+  if (lang === 'fr') return fr;
+  if (fr === '/') return '/en';
+  for (const [a, b] of MAP) if (fr === a.replace(/\/$/, '') || fr.startsWith(a)) return b + fr.slice(a.length).replace(/^\//, a.endsWith('/') ? '' : '/');
+  return fr;
+}
+/** Adresse française d'une page anglaise (pour le sélecteur de langue et hreflang). */
+export function frPath(en: string): string {
+  if (en === '/en') return '/';
+  for (const [a, b] of MAP) if (en === b.replace(/\/$/, '') || en.startsWith(b)) return a + en.slice(b.length).replace(/^\//, b.endsWith('/') ? '' : '/');
+  return en.replace(/^\/en/, '') || '/';
+}
+
+export const colorName = (lang: Lang, hex: string) => (lang === 'en' ? COLOR_EN[hex] : COLOR_NAMES[hex]) || hex;
+export const productL = (lang: Lang, p: Product): Product => (lang === 'en' && PRODUCTS_EN[p.slug] ? { ...p, ...PRODUCTS_EN[p.slug] } : p);
+export const categoryL = (lang: Lang, c: Category): Category => (lang === 'en' && CATEGORIES_EN[c.slug] ? { ...c, ...CATEGORIES_EN[c.slug] } : c);
+export const categoryBySlug = (lang: Lang, slug: string) => { const c = getCategory(slug); return c && categoryL(lang, c); };
+export const sectorL = (lang: Lang, s: Sector): Sector => (lang === 'en' && SECTORS_EN[s.slug] ? { ...s, ...SECTORS_EN[s.slug] } : s);
+export const sectorBySlug = (lang: Lang, slug: string) => { const s = getSector(slug); return s && sectorL(lang, s); };
+export const generalFaq = (lang: Lang, fr: [string, string][]) => (lang === 'en' ? GENERAL_FAQ_EN : fr);
+/** Zones d'un vêtement avec leur nom dans la langue. */
+export const zonesL = (lang: Lang, p: Product): Zone[] => zonesFor(p).map((z) => (lang === 'en' ? { ...z, name: p.shape === 'cap' && z.id === 'heart' ? ZONE_EN.face : ZONE_EN[z.id] || z.name } : z));
