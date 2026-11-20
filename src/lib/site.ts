@@ -27,23 +27,14 @@ export const COMPANY = {
 };
 export const TAGLINE = 'Tenues professionnelles personnalisées';
 
-export const LEGAL_PAGES: Record<string, { title: string; body: string[] }> = {
-  cgv: { title: 'Conditions générales de vente', body: [
-    'Identité du vendeur, caractéristiques des produits, prix TTC et HT, frais de livraison, modalités de paiement et délais.',
-    'Garanties légales de conformité (art. L217-3 et suivants du Code de la consommation) et des vices cachés (art. 1641 du Code civil).',
-    'Exclusion du droit de rétractation pour les articles personnalisés (art. L221-28 3°), droit de rétractation de 14 jours pour les articles non personnalisés.',
-    'Logos et visuels : le client garantit détenir les droits (marque, droit d\'auteur, droit à l\'image) sur les logos, textes et visuels qu\'il transmet, et garantit alwaan contre toute réclamation à ce sujet. alwaan peut refuser d\'imprimer un visuel qui porte manifestement atteinte aux droits d\'un tiers, à la loi ou aux bonnes mœurs ; la commande est alors annulée et remboursée.',
-    'Service après-vente : voir la page « Retours, SAV et garanties ».',
-    'Règlement des litiges et coordonnées du médiateur de la consommation.'] },
-  'mentions-legales': { title: 'Mentions légales', body: [
+/** final : texte rédigé (CGV, confidentialité : voir legalTexts.ts) ; sinon page encore à compléter. */
+export const LEGAL_PAGES: Record<string, { title: string; body: string[]; final?: boolean }> = {
+  cgv: { title: 'Conditions générales de vente', body: [], final: true },
+  'mentions-legales': { title: 'Mentions légales', final: true, body: [
     `Le site alwaan.fr est édité par ${COMPANY.name}, ${COMPANY.legalForm}${COMPANY.capital ? ` au capital de ${COMPANY.capital}` : ''}, dont le siège est situé ${COMPANY.address}. SIRET ${COMPANY.siret}, ${COMPANY.rcs}, TVA intracommunautaire ${COMPANY.vat}.`,
     `Directeur de la publication : le président de ${COMPANY.name}.${COMPANY.email ? ` Contact : ${COMPANY.email}.` : ''}${COMPANY.phone ? ` Téléphone : ${COMPANY.phone}.` : ''}`,
     'Hébergement : Netlify, Inc., 512 2nd Street, Suite 200, San Francisco, CA 94107, États-Unis. Boutique et paiement : Shopify International Ltd., Victoria Buildings, 1-2 Haddington Road, Dublin 4, Irlande.'] },
-  confidentialite: { title: 'Politique de confidentialité', body: [
-    'Données collectées, finalités, base légale, durées de conservation.',
-    'Destinataires : transporteur, prestataire de paiement (Stripe), régies publicitaires si consentement (Google, Meta). Transferts hors UE et garanties.',
-    'Email laissé dans l\'assistant : conservé pour renvoyer la maquette et rappeler la demande (intérêt légitime), lien de désinscription dans chaque email ; offres commerciales seulement avec accord explicite.',
-    'Droits d\'accès, de rectification, d\'effacement, d\'opposition et de portabilité, contact et recours auprès de la CNIL.'] },
+  confidentialite: { title: 'Politique de confidentialité', body: [], final: true },
   cookies: { title: 'Cookies', body: [
     'Liste des cookies : nécessaires, mesure d\'audience, publicité (Google Ads, Meta Pixel).',
     'Aucun cookie publicitaire n\'est déposé sans votre accord. Refuser est aussi simple qu\'accepter. Votre choix est conservé 6 mois.'] },
@@ -52,7 +43,7 @@ export const LEGAL_PAGES: Record<string, { title: string; body: string[] }> = {
   livraison: { title: 'Livraison et délais', body: [
     'Délais indicatifs : production en 7 jours ouvrés après la commande, ou 4 jours ouvrés en production express (option payante : 15 € jusqu\'à 10 pièces, 20 € jusqu\'à 20, 30 € jusqu\'à 30, 60 € au-delà). Livraison en France et en Belgique.',
     'Livraison offerte dès 150 € HT d\'articles, sinon 9,90 € HT. Suivi par email.'] },
-  retours: { title: 'Retours, SAV et garanties', body: [
+  retours: { title: 'Retours, SAV et garanties', final: true, body: [
     'Articles personnalisés : fabriqués à votre logo, ils ne bénéficient pas du droit de rétractation (art. L221-28 3° du Code de la consommation). Les garanties légales de conformité et des vices cachés s\'appliquent toujours.',
     'Votre maquette validée sur le site vaut bon à tirer. Nous imprimons ce que vous avez validé : emplacement, couleurs, texte et orthographe.',
     'Défaut de notre part (impression non conforme à la maquette validée, défaut du vêtement, erreur d\'article ou de quantité) : signalez-le sous 7 jours après réception, avec une photo, par email, WhatsApp ou depuis votre espace client. Nous réimprimons gratuitement les pièces concernées en production express, ou nous les remboursons, et le retour est à nos frais.',

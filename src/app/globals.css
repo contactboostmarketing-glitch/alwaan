@@ -527,3 +527,6 @@ footer.site{background:var(--soft);margin-top:40px;padding-block:32px;font-size:
 .event-design small{font-size:12px;font-weight:600}
 .event-strip{margin-bottom:8px;background:#fff4dc}
 .occasions{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}.occasion span{font-size:24px}.occasion b{font-size:14px}.occasion small{font-size:12px}
+.legal h2{font-size:18px;margin:26px 0 8px}
+.legal p{line-height:1.6}
+.legal .li{margin:4px 0 4px 10px}
