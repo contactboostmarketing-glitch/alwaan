@@ -3,6 +3,7 @@
 // En local : dossier .data/logos (ignoré par git).
 import { promises as fs } from 'fs';
 import path from 'path';
+import { store } from './netlifyStore';
 
 export const MAX_LOGO_BYTES = 15 * 1024 * 1024;
 export const LOGO_TYPES: Record<string, string> = {
@@ -15,10 +16,7 @@ export const LOGO_ID = /^[a-f0-9]{32}\.[a-z]{2,5}$/;
 const onNetlify = () => !!(process.env.NETLIFY || process.env.NETLIFY_BLOBS_CONTEXT || process.env.SITE_ID);
 const localDir = () => path.join(process.cwd(), '.data', 'logos');
 
-async function netlifyStore() {
-  const { getStore } = await import('@netlify/blobs');
-  return getStore({ name: 'logos', consistency: 'strong' });
-}
+const netlifyStore = () => store('logos');
 
 export async function saveLogo(id: string, data: ArrayBuffer, meta: { type: string; name: string }) {
   if (onNetlify()) {
