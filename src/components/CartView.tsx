@@ -13,7 +13,8 @@ import { categoryL, colorName, productL, zonesL } from '@/i18n';
 
 
 export function CartView() {
-  const { lines, remove, add, promo, setPromo, pro, express, setExpress, reseller, sample, setSample, voucher, setVoucher } = useCart();
+  const { lines, remove, add, promo, setPromo, pro, express, setExpress, reseller, sample, setSample, voucher, setVoucher, connected, clear } = useCart();
+  const [transfer, setTransfer] = useState<{ name: string; total: number; iban?: string; holder: string } | null>(null);
   const { t: tx, l: lk, lang } = useT();
   const [code, setCode] = useState('');
   const [cgv, setCgv] = useState(false);
@@ -23,6 +24,16 @@ export function CartView() {
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
 
+  if (transfer) return (
+    <section className="wrap empty transfer-ok">
+      <h1>✓ {tx('Commande {n} enregistrée', { n: transfer.name })}</h1>
+      <p>{tx('Montant à régler par virement')} : <b>{eur(transfer.total, lang)} {tx('TTC')}</b></p>
+      {transfer.iban ? <div className="iban"><span>{tx('Bénéficiaire')} : <b>{transfer.holder}</b></span><span>IBAN : <b>{transfer.iban}</b></span><span>{tx('Référence')} : <b>{transfer.name}</b></span></div>
+        : <p className="muted">{tx('Nos coordonnées bancaires vous sont envoyées par email.')}</p>}
+      <p className="muted small">{tx('Un récapitulatif vous a été envoyé par email. La production démarre dès réception du virement.')}</p>
+      <Link className="btn line" href={lk('/compte')}>{tx('Mon compte')}</Link>
+    </section>
+  );
   if (!lines.length) return (
     <section className="wrap empty"><h1>{tx('Votre panier est vide')}</h1><p className="muted">{tx('Choisissez un vêtement pour commencer.')}</p><Link className="btn cta" href={lk('/')}>{tx('Voir les vêtements')}</Link></section>
   );
@@ -61,6 +72,18 @@ export function CartView() {
       track('generate_lead', { value: t.ht });
     } catch { setMsg(tx('Connexion impossible. Réessayez.')); }
     finally { setQuoting(false); }
+  };
+  // Virement (pros connectés) : commande provisoire Shopify + coordonnées bancaires.
+  const payByTransfer = async () => {
+    if (!cgv) { setMsg(tx('Cochez l\'acceptation des CGV pour continuer.')); return; }
+    setBusy(true); setMsg('');
+    try {
+      const r = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ payment: 'virement', promo, pro, lang, express, voucher: voucher?.code, sample: sample && t.pieces >= SAMPLE_MIN, attribution: attributionForCheckout(), lines: lines.map(({ logo, ...l }) => ({ ...l, hasLogoPreview: !!logo })) }) });
+      const d = await r.json();
+      if (d.transfer) { setTransfer(d.transfer); clear(); window.scrollTo(0, 0); } else setMsg(d.error || tx('Le paiement n\'est pas encore configuré.'));
+    } catch { setMsg(tx('Connexion impossible. Réessayez dans un instant.')); }
+    setBusy(false);
   };
   const checkout = async () => {
     if (!cgv) { setMsg(tx('Cochez l\'acceptation des CGV pour continuer.')); return; }
@@ -140,6 +163,8 @@ export function CartView() {
           )}
           <label className="consent"><input type="checkbox" checked={cgv} onChange={(e) => setCgv(e.target.checked)} /><span>{tx('J\'accepte les')} <Link href="/cgv">{tx('CGV')}</Link> {tx('(articles personnalisés : pas de rétractation)')}</span></label>
           <button className="btn cta block" onClick={checkout} disabled={busy}>{tx(busy ? 'Redirection…' : 'Commander avec obligation de paiement')}</button>
+          {connected && pro && <button className="btn line block" onClick={payByTransfer} disabled={busy}>🏦 {tx('Payer par virement')}</button>}
+          {!connected && pro && <p className="muted small">{tx('Virement possible pour les pros connectés à leur compte.')} <Link className="link" href={lk('/compte')}>{tx('Se connecter')}</Link></p>}
           {msg && <p className="err" role="alert">{msg}</p>}
           <div className="paylogos"><span>CB</span><span>Visa</span><span>Mastercard</span><span>Apple Pay</span><span>Google Pay</span></div>
           {!quoteOpen ? <button className="btn line block" onClick={() => setQuoteOpen(true)}>{tx('Télécharger un devis PDF')}</button> : (

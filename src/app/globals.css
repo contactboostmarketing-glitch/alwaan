@@ -530,3 +530,4 @@ footer.site{background:var(--soft);margin-top:40px;padding-block:32px;font-size:
 .legal h2{font-size:18px;margin:26px 0 8px}
 .legal p{line-height:1.6}
 .legal .li{margin:4px 0 4px 10px}
+.transfer-ok .iban{display:grid;gap:6px;padding:14px;border-radius:14px;background:var(--soft);margin:12px 0;font-size:15px;word-break:break-all}

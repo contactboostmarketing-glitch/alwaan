@@ -6,7 +6,7 @@
 //   SHOPIFY_STOREFRONT_TOKEN   jeton public Storefront (Back office → Applications → Headless)
 import { COLOR_NAMES, ZONES, getProduct, zonesFor, type Zone } from './catalog';
 import { cartTotals, lineFull, namesAllowed, qtyOf, reworkLogos, round, type LineConfig } from './pricing';
-import { adminEnabled, createExactDiscount } from './shopifyAdmin';
+import { admin, adminEnabled, createExactDiscount } from './shopifyAdmin';
 import { SITE_URL } from './site';
 
 const API_VERSION = '2025-01';
@@ -153,4 +153,39 @@ export async function createShopifyCheckout(lines: LineConfig[], opts: { promo?:
   const charged = round(Number(cart.cost.subtotalAmount.amount) - (codes.length && discounted === 0 ? gap : discounted));
   if (Math.abs(charged - expected) > 0.02) throw new Error(`Écart de prix : Shopify ${charged} € / site ${expected} €`);
   return cart.checkoutUrl;
+}
+
+/**
+ * Paiement par virement (pros connectés) : commande provisoire Shopify (« brouillon ») au montant exact du site,
+ * envoyée au client avec l'IBAN et la référence. À réception du virement, l'équipe la marque « payée » dans Shopify :
+ * elle devient une commande normale (webhook « commande payée » → production).
+ * Droits de l'application nécessaires : read_draft_orders, write_draft_orders.
+ */
+export async function createTransferOrder(lines: LineConfig[], opts: { email: string; promo?: string | null; note?: string; origin?: string; attributes?: Record<string, string>; express?: boolean; reseller?: boolean; voucher?: { amount: number; min: number } | null; iban?: string }) {
+  const t = cartTotals(lines, opts.promo, opts.express, opts.reseller, opts.voucher);
+  const shopLines = await toShopifyLines(lines, opts.origin, t.express);
+  const catalogue = round(lines.reduce((a, l) => a + lineFull(l), 0) + t.rework + t.express);
+  const expected = round(t.goods - t.discount + t.express - t.reseller - t.voucher);
+  const gap = round(catalogue - expected);
+  type R = { draftOrderCreate: { draftOrder: { id: string; name: string; subtotalPriceSet: { shopMoney: { amount: string } }; totalPriceSet: { shopMoney: { amount: string } } } | null; userErrors: { field?: string[]; message: string }[] } };
+  const d = await admin<R>(`mutation($i: DraftOrderInput!) { draftOrderCreate(input: $i) { draftOrder { id name subtotalPriceSet { shopMoney { amount } } totalPriceSet { shopMoney { amount } } } userErrors { field message } } }`, { i: {
+    email: opts.email,
+    lineItems: shopLines.map((l) => ({ variantId: l.merchandiseId, quantity: l.quantity, customAttributes: l.attributes })),
+    ...(gap > 0.009 ? { appliedDiscount: { value: gap, valueType: 'FIXED_AMOUNT', title: 'Remise site (quantité, codes, revendeur)' } } : {}),
+    shippingLine: { title: t.shipping ? 'Livraison' : 'Livraison offerte', priceWithCurrency: { amount: t.shipping.toFixed(2), currencyCode: 'EUR' } },
+    note: `${opts.note || ''} · PAIEMENT PAR VIREMENT : ne pas produire avant réception`.trim(),
+    customAttributes: Object.entries({ ...(opts.attributes || {}), _paiement: 'virement' }).map(([key, value]) => ({ key, value })),
+    tags: ['virement', 'attente-paiement'],
+  } });
+  const dr = d.draftOrderCreate.draftOrder;
+  if (!dr) throw new Error(d.draftOrderCreate.userErrors.map((e) => e.message).join(', '));
+  const sub = Number(dr.subtotalPriceSet.shopMoney.amount);
+  if (Math.abs(sub - expected) > 0.02) throw new Error(`Écart de prix : Shopify ${sub} € / site ${expected} €`);
+  const total = Number(dr.totalPriceSet.shopMoney.amount);
+  // Email Shopify au client : récapitulatif, montant et coordonnées du virement.
+  await admin(`mutation($id: ID!, $e: EmailInput) { draftOrderInvoiceSend(id: $id, email: $e) { userErrors { message } } }`, { id: dr.id, e: {
+    subject: `Votre commande ${dr.name} · paiement par virement`,
+    customMessage: `Merci pour votre commande. Montant à régler : ${total.toFixed(2).replace('.', ',')} € TTC${opts.iban ? `, par virement sur l'IBAN ${opts.iban}` : ''}, référence ${dr.name}. La production démarre dès réception du virement.`,
+  } }).catch(() => null);
+  return { name: dr.name, total, ht: t.ht };
 }

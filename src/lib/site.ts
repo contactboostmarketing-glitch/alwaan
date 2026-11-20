@@ -21,7 +21,7 @@ export const COMPANY = {
   vat: process.env.COMPANY_VAT || 'FR76 990444291',
   rcs: process.env.COMPANY_RCS || 'RCS Lille 990 444 291',
   capital: process.env.COMPANY_CAPITAL || '1 000 €',
-  email: process.env.COMPANY_EMAIL || '',
+  email: process.env.COMPANY_EMAIL || 'contact@alwaan.fr',
   phone: process.env.NEXT_PUBLIC_PHONE || '',
   iban: process.env.COMPANY_IBAN || '',
 };
