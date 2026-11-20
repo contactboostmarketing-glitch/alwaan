@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { Inter, Oswald } from 'next/font/google';
 import { CartProvider } from '@/components/CartProvider';
 import { CookieBanner } from '@/components/CookieBanner';
+import { Tracking } from '@/components/Tracking';
+import { ContactFloat } from '@/components/Contact';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { JsonLd } from '@/components/ui';
@@ -30,6 +32,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main>{children}</main>
           <Footer />
           <CookieBanner />
+          <Tracking />
+          <ContactFloat />
         </CartProvider>
         <JsonLd data={{ '@context': 'https://schema.org', '@type': 'Organization', name: SITE_NAME, url: SITE_URL, description: TAGLINE, areaServed: [{ '@type': 'Country', name: 'France' }, { '@type': 'Country', name: 'Belgique' }], knowsAbout: ['vêtements personnalisés', 'impression DTF', 'vêtements de travail', 'haute visibilité EN ISO 20471'] }} />
       </body>

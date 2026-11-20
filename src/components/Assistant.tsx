@@ -10,6 +10,7 @@ import { useCart } from './CartProvider';
 import { Garment, isDark } from './Garment';
 import { Price } from './Price';
 import { snapshot, toDataUrl, uploadMockup } from '@/lib/mockup';
+import { track } from '@/lib/track';
 import { CutoutChoice, ReworkOption, useLogo } from './LogoCutout';
 
 type Place = 'heart' | 'chest' | 'back' | 'heart-back';
@@ -119,7 +120,7 @@ export function Assistant() {
         email, marketing: optin, place, color, people, products: picked, qty, packs, logoId: logo?.id, logoName: logo?.name, logoStatus: logo?.status ?? 'uploaded', text }) });
       const d = await r.json();
       if (!r.ok) { setMsg(d.error || 'Enregistrement impossible.'); setSaved('idle'); return; }
-      setSaved('ok');
+      setSaved('ok'); track('generate_lead');
     } catch { setMsg('Enregistrement impossible. Vérifiez votre connexion.'); setSaved('idle'); }
   };
   const saveBox = saved === 'ok' ? (
@@ -210,6 +211,7 @@ export function Assistant() {
     if (!pieces) return;
     if (uploading) { setMsg('Envoi du logo en cours, un instant…'); return; }
     lines.filter((l) => qtyOf(l)).forEach((l) => add(l));
+    track('add_to_cart', { value: total, items: lines.filter((l) => qtyOf(l)).map((l) => ({ item_id: l.slug, item_name: getProduct(l.slug)!.name, quantity: qtyOf(l) })) });
     router.push('/panier');
   };
 

@@ -24,10 +24,12 @@ type Props = {
   logo?: string;
   text?: string;
   className?: string;
+  width?: number; // taille en pixels (export PNG)
+  height?: number;
 };
 
 /** Dessin vectoriel du vêtement avec les marquages. À remplacer par les photos détourées de chaque coloris. */
-export function Garment({ slug, color, view = 'front', zones = [], logo, text, className }: Props) {
+export function Garment({ slug, color, view = 'front', zones = [], logo, text, className, width, height }: Props) {
   const prod = getProduct(slug);
   if (!prod) return null;
   const s = prod.shape;
@@ -36,7 +38,7 @@ export function Garment({ slug, color, view = 'front', zones = [], logo, text, c
   const marks = zonesFor(prod).filter((z) => zones.includes(z.id) && z.view === view);
 
   return (
-    <svg viewBox="0 0 260 250" className={className} role="img" aria-label={`${prod.name}, aperçu`}>
+    <svg viewBox="0 0 260 250" width={width} height={height} className={className} role="img" aria-label={`${prod.name}, aperçu`}>
       <path d={PATHS[s]} fill={color} stroke="rgba(20,33,63,.35)" strokeWidth="2" strokeLinejoin="round" />
       {(s === 'hv' || s === 'hvjacket') && (<><rect x="68" y="160" width="124" height="10" fill="#c9ccd2" /><rect x="68" y="188" width="124" height="10" fill="#c9ccd2" /></>)}
       {s === 'cap' && <path d="M40 150 Q130 175 225 150 Q240 158 225 166 Q130 190 40 166 Z" fill={color} stroke="rgba(0,0,0,.3)" strokeWidth="2" />}

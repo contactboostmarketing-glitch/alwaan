@@ -2,21 +2,21 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor } from '@/lib/catalog';
+import { attributionForCheckout, track } from '@/lib/track';
+import { deliveryDate, fmtDay } from '@/lib/delivery';
 import { cartTotals, eur, lineTotal, logoKey, pools, qtyOf, unitAt, unitPrice, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
 import { Price } from './Price';
 
-function deliveryDate(days: number) {
-  const d = new Date(); let k = 0;
-  while (k < days) { d.setDate(d.getDate() + 1); if (d.getDay() % 6) k++; }
-  return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-}
 
 export function CartView() {
   const { lines, remove, add, promo, setPromo, pro } = useCart();
   const [code, setCode] = useState('');
   const [cgv, setCgv] = useState(false);
+  const [quoteOpen, setQuoteOpen] = useState(false);
+  const [company, setCompany] = useState('');
+  const [quoting, setQuoting] = useState(false);
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -41,12 +41,26 @@ export function CartView() {
     const c = code.trim().toUpperCase();
     if (PROMO_CODES[c]) { setPromo(c); setMsg(''); } else setMsg('Ce code n\'existe pas ou a expiré.');
   };
+  const downloadQuote = async () => {
+    setQuoting(true); setMsg('');
+    try {
+      const r = await fetch('/api/devis-panier', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ promo, company, lines: lines.map(({ logo, ...l }) => l) }) });
+      if (!r.ok) { const d = await r.json().catch(() => ({})); setMsg(d.error || 'Devis impossible.'); return; }
+      const blob = await r.blob(), a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = (r.headers.get('Content-Disposition') || '').match(/filename="(.+)"/)?.[1] || 'devis-alwaan.pdf';
+      document.body.appendChild(a); a.click(); a.remove();
+      track('generate_lead', { value: t.ht });
+    } catch { setMsg('Connexion impossible. Réessayez.'); }
+    finally { setQuoting(false); }
+  };
   const checkout = async () => {
     if (!cgv) { setMsg('Cochez l\'acceptation des CGV pour continuer.'); return; }
     setBusy(true); setMsg('');
+    track('begin_checkout', { value: t.ht, items: lines.map((l) => ({ item_id: l.slug, item_name: getProduct(l.slug)?.name || l.slug, quantity: qtyOf(l) })) });
     try {
       const r = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ promo, pro, lines: lines.map(({ logo, ...l }) => ({ ...l, hasLogoPreview: !!logo })) }) });
+        body: JSON.stringify({ promo, pro, attribution: attributionForCheckout(), lines: lines.map(({ logo, ...l }) => ({ ...l, hasLogoPreview: !!logo })) }) });
       const d = await r.json();
       if (d.url) window.location.href = d.url; else setMsg(d.error || 'Le paiement n\'est pas encore configuré.');
     } catch { setMsg('Connexion impossible. Réessayez dans un instant.'); }
@@ -101,16 +115,20 @@ export function CartView() {
           <div className="row tot"><span>Total TTC</span><span>{eur(t.ttc)}</span></div>
           {!pro && <p className="muted small">dont TVA {eur(t.vat)}</p>}
           {t.saved > 1 && <div className="row save"><span>Vous économisez</span><span><Price ht={t.saved} /></span></div>}
-          <p className="small">Livraison estimée : <b>{deliveryDate(8)}</b>. Votre maquette validée part directement en production.</p>
+          <p className="eta">🚚 Reçu vers le {fmtDay(deliveryDate())}</p>
           {!promo && (
             <div className="promo-in"><input type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder="Code promo" aria-label="Code promo" /><button className="btn line small" onClick={applyCode}>Appliquer</button></div>
           )}
-          <label className="consent"><input type="checkbox" checked={cgv} onChange={(e) => setCgv(e.target.checked)} /><span>J&apos;accepte les <Link href="/cgv">conditions générales de vente</Link> et je reconnais que les articles personnalisés ne bénéficient pas du droit de rétractation.</span></label>
+          <label className="consent"><input type="checkbox" checked={cgv} onChange={(e) => setCgv(e.target.checked)} /><span>J&apos;accepte les <Link href="/cgv">CGV</Link> (articles personnalisés : pas de rétractation)</span></label>
           <button className="btn cta block" onClick={checkout} disabled={busy}>{busy ? 'Redirection…' : 'Commander avec obligation de paiement'}</button>
           {msg && <p className="err" role="alert">{msg}</p>}
           <div className="paylogos"><span>CB</span><span>Visa</span><span>Mastercard</span><span>Apple Pay</span><span>Google Pay</span></div>
-          <p className="muted small">Votre carte est débitée à la commande. La production démarre aussitôt à partir de la maquette que vous avez validée.</p>
-          <Link className="link" href="/devis">Besoin d&apos;un devis PDF pour votre entreprise ?</Link>
+          {!quoteOpen ? <button className="btn line block" onClick={() => setQuoteOpen(true)}>Télécharger un devis PDF</button> : (
+            <div className="quote-box">
+              <input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Société (facultatif)" aria-label="Société" />
+              <button className="btn line block" disabled={quoting} onClick={downloadQuote}>{quoting ? 'Préparation…' : 'Télécharger le devis'}</button>
+            </div>
+          )}
         </aside>
       </div>
     </section>

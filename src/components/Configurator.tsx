@@ -10,6 +10,8 @@ import { Price } from './Price';
 import { CutoutChoice, ReworkOption, useLogo } from './LogoCutout';
 import { Perks } from './ui';
 import { snapshot, uploadMockup } from '@/lib/mockup';
+import { track } from '@/lib/track';
+import { deliveryDate, fmtDay } from '@/lib/delivery';
 
 function initial(slug: string): LineConfig {
   const p = getProduct(slug)!;
@@ -56,7 +58,12 @@ export function Configurator({ slug }: { slug: string }) {
   const [added, setAdded] = useState(false);
   const editIndex = edit !== null && lines[Number(edit)]?.slug === slug ? Number(edit) : null;
 
-  const [cfg, setCfg] = useState<LineConfig>(() => initial(slug));
+  const [cfg, setCfg] = useState<LineConfig>(() => {
+    // Couleur imposée par le lien (Google Shopping : ?couleur=1d2a5c).
+    const c = initial(slug), h = params.get('couleur');
+    return h && p.colors.includes(`#${h}`) ? { ...c, color: `#${h}` } : c;
+  });
+  useEffect(() => { track('view_item', { items: [{ item_id: slug, item_name: p.name }] }); }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
   const [view, setView] = useState<'front' | 'back'>('front');
   const [toast, setToast] = useState('');
   const [approved, setApproved] = useState(false);
@@ -128,6 +135,7 @@ export function Configurator({ slug }: { slug: string }) {
     const item = { ...cfg, mockupId, approvedAt: new Date().toISOString() };
     if (editIndex !== null) { update(editIndex, item); router.push('/panier'); return; }
     add(item);
+    track('add_to_cart', { value: lineTotal(item, pool), items: [{ item_id: p.slug, item_name: p.name, quantity: qtyOf(item) }] });
     setApproved(false);
     setAdded(true);
     flash(`${q} × ${p.name} ajoutés au panier`);
@@ -232,6 +240,7 @@ export function Configurator({ slug }: { slug: string }) {
               <div className="tot"><Price ht={at(pool)} /> <small className="muted">/ pièce</small></div>
               <small className="muted">Choisissez vos tailles</small>
             </>)}
+            <p className="eta">🚚 Reçu vers le {fmtDay(deliveryDate())}</p>
           </div>
           <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /><span>Je valide ma maquette <b>(bon à tirer)</b></span></label>
           <button className="btn cta" onClick={submit} disabled={saving}>{saving ? 'Enregistrement de la maquette…' : editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier'}</button>

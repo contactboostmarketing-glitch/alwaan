@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { PRODUCTS, REWORK_FEE, ZONES, zonesFor, type Zone } from '@/lib/catalog';
 import { REWORK_HANDLE, markHandle } from '@/lib/shopify';
 import { admin, adminEnabled } from '@/lib/shopifyAdmin';
+import { publicOrigin } from '@/lib/site';
 
 /**
  * Met Shopify en accord avec la grille de prix du site :
@@ -100,6 +101,20 @@ async function syncGarment(slug: string, price: number, dry: boolean) {
   return { handle: slug, action: e.length ? 'erreur' : `${wrong.length} variante(s) mises à ${target}`, errors: e };
 }
 
+/** Abonne le site au webhook « commande payée » (conversions, dossiers de retouche, recommander). */
+async function ensureWebhook(origin: string): Promise<string> {
+  const uri = `${origin}/api/shopify/webhook`;
+  const list = await admin<{ webhookSubscriptions: { nodes: { id: string; topic: string; uri?: string }[] } }>(
+    `{ webhookSubscriptions(first: 50) { nodes { id topic uri } } }`, {});
+  if (list.webhookSubscriptions.nodes.some((w) => w.topic === 'ORDERS_PAID' && w.uri === uri)) return `déjà actif (${uri})`;
+  const r = await admin<{ webhookSubscriptionCreate: { userErrors: UserError[] } }>(
+    `mutation($s: WebhookSubscriptionInput!) { webhookSubscriptionCreate(topic: ORDERS_PAID, webhookSubscription: $s) { userErrors { field message } } }`,
+    { s: { uri, format: 'JSON' } },
+  );
+  const e = r.webhookSubscriptionCreate.userErrors;
+  return e.length ? `erreur : ${e.map((x) => x.message).join(', ')}` : `créé (${uri})`;
+}
+
 export async function POST(req: Request) {
   const key = process.env.SYNC_KEY || process.env.ROLY_SYNC_KEY;
   if (!key || req.headers.get('x-sync-key') !== key) return new Response('Non autorisé', { status: 401 });
@@ -113,7 +128,8 @@ export async function POST(req: Request) {
       '<p>Le logo est retravaillé (fond, netteté, vectorisation) puis la maquette est renvoyée au client avant impression. Forfait par logo.</p>', 'Service', pubs, dry));
     const vetements = [];
     for (const p of PRODUCTS) vetements.push(await syncGarment(p.slug, p.price, dry));
-    return NextResponse.json({ ok: true, dry, marquages, vetements });
+    const webhook = dry ? 'non modifié (simulation)' : await ensureWebhook(publicOrigin(req));
+    return NextResponse.json({ ok: true, dry, marquages, vetements, webhook });
   } catch (e) {
     return NextResponse.json({ ok: false, error: String((e as Error).message).slice(0, 500) }, { status: 502 });
   }

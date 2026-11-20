@@ -12,6 +12,7 @@
     "@anthropic-ai/sdk": "^1.11.0",
     "@netlify/blobs": "^11.1.9",
     "next": "^16.0.10",
+    "pdf-lib": "^1.17.1",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "stripe": "^17.7.0",

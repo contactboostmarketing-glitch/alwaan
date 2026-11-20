@@ -3,30 +3,10 @@ import Stripe from 'stripe';
 import { COLOR_NAMES, PROMO_CODES, getProduct, sizesFor, zonesFor } from '@/lib/catalog';
 import { cartTotals, logoKey, pools, qtyOf, unitPrice, type LineConfig } from '@/lib/pricing';
 import { createRework } from '@/lib/rework';
+import { saveCart } from '@/lib/savedCart';
 import { SITE_URL, publicOrigin } from '@/lib/site';
-import { LOGO_ID } from '@/lib/logoStore';
+import { sanitize } from '@/lib/cartSanitize';
 import { createShopifyCheckout, shopifyEnabled } from '@/lib/shopify';
-
-type InLine = Omit<LineConfig, 'logo'> & { hasLogoPreview?: boolean };
-
-/** Revalide le panier côté serveur (produits, couleurs, zones, tailles) puis recalcule tous les prix. */
-function sanitize(raw: unknown): LineConfig[] | null {
-  if (!Array.isArray(raw) || !raw.length || raw.length > 50) return null;
-  const out: LineConfig[] = [];
-  for (const l of raw as InLine[]) {
-    const p = getProduct(l?.slug);
-    if (!p || !p.colors.includes(l.color)) return null;
-    const zones = (l.zones || []).filter((z) => zonesFor(p).some((x) => x.id === z));
-    const sizes = sizesFor(p);
-    const qty = Object.fromEntries(Object.entries(l.qty || {}).filter(([s]) => sizes.includes(s) || s === 'Total').map(([s, v]) => [s, Math.max(0, Math.min(5000, Math.floor(Number(v)) || 0))]));
-    if (!zones.length || !qtyOf({ qty })) return null;
-    // Sans graphiste : chaque article doit avoir un logo reçu (ou un texte) et une maquette validée.
-    const logoOk = l.logoStatus === 'text' ? !!String(l.text || '').trim() : !!(l.logoId && LOGO_ID.test(l.logoId));
-    if (!logoOk || !(l.mockupId && LOGO_ID.test(l.mockupId))) return null;
-    out.push({ slug: p.slug, color: l.color, zones, qty, text: String(l.text || '').slice(0, 24), logoName: l.logoName, logoId: l.logoId && LOGO_ID.test(l.logoId) ? l.logoId : undefined, logoSourceId: l.logoSourceId && LOGO_ID.test(l.logoSourceId) ? l.logoSourceId : undefined, logoCut: (['edges', 'all', 'none'] as const).find((m) => m === l.logoCut), logoRework: !!l.logoRework && l.logoStatus !== 'text', logoStatus: l.logoStatus === 'text' ? 'text' : 'uploaded', logoLowRes: !!l.logoLowRes, mockupId: l.mockupId, approvedAt: typeof l.approvedAt === 'string' ? l.approvedAt.slice(0, 40) : undefined, pack: !!l.pack });
-  }
-  return out;
-}
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
@@ -44,7 +24,17 @@ export async function POST(req: Request) {
   // Shopify en priorité : panier, paiement et commandes gérés dans le back office.
   if (shopifyEnabled()) {
     try {
-      const url = await createShopifyCheckout(lines, { promo, note: body?.pro ? 'Client professionnel' : 'Client particulier', origin: publicOrigin(req) });
+      // Attributs cachés (préfixe _) : source de la visite pour attribuer la vente, lien « Recommander ».
+      const origin = publicOrigin(req);
+      const saved = await saveCart({ kind: 'commande', lines, promo }).catch(() => null);
+      const attr: Record<string, string> = {};
+      const a = body?.attribution && typeof body.attribution === 'object' ? body.attribution : {};
+      for (const k of ['gclid', 'gbraid', 'wbraid', 'fbclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'landing', 'ga_cid', 'fbp', 'fbc']) if (typeof a[k] === 'string' && a[k]) attr[`_${k}`] = a[k].slice(0, 250);
+      const ip = (req.headers.get('x-nf-client-connection-ip') || req.headers.get('x-forwarded-for') || '').split(',')[0].trim();
+      if (ip) attr._ip = ip.slice(0, 64);
+      const ua = req.headers.get('user-agent'); if (ua) attr._ua = ua.slice(0, 250);
+      if (saved) { attr._panier = saved.id; attr._recommander = `${origin}/recommander/${saved.id}`; }
+      const url = await createShopifyCheckout(lines, { promo, note: body?.pro ? 'Client professionnel' : 'Client particulier', origin, attributes: attr });
       return NextResponse.json({ url });
     } catch (e) {
       console.error('[checkout shopify]', e);
