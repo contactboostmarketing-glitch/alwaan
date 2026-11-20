@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useState } from 'react';
-import { COLOR_NAMES, COMPLETE_THE_LOOK, PACK_DISCOUNT, PROMO_CODES, ZONES, defaultColor, getProduct, sizesFor, tierFor } from '@/lib/catalog';
+import { CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PACK_DISCOUNT, PROMO_CODES, ZONES, defaultColor, getProduct, sizesFor, tierFor } from '@/lib/catalog';
 import { cartTotals, eur, lineTotal, qtyOf, unitBase, unitPrice, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
@@ -57,6 +57,15 @@ export function CartView() {
       <div className="cart">
         <div>
           {lines.map((l, i) => <CartLine key={i} l={l} i={i} onRemove={() => remove(i)} />)}
+          <div className="addmore">
+            <span>Ajouter un autre vêtement avec le même logo :</span>
+            <div className="chips">
+              {CATEGORIES.map((c) => {
+                const x = PRODUCTS.find((y) => y.category === c.slug && y.bestseller) ?? PRODUCTS.find((y) => y.category === c.slug)!;
+                return <Link key={c.slug} className="chip" href={`/produits/${x.slug}?meme-logo=1`}>+ {c.name}</Link>;
+              })}
+            </div>
+          </div>
           {ups.length > 0 && (
             <>
               <div className="sec-head mt"><h2>Complétez la tenue</h2><span className="muted">Même logo, même quantité, -10 %</span></div>

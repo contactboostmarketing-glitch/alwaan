@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { COLOR_NAMES, PROMO_CODES, ZONES, getProduct, sizesFor, zonesFor } from '@/lib/catalog';
 import { cartTotals, qtyOf, unitPrice, type LineConfig } from '@/lib/pricing';
 import { SITE_URL } from '@/lib/site';
+import { createShopifyCheckout, shopifyEnabled } from '@/lib/shopify';
 
 type InLine = Omit<LineConfig, 'logo'> & { hasLogoPreview?: boolean };
 
@@ -28,8 +29,19 @@ export async function POST(req: Request) {
   if (!lines) return NextResponse.json({ error: 'Panier invalide. Rechargez la page.' }, { status: 400 });
   const promo = body?.promo && PROMO_CODES[String(body.promo).toUpperCase()] ? String(body.promo).toUpperCase() : null;
 
+  // Shopify en priorité : panier, paiement et commandes gérés dans le back office.
+  if (shopifyEnabled()) {
+    try {
+      const url = await createShopifyCheckout(lines, { promo, note: body?.pro ? 'Client professionnel' : 'Client particulier' });
+      return NextResponse.json({ url });
+    } catch (e) {
+      console.error('[checkout shopify]', e);
+      return NextResponse.json({ error: 'Le paiement est momentanément indisponible. Réessayez dans un instant.' }, { status: 502 });
+    }
+  }
+
   const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) return NextResponse.json({ error: 'Paiement en cours de configuration : ajoutez STRIPE_SECRET_KEY.' }, { status: 503 });
+  if (!key) return NextResponse.json({ error: 'Paiement en cours de configuration.' }, { status: 503 });
   const stripe = new Stripe(key);
   const t = cartTotals(lines, promo);
   const cents = (n: number) => Math.round(n * 100);

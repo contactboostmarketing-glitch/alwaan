@@ -238,3 +238,8 @@ footer.site{background:var(--soft);margin-top:40px;padding-block:32px;font-size:
 .mt8{margin-top:10px;color:var(--muted);max-width:62ch}
 .mb{margin-bottom:14px}
 .draft{background:var(--warnbg);padding:10px 12px;border-radius:10px;color:var(--ink)!important}
+.samelogo{grid-column:1/-1;background:var(--soft);border-radius:18px;padding:16px;margin-top:8px}
+.samegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:12px}
+.samegrid .img{background:#fff}
+.addmore{display:grid;gap:8px;padding-block:14px;border-bottom:1px solid var(--line);font-size:14px;font-weight:600}
+.chip{text-decoration:none}

@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
-import { COLOR_NAMES, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor } from '@/lib/catalog';
+import { CATEGORIES, COLOR_NAMES, PRODUCTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor } from '@/lib/catalog';
 import { lineTotal, qtyOf, unitBase, unitPrice, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
@@ -37,13 +37,25 @@ export function Configurator({ slug }: { slug: string }) {
   const zones = zonesFor(p);
   const { add, update, lines } = useCart();
   const router = useRouter();
-  const edit = useSearchParams().get('modifier');
+  const params = useSearchParams();
+  const edit = params.get('modifier');
+  const sameLogo = params.get('meme-logo') !== null;
+  const [added, setAdded] = useState(false);
   const editIndex = edit !== null && lines[Number(edit)]?.slug === slug ? Number(edit) : null;
 
   const [cfg, setCfg] = useState<LineConfig>(() => initial(slug));
   const [view, setView] = useState<'front' | 'back'>('front');
   const [toast, setToast] = useState('');
   useEffect(() => { if (editIndex !== null) setCfg(structuredClone(lines[editIndex])); }, [editIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+  // « Même logo » : on reprend le logo, le texte, les emplacements et si possible la couleur du dernier article.
+  useEffect(() => {
+    const last = lines[lines.length - 1];
+    if (!sameLogo || editIndex !== null || !last) return;
+    const valid = zones.map((z) => z.id);
+    const z = last.zones.filter((x) => valid.includes(x));
+    setCfg((c) => ({ ...c, logo: last.logo, logoName: last.logoName, logoStatus: last.logoStatus, text: last.text,
+      zones: z.length ? z : c.zones, color: p.colors.includes(last.color) ? last.color : c.color }));
+  }, [sameLogo, lines.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const q = qtyOf(cfg);
   const cur = tierFor(q);
@@ -72,6 +84,7 @@ export function Configurator({ slug }: { slug: string }) {
     if (!cfg.zones.length) { flash('Choisissez au moins un emplacement'); return; }
     if (editIndex !== null) { update(editIndex, cfg); router.push('/panier'); return; }
     add(cfg);
+    setAdded(true);
     flash(`${q} × ${p.name} ajoutés au panier`);
   };
   const hasBack = zones.some((z) => z.view === 'back');
@@ -163,7 +176,30 @@ export function Configurator({ slug }: { slug: string }) {
         </div>
         <div className="trust"><span>Visuel envoyé sous 24 h</span><span>Paiement sécurisé</span><span>Défaut d&apos;impression refait</span><span>Livraison 7 jours ouvrés</span></div>
       </div>
+      {added && <SameLogo current={p.category} logo={cfg.logo} />}
       {toast && <div className="toast" role="status">{toast} {toast.includes('ajoutés') && <Link href="/panier">Voir le panier</Link>}</div>}
     </div>
+  );
+}
+
+/** Après l'ajout : proposer les autres types de vêtements avec le même logo, en un tap. */
+function SameLogo({ current, logo }: { current: string; logo?: string }) {
+  const picks = CATEGORIES.filter((c) => c.slug !== current)
+    .map((c) => PRODUCTS.find((x) => x.category === c.slug && x.bestseller) ?? PRODUCTS.find((x) => x.category === c.slug)!)
+    .filter(Boolean);
+  return (
+    <section className="samelogo" aria-label="Même logo sur un autre vêtement">
+      <div className="sec-head"><h2>Même logo sur un autre vêtement ?</h2><Link className="btn cta small" href="/panier">Voir le panier</Link></div>
+      <p className="muted small">Votre logo et vos emplacements sont repris automatiquement : choisissez juste la couleur et les quantités.</p>
+      <div className="samegrid">
+        {picks.map((x) => (
+          <Link key={x.slug} className="pcard" href={`/produits/${x.slug}?meme-logo=1`}>
+            <div className="img"><Garment slug={x.slug} color={defaultColor(x)} zones={[x.shape === 'cap' ? 'chest' : 'heart']} logo={logo} /></div>
+            <strong>{CATEGORIES.find((c) => c.slug === x.category)!.name}</strong>
+            <small>{x.name}</small>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
