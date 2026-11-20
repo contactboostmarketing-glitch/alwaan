@@ -45,7 +45,8 @@ export async function POST(req: Request) {
         : m.includes('pas été acceptée') ? 'REMISE_NON_APPLIQUEE'
         : m.includes('Écart de prix') ? 'ECART_PRIX'
         : 'PANIER';
-      return NextResponse.json({ error: 'Le paiement est momentanément indisponible. Réessayez dans un instant.', code }, { status: 502 });
+      const detail = code === 'ADMIN_REFUSE' ? (m.match(/\((\d{3}[^)]*)\)/)?.[1] ?? '') : undefined;
+      return NextResponse.json({ error: 'Le paiement est momentanément indisponible. Réessayez dans un instant.', code, ...(detail ? { detail } : {}) }, { status: 502 });
     }
   }
 
