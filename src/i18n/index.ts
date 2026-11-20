@@ -15,7 +15,7 @@ export function tr(lang: Lang, fr: string, vars?: Record<string, string | number
 }
 
 // Correspondance des adresses françaises → anglaises. Les pages non traduites (guides, CGV…) restent en français.
-const MAP: [string, string][] = [['/vetements/', '/en/clothing/'], ['/produits/', '/en/products/'], ['/metiers/', '/en/industries/'], ['/panier', '/en/cart'], ['/assistant', '/en/assistant'], ['/faq', '/en/faq'], ['/devis', '/en/quote']];
+const MAP: [string, string][] = [['/vetements/', '/en/clothing/'], ['/produits/', '/en/products/'], ['/metiers/', '/en/industries/'], ['/panier', '/en/cart'], ['/assistant', '/en/assistant'], ['/faq', '/en/faq'], ['/devis', '/en/quote'], ['/compte', '/en/account']];
 export function href(lang: Lang, fr: string): string {
   if (lang === 'fr') return fr;
   if (fr === '/') return '/en';

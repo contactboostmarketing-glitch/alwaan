@@ -417,3 +417,26 @@ footer.site{background:var(--soft);margin-top:40px;padding-block:32px;font-size:
 @media print{header.site,footer.site,.cookie,.wa-float,.no-print,.topbar{display:none!important}.prod-card{border:1px solid #999}}
 .langsw{margin-left:auto;margin-right:8px;font-weight:700;font-size:13px;padding:6px 9px;border-radius:999px;border:1.5px solid var(--line);text-decoration:none;color:var(--ink)}
 .langsw + .mode{margin-left:0}
+.express{display:flex;align-items:center;gap:10px;margin:10px 0;padding:10px 12px;border:1.5px dashed var(--line);border-radius:12px;background:#fff;cursor:pointer}
+.express.on{border-style:solid;border-color:var(--blue);background:#eef3ff}
+.express input{width:18px;height:18px;flex:none}
+.express span{flex:1}.express small{display:block;color:var(--muted);font-size:12.5px}
+.express-fee{white-space:nowrap;font-size:14px}
+.acctlink{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;border:1.5px solid var(--line);color:var(--ink);margin-right:6px}
+.acct{padding-top:20px;padding-bottom:48px;max-width:820px}.acct.narrow{max-width:460px}
+.acct h2{font-size:18px;margin:26px 0 10px}
+.acct-perks{flex-direction:column;gap:8px;margin:14px 0 18px}
+.acct-card{border:1.5px solid var(--line);border-radius:14px;padding:12px;margin:8px 0;background:#fff}
+.acct-card header{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.acct-total{margin-left:auto}
+.acct-logos{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.acct-logo{border:1.5px solid var(--line);border-radius:14px;padding:8px;background:#fff;display:grid;gap:6px}
+.small-drop{padding:14px}
+@media (max-width:440px){
+  .hd{gap:6px}
+  .logo b{font-size:19px}
+  .langsw{padding:5px 7px;font-size:12px;margin-right:2px}
+  .mode button{padding:6px 8px;font-size:12.5px}
+  .acctlink{width:32px;height:32px;margin-right:2px}
+  .cartlink{padding:6px 8px}
+}

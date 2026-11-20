@@ -100,6 +100,17 @@ export function Assistant() {
   const [optin, setOptin] = useState(false);
   const [saved, setSaved] = useState<'idle' | 'saving' | 'ok'>('idle');
   const reprise = useSearchParams().get('reprise');
+  const reuseLogo = useSearchParams().get('logo');
+  // Logo déjà utilisé (espace client « Réutiliser ») : on le reprend tel quel, déjà préparé pour l'impression.
+  useEffect(() => {
+    if (!reuseLogo || !/^[a-f0-9]{32}\.[a-z]{2,5}$/.test(reuseLogo)) return;
+    toDataUrl(`/api/logo/${reuseLogo}?apercu`).then((src) => {
+      if (!src) return;
+      setLogo({ status: 'uploaded', id: reuseLogo, sourceId: reuseLogo, preview: src, name: 'logo' });
+      inkOf(src).then(setInk);
+      setStep('place');
+    });
+  }, [reuseLogo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reprise d'une demande sauvegardée (lien reçu par email).
   useEffect(() => {

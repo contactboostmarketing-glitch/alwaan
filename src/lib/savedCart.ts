@@ -10,6 +10,8 @@ export type SavedCart = {
   createdAt: string;
   lines: LineConfig[];
   promo?: string | null;
+  express?: boolean;
+  reseller?: boolean;
   quote?: { number: string; company?: string; email?: string; validUntil: string };
 };
 export const CART_ID = /^[a-f0-9]{24}$/;

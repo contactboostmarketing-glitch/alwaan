@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useState } from 'react';
-import { CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor, defaultZone } from '@/lib/catalog';
+import { CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor, defaultZone, expressFee } from '@/lib/catalog';
 import { attributionForCheckout, track } from '@/lib/track';
 import { deliveryDate, fmtDay } from '@/lib/delivery';
 import { cartTotals, eur, lineTotal, logoKey, pools, qtyOf, unitAt, unitPrice, type LineConfig } from '@/lib/pricing';
@@ -13,7 +13,7 @@ import { categoryL, colorName, productL, zonesL } from '@/i18n';
 
 
 export function CartView() {
-  const { lines, remove, add, promo, setPromo, pro } = useCart();
+  const { lines, remove, add, promo, setPromo, pro, express, setExpress, reseller } = useCart();
   const { t: tx, l: lk, lang } = useT();
   const [code, setCode] = useState('');
   const [cgv, setCgv] = useState(false);
@@ -27,7 +27,7 @@ export function CartView() {
     <section className="wrap empty"><h1>{tx('Votre panier est vide')}</h1><p className="muted">{tx('Choisissez un vêtement pour commencer.')}</p><Link className="btn cta" href={lk('/')}>{tx('Voir les vêtements')}</Link></section>
   );
 
-  const t = cartTotals(lines, promo);
+  const t = cartTotals(lines, promo, express, reseller);
   const pool = pools(lines);
   const firstPool = lines.reduce((a, l) => a + (logoKey(l) === logoKey(lines[0]) ? qtyOf(l) : 0), 0);
   const first = lines[0];
@@ -48,7 +48,7 @@ export function CartView() {
     setQuoting(true); setMsg('');
     try {
       const r = await fetch('/api/devis-panier', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ promo, company, lines: lines.map(({ logo, ...l }) => l) }) });
+        body: JSON.stringify({ promo, company, express, lines: lines.map(({ logo, ...l }) => l) }) });
       if (!r.ok) { const d = await r.json().catch(() => ({})); setMsg(d.error || tx('Devis impossible.')); return; }
       const blob = await r.blob(), a = document.createElement('a');
       a.href = URL.createObjectURL(blob); a.download = (r.headers.get('Content-Disposition') || '').match(/filename="(.+)"/)?.[1] || 'devis-alwaan.pdf';
@@ -63,7 +63,7 @@ export function CartView() {
     track('begin_checkout', { value: t.ht, items: lines.map((l) => ({ item_id: l.slug, item_name: getProduct(l.slug)?.name || l.slug, quantity: qtyOf(l) })) });
     try {
       const r = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ promo, pro, lang, attribution: attributionForCheckout(), lines: lines.map(({ logo, ...l }) => ({ ...l, hasLogoPreview: !!logo })) }) });
+        body: JSON.stringify({ promo, pro, lang, express, attribution: attributionForCheckout(), lines: lines.map(({ logo, ...l }) => ({ ...l, hasLogoPreview: !!logo })) }) });
       const d = await r.json();
       if (d.url) window.location.href = d.url; else setMsg(d.error || tx('Le paiement n\'est pas encore configuré.'));
     } catch { setMsg(tx('Connexion impossible. Réessayez dans un instant.')); }
@@ -95,7 +95,7 @@ export function CartView() {
                   return (
                     <div className="up" key={s}>
                       <div className="img"><Garment slug={s} color={color} zones={[defaultZone(p)]} logo={first.logo} /></div>
-                      <div><strong>{productL(lang, p).name}</strong><small>{tx('{q} pièces avec votre logo', { q })} · <Price ht={u} />/pc</small></div>
+                      <div><strong>{productL(lang, p).name}</strong><small>{tx('{q} pièces avec votre logo', { q })} · <Price raw ht={u} />/pc</small></div>
                       <button className="btn line small" onClick={() => addUp(s)}>{tx('Ajouter')}</button>
                     </div>
                   );
@@ -107,18 +107,25 @@ export function CartView() {
 
         <aside className="summary" aria-label={tx('Récapitulatif')}>
           <div className="ship">
-            {t.remainingForFree > 0 ? <>{tx('Plus que')} <b><Price ht={t.remainingForFree} /></b> {tx('pour la livraison offerte')}</> : <b className="okc">{tx('Livraison offerte')}</b>}
+            {t.remainingForFree > 0 ? <>{tx('Plus que')} <b><Price raw ht={t.remainingForFree} /></b> {tx('pour la livraison offerte')}</> : <b className="okc">{tx('Livraison offerte')}</b>}
             <div className="barx"><i style={{ width: `${Math.min(100, ((t.goods - t.discount) / 150) * 100)}%` }} /></div>
           </div>
-          <div className="row"><span>{tx('Sous-total')}</span><span><Price ht={t.goods - t.rework} /></span></div>
-          {t.rework > 0 && <div className="row"><span>{tx('Retouche logo (graphiste)')}</span><span><Price ht={t.rework} /></span></div>}
-          {t.discount > 0 && <div className="row save"><span>{tx('Code')} {promo}</span><span>-<Price ht={t.discount} /></span></div>}
-          <div className="row"><span>{tx('Livraison')}</span><span>{t.shipping ? <Price ht={t.shipping} /> : tx('Offerte')}</span></div>
+          <div className="row"><span>{tx('Sous-total')}</span><span><Price raw ht={t.goods - t.rework} /></span></div>
+          {t.rework > 0 && <div className="row"><span>{tx('Retouche logo (graphiste)')}</span><span><Price raw ht={t.rework} /></span></div>}
+          {t.discount > 0 && <div className="row save"><span>{tx('Code')} {promo}</span><span>-<Price raw ht={t.discount} /></span></div>}
+          {t.reseller > 0 && <div className="row save"><span>{tx('Remise revendeur -10 %')}</span><span>-<Price raw ht={t.reseller} /></span></div>}
+          {t.express > 0 && <div className="row"><span>⚡ {tx('Production express')}</span><span><Price raw ht={t.express} /></span></div>}
+          <div className="row"><span>{tx('Livraison')}</span><span>{t.shipping ? <Price raw ht={t.shipping} /> : tx('Offerte')}</span></div>
           {pro && <><div className="row"><span>{tx('Total HT')}</span><span>{eur(t.ht, lang)}</span></div><div className="row"><span>{tx('TVA 20 %')}</span><span>{eur(t.vat, lang)}</span></div></>}
           <div className="row tot"><span>{tx('Total TTC')}</span><span>{eur(t.ttc, lang)}</span></div>
           {!pro && <p className="muted small">{tx('dont TVA')} {eur(t.vat, lang)}</p>}
-          {t.saved > 1 && <div className="row save"><span>{tx('Vous économisez')}</span><span><Price ht={t.saved} /></span></div>}
-          <p className="eta">🚚 {tx('Reçu vers le {d}', { d: fmtDay(deliveryDate(), lang) })}</p>
+          {t.saved > 1 && <div className="row save"><span>{tx('Vous économisez')}</span><span><Price raw ht={t.saved} /></span></div>}
+          <label className={`express ${express ? 'on' : ''}`}>
+            <input type="checkbox" checked={express} onChange={(e) => setExpress(e.target.checked)} />
+            <span><b>⚡ {tx('Production express')}</b><small>{tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), true), lang) })}</small></span>
+            <b className="express-fee">+<Price raw ht={expressFee(t.pieces || 1)} /></b>
+          </label>
+          <p className="eta">🚚 {tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), express), lang) })}</p>
           {!promo && (
             <div className="promo-in"><input type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder={tx('Code promo')} aria-label={tx('Code promo')} /><button className="btn line small" onClick={applyCode}>{tx('Appliquer')}</button></div>
           )}
@@ -156,7 +163,7 @@ function CartLine({ l, i, pool, onRemove }: { l: LineConfig; i: number; pool: nu
         <small>{logo} · {bat}</small>
         <div className="acts"><Link className="link" href={`${lk(`/produits/${p.slug}`)}?modifier=${i}`}>{tx('Modifier')}</Link><button className="link mutedl" onClick={onRemove}>{tx('Supprimer')}</button></div>
       </div>
-      <div className="pr"><Price ht={lineTotal(l, pool)} /><small>{q} pcs · <Price ht={unitPrice(l, pool)} suffix={false} />/pc</small></div>
+      <div className="pr"><Price raw ht={lineTotal(l, pool)} /><small>{q} pcs · <Price raw ht={unitPrice(l, pool)} suffix={false} />/pc</small></div>
     </div>
   );
 }

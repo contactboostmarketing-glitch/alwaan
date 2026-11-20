@@ -14,7 +14,7 @@ export const ZONE_EN: Record<string, string> = {
 
 export const GENERAL_FAQ_EN: [string, string][] = [
   ['Is there a minimum order?', 'No, you can order from 1 piece. Printing gets cheaper automatically: -15% from 5 pieces, -20% from 10 and -40% from 30 (except the large front, which has a fixed price). Pieces carrying the same logo add up, even across different garments.'],
-  ['When will I receive my order?', '7 working days after your order. The estimated delivery date is shown on the product page and in the cart.'],
+  ['When will I receive my order?', 'Estimated lead time: 7 working days of production after your order, plus delivery. Express production (4 working days) is available as an option: €15 up to 10 pieces, €20 up to 20, €30 up to 30, €60 above. The estimated date is shown on the product page and in the cart.'],
   ['Which logo file should I send?', 'A PNG with a transparent background or an SVG, as large as possible (at least 800 pixels wide). If your logo has a background, the site removes it for you or keeps it, your choice. No logo? You can print a simple text.'],
   ['Can I return a personalised garment?', 'Garments printed with your logo are made to order, so the right of withdrawal does not apply (French Consumer Code, art. L221-28 3°). A printing defect or a mistake on our side is reprinted at our expense.'],
 ];

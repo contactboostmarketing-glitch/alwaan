@@ -47,7 +47,7 @@ const ALL = ['#ffffff', '#f2d33b', '#e8892b', '#c8302f', '#8b1e2d', '#d43f8d', '
 
 export const GENERAL_FAQ: [string, string][] = [
   ['Y a-t-il un minimum de commande ?', 'Non, vous pouvez commander dès 1 pièce. Le marquage baisse automatiquement : -15 % dès 5 pièces, -20 % dès 10 et -40 % dès 30 (hors grand devant, à prix fixe). Les pièces qui portent le même logo se cumulent, même sur des vêtements différents.'],
-  ['Quand vais-je recevoir ma commande ?', '7 jours ouvrés après votre commande, 4 jours en express. La date estimée s\'affiche dans le panier.'],
+  ['Quand vais-je recevoir ma commande ?', 'Délai indicatif : 7 jours ouvrés de production après votre commande, plus la livraison. En option, la production express passe à 4 jours ouvrés (15 € jusqu\'à 10 pièces, 20 € jusqu\'à 20, 30 € jusqu\'à 30, 60 € au-delà). La date estimée s\'affiche sur la page produit et dans le panier.'],
   ['Quel fichier de logo envoyer ?', 'Un PNG à fond transparent ou un SVG, le plus grand possible (au moins 800 pixels de large). Le site vous prévient si votre logo est en petite définition. Pas de logo ? Vous pouvez imprimer un simple texte.'],
   ['Puis-je retourner un vêtement personnalisé ?', 'Les articles marqués à votre logo sont fabriqués sur mesure et ne bénéficient pas du droit de rétractation (article L221-28 3° du Code de la consommation). Un défaut d\'impression ou une erreur de notre part est refait à nos frais.'],
 ];
@@ -140,6 +140,11 @@ export const VAT = 0.2;
 export const PROMO_CODES: Record<string, number> = { BIENVENUE: 0.1 };
 /** Logo retravaillé par notre graphiste (fond, netteté, vectorisation) : forfait HT, une fois par logo. */
 export const REWORK_FEE = 4;
+/** Remise des revendeurs validés (Kbis vérifié) : sur tout, hors livraison. */
+export const RESELLER_RATE = 0.1;
+/** Production express : forfait HT selon le nombre total de pièces de la commande. */
+export const EXPRESS_FEES: [number, number][] = [[10, 15], [20, 20], [30, 30], [Infinity, 60]];
+export const expressFee = (pieces: number) => EXPRESS_FEES.find(([max]) => pieces <= max)![1];
 
 // Textes détaillés des pages catégories (page mère du cocon sémantique).
 const DETAILS: Record<string, string[]> = {

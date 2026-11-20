@@ -4,6 +4,8 @@ import { COLOR_NAMES, PROMO_CODES, getProduct, sizesFor, zonesFor } from '@/lib/
 import { cartTotals, logoKey, pools, qtyOf, unitPrice, type LineConfig } from '@/lib/pricing';
 import { createRework } from '@/lib/rework';
 import { saveCart } from '@/lib/savedCart';
+import { sessionEmail } from '@/lib/customer';
+import { isReseller } from '@/lib/reseller';
 import { SITE_URL, publicOrigin } from '@/lib/site';
 import { sanitize } from '@/lib/cartSanitize';
 import { createShopifyCheckout, shopifyEnabled } from '@/lib/shopify';
@@ -19,6 +21,10 @@ export async function POST(req: Request) {
     const id = await createRework(group.map((l) => ({ slug: l.slug, color: l.color, zones: l.zones, text: l.text, logoId: l.logoId, logoSourceId: l.logoSourceId, mockupId: l.mockupId, pieces: qtyOf(l) })));
     for (const l of group) l.reworkId = id;
   }
+  const express = body?.express === true;
+  // Remise revendeur : vérifiée côté serveur (compte connecté + statut validé), jamais sur parole du navigateur.
+  const customerEmail = await sessionEmail(req, publicOrigin(req));
+  const reseller = await isReseller(customerEmail);
   const promo = body?.promo && PROMO_CODES[String(body.promo).toUpperCase()] ? String(body.promo).toUpperCase() : null;
 
   // Shopify en priorité : panier, paiement et commandes gérés dans le back office.
@@ -36,7 +42,9 @@ export async function POST(req: Request) {
       if (saved) { attr._panier = saved.id; attr._recommander = `${origin}/recommander/${saved.id}`; }
       const lang = body?.lang === 'en' ? 'en' : 'fr';
       if (lang === 'en') attr._langue = 'en';
-      const url = await createShopifyCheckout(lines, { promo, note: (body?.pro ? 'Client professionnel' : 'Client particulier') + (lang === 'en' ? ' · anglophone' : ''), origin, attributes: attr, lang });
+      if (express) attr._express = 'oui';
+      if (reseller) attr._revendeur = 'oui';
+      const url = await createShopifyCheckout(lines, { promo, note: (body?.pro ? 'Client professionnel' : 'Client particulier') + (lang === 'en' ? ' · anglophone' : ''), origin, attributes: attr, lang, express, reseller });
       return NextResponse.json({ url });
     } catch (e) {
       console.error('[checkout shopify]', e);
@@ -58,7 +66,7 @@ export async function POST(req: Request) {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) return NextResponse.json({ error: 'Paiement en cours de configuration.' }, { status: 503 });
   const stripe = new Stripe(key);
-  const t = cartTotals(lines, promo);
+  const t = cartTotals(lines, promo, express, reseller);
   const cents = (n: number) => Math.round(n * 100);
 
   const pool = pools(lines);
@@ -69,13 +77,14 @@ export async function POST(req: Request) {
     return {
       quantity: qtyOf(l),
       price_data: {
-        currency: 'eur', tax_behavior: 'exclusive', unit_amount: cents(unitPrice(l, pool[i])),
+        currency: 'eur', tax_behavior: 'exclusive', unit_amount: cents(unitPrice(l, pool[i]) * (reseller ? 0.9 : 1)),
         product_data: { name: `${p.name} · ${COLOR_NAMES[l.color]}`, description: `${zones} · ${sizes}`.slice(0, 500) },
       },
     };
   });
 
-  if (t.rework) line_items.push({ quantity: 1, price_data: { currency: 'eur', tax_behavior: 'exclusive', unit_amount: cents(t.rework), product_data: { name: 'Retouche du logo par notre graphiste' } } });
+  if (t.express) line_items.push({ quantity: 1, price_data: { currency: 'eur', tax_behavior: 'exclusive', unit_amount: cents(t.express * (reseller ? 0.9 : 1)), product_data: { name: 'Production express' } } });
+  if (t.rework) line_items.push({ quantity: 1, price_data: { currency: 'eur', tax_behavior: 'exclusive', unit_amount: cents(t.rework * (reseller ? 0.9 : 1)), product_data: { name: 'Retouche du logo par notre graphiste' } } });
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     locale: body?.lang === 'en' ? 'en' : 'fr',

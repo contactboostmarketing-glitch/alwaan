@@ -1,7 +1,7 @@
 // Calcul des prix. Le même code tourne dans le navigateur (affichage) et sur le serveur (paiement),
 // le serveur ne fait jamais confiance aux montants envoyés par le client.
 import {
-  FREE_SHIPPING_HT, PROMO_CODES, REWORK_FEE, SHIPPING_HT, VAT, getProduct, tierFor, zonesFor,
+  FREE_SHIPPING_HT, PROMO_CODES, RESELLER_RATE, REWORK_FEE, SHIPPING_HT, expressFee, VAT, getProduct, tierFor, zonesFor,
 } from './catalog';
 
 /** uploaded = logo fourni ; text = pas de logo, seulement un texte imprimé. */
@@ -72,18 +72,23 @@ export function reworkLogos(lines: LineConfig[]): number[] {
   return first; // index de la première ligne de chaque logo concerné
 }
 
-export function cartTotals(lines: LineConfig[], promo?: string | null) {
+export function cartTotals(lines: LineConfig[], promo?: string | null, withExpress = false, isReseller = false) {
   const pool = pools(lines);
+  const pieces = lines.reduce((a, l) => a + qtyOf(l), 0);
+  // Production express : forfait selon le nombre total de pièces, hors remise et hors seuil de livraison offerte.
+  const express = withExpress && pieces ? expressFee(pieces) : 0;
   const rework = round(reworkLogos(lines).length * REWORK_FEE);
   const goods = round(lines.reduce((a, l, i) => a + lineTotal(l, pool[i]), 0) + rework);
   const rate = promo ? PROMO_CODES[promo.toUpperCase()] ?? 0 : 0;
   const discount = round(goods * rate);
   const net = goods - discount;
   const shipping = !lines.length || net >= FREE_SHIPPING_HT ? 0 : SHIPPING_HT;
-  const ht = round(net + shipping);
+  // Revendeur validé : -10 % sur tout (articles, retouche, express), hors livraison.
+  const reseller = isReseller ? round((net + express) * RESELLER_RATE) : 0;
+  const ht = round(net + express - reseller + shipping);
   const vat = round(ht * VAT);
-  const saved = round(lines.reduce((a, l) => a + lineFull(l), 0) + rework - goods + discount);
-  return { rework, goods, discount, shipping, ht, vat, ttc: round(ht + vat), saved, remainingForFree: Math.max(0, FREE_SHIPPING_HT - net) };
+  const saved = round(lines.reduce((a, l) => a + lineFull(l), 0) + rework - goods + discount + reseller);
+  return { reseller, express, pieces, rework, goods, discount, shipping, ht, vat, ttc: round(ht + vat), saved, remainingForFree: Math.max(0, FREE_SHIPPING_HT - net) };
 }
 
 export const round = (n: number) => Math.round(n * 100) / 100;

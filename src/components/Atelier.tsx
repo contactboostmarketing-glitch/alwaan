@@ -166,7 +166,7 @@ export function AtelierRework({ id }: { id: string }) {
 }
 
 function AtelierNav() {
-  return <nav className="atl-nav no-print"><Link href="/atelier/production">Production</Link><Link href="/atelier">Retouches</Link></nav>;
+  return <nav className="atl-nav no-print"><Link href="/atelier/production">Production</Link><Link href="/atelier">Retouches</Link><Link href="/atelier/revendeurs">Revendeurs</Link></nav>;
 }
 
 const day = (s: string) => new Date(s).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -205,7 +205,7 @@ export function AtelierProduction() {
         return (
           <article key={o.id} className={`prod-card ${o.blocked ? 'blocked' : ''}`}>
             <header>
-              <b>{o.name}</b>
+              <b>{o.name}</b>{o.express && <span className="st st-modif">⚡ EXPRESS</span>}
               <span className={`st ${o.blocked ? 'st-modif' : late ? 'st-modif' : 'st-valide'}`}>{o.blocked ? 'Attente BAT client' : late ? `En retard · ${day(o.due)}` : `À expédier le ${day(o.due)}`}</span>
               <small className="muted">{o.pieces} pcs · payé le {day(o.createdAt)}</small>
             </header>
@@ -225,6 +225,41 @@ export function AtelierProduction() {
           </article>
         );
       })}
+    </section>
+  );
+}
+
+type ResellerRow = { email: string; company: string; siret: string; kbisId: string; status: 'en_attente' | 'valide' | 'refuse'; createdAt: string };
+const R_LABEL = { en_attente: 'À vérifier', valide: 'Validé (-10 %)', refuse: 'Refusé' };
+
+/** Validation des revendeurs : vérifier le Kbis (et le SIRET sur l'annuaire officiel), puis valider. */
+export function AtelierResellers() {
+  const { key, save } = useStaffKey();
+  const [items, setItems] = useState<ResellerRow[] | null>(null);
+  const [err, setErr] = useState('');
+  const load = () => fetch('/api/atelier/revendeurs', { headers: { 'x-staff-key': key } }).then(async (r) => {
+    const d = await r.json(); if (r.status === 401) { setErr(d.error); save(''); return; } setItems(d.items);
+  }).catch(() => setErr('Connexion impossible.'));
+  useEffect(() => { if (key) load(); }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!key) return <KeyGate onKey={save} error={err} />;
+  const decide = async (email: string, decision: 'valide' | 'refuse') => {
+    await fetch('/api/atelier/revendeurs', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-staff-key': key }, body: JSON.stringify({ email, decision }) });
+    load();
+  };
+  return (
+    <section className="wrap atelier"><AtelierNav /><h1>Revendeurs</h1>
+      {!items ? <p className="muted">Chargement…</p> : !items.length ? <p className="muted">Aucune demande.</p> : items.map((r) => (
+        <article key={r.email} className="prod-card">
+          <header><b>{r.company}</b><span className={`st ${r.status === 'valide' ? 'st-valide' : r.status === 'refuse' ? 'st-modif' : 'st-a_retoucher'}`}>{R_LABEL[r.status]}</span><small className="muted">{when(r.createdAt)}</small></header>
+          <p className="small">{r.email} · SIRET {r.siret}</p>
+          <div className="atl-files">
+            <a className="btn line small" href={`/api/logo/${r.kbisId}`} target="_blank" rel="noopener">Voir le Kbis</a>
+            <a className="btn line small" href={`https://annuaire-entreprises.data.gouv.fr/etablissement/${r.siret}`} target="_blank" rel="noopener">Vérifier le SIRET</a>
+            {r.status !== 'valide' && <button className="btn cta small" onClick={() => decide(r.email, 'valide')}>Valider</button>}
+            {r.status !== 'refuse' && <button className="btn line small" onClick={() => decide(r.email, 'refuse')}>Refuser</button>}
+          </div>
+        </article>
+      ))}
     </section>
   );
 }

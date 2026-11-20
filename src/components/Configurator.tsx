@@ -245,7 +245,7 @@ export function Configurator({ slug }: { slug: string }) {
               <div className="tot"><Price ht={at(pool)} /> <small className="muted">/ {t('pièce')}</small></div>
               <small className="muted">{t('Choisissez vos tailles')}</small>
             </>)}
-            <p className="eta">🚚 {t('Reçu vers le {d}', { d: fmtDay(deliveryDate(), lang) })}</p>
+            <p className="eta">🚚 {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(), lang) })} · <span className="muted">{t('express possible')}</span></p>
           </div>
           <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /><span>{t('Je valide ma maquette')} <b>{t('(bon à tirer)')}</b></span></label>
           <button className="btn cta" onClick={submit} disabled={saving}>{t(saving ? 'Enregistrement de la maquette…' : editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier')}</button>

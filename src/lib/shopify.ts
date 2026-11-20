@@ -49,7 +49,7 @@ export const markHandle = (z: Zone) => `marquage-${z.id}${z.price !== ZONES.find
 export type CartLineInput = { merchandiseId: string; quantity: number; attributes: { key: string; value: string }[] };
 
 /** Transforme les lignes du configurateur en lignes de panier Shopify. */
-export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL): Promise<CartLineInput[]> {
+export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL, expressAmount = 0): Promise<CartLineInput[]> {
   const out: CartLineInput[] = [];
   const cache = new Map<string, Variant[]>();
   const vs = async (h: string) => { if (!cache.has(h)) cache.set(h, await variantsOf(h)); return cache.get(h)!; };
@@ -92,9 +92,16 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL): Pr
     if (!rv) throw new Error(`Produit introuvable dans Shopify : ${REWORK_HANDLE}`);
     out.push({ merchandiseId: rv.id, quantity: 1, attributes: [{ key: 'Groupe', value: `Article ${i + 1} · ${getProduct(lines[i].slug)!.name}` }] });
   }
+  // Production express : un produit par palier de prix (production-express-15, -20, -30, -60).
+  if (expressAmount) {
+    const [ev] = await vs(expressHandle(expressAmount));
+    if (!ev) throw new Error(`Produit introuvable dans Shopify : ${expressHandle(expressAmount)}`);
+    out.push({ merchandiseId: ev.id, quantity: 1, attributes: [{ key: 'Production', value: 'EXPRESS' }] });
+  }
   return out;
 }
 export const REWORK_HANDLE = 'retouche-logo';
+export const expressHandle = (amount: number) => `production-express-${amount}`;
 
 /**
  * Crée le panier Shopify et renvoie l'adresse de paiement.
@@ -102,11 +109,11 @@ export const REWORK_HANDLE = 'retouche-logo';
  * on applique donc un code unique du montant de l'écart (paliers de quantité, pack, code promo),
  * puis on vérifie le sous-total obtenu avant d'envoyer le client au paiement.
  */
-export async function createShopifyCheckout(lines: LineConfig[], opts: { promo?: string | null; note?: string; origin?: string; attributes?: Record<string, string>; lang?: 'fr' | 'en' } = {}) {
-  const shopLines = await toShopifyLines(lines, opts.origin);
-  const t = cartTotals(lines, opts.promo);
-  const catalogue = round(lines.reduce((a, l) => a + lineFull(l), 0) + t.rework);
-  const expected = round(t.goods - t.discount); // montant des articles affiché sur le site, HT
+export async function createShopifyCheckout(lines: LineConfig[], opts: { promo?: string | null; note?: string; origin?: string; attributes?: Record<string, string>; lang?: 'fr' | 'en'; express?: boolean; reseller?: boolean } = {}) {
+  const t = cartTotals(lines, opts.promo, opts.express, opts.reseller);
+  const shopLines = await toShopifyLines(lines, opts.origin, t.express);
+  const catalogue = round(lines.reduce((a, l) => a + lineFull(l), 0) + t.rework + t.express);
+  const expected = round(t.goods - t.discount + t.express - t.reseller); // montant des articles affiché sur le site, HT
   const gap = round(catalogue - expected);
 
   let codes: string[] = [];

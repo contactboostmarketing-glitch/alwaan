@@ -11,7 +11,7 @@ const eur = (n: number) => clean(n.toLocaleString('fr-FR', { style: 'currency', 
 
 export { COMPANY };
 
-export async function quotePdf(o: { number: string; date: Date; validUntil: Date; lines: LineConfig[]; promo?: string | null; company?: string; email?: string; link: string }): Promise<Uint8Array> {
+export async function quotePdf(o: { number: string; date: Date; validUntil: Date; lines: LineConfig[]; promo?: string | null; express?: boolean; reseller?: boolean; company?: string; email?: string; link: string }): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   doc.setTitle(`Devis ${o.number}`); doc.setAuthor(COMPANY.name);
   const font = await doc.embedFont(StandardFonts.Helvetica), bold = await doc.embedFont(StandardFonts.HelveticaBold);
@@ -41,12 +41,14 @@ export async function quotePdf(o: { number: string; date: Date; validUntil: Date
     text(`Marquage DTF : ${zones}${l.text ? ` · texte « ${l.text} »` : ''}`, 46, 8.5, font, muted); y -= 11;
     text(`Tailles : ${sizes}`, 46, 8.5, font, muted); y -= 16;
   });
-  const t = cartTotals(o.lines, o.promo);
+  const t = cartTotals(o.lines, o.promo, o.express, o.reseller);
   if (reworkLogos(o.lines).length) { newPageIfNeeded(20); text('Retouche du logo par notre graphiste', 46, 10); right(String(reworkLogos(o.lines).length), 400); right(eur(REWORK_FEE), 475); right(eur(t.rework), 550); y -= 18; }
   page.drawLine({ start: { x: 300, y: y + 6 }, end: { x: 555, y: y + 6 }, thickness: 0.6, color: muted }); y -= 8;
   const row = (label: string, v: string, b = false) => { newPageIfNeeded(16); text(label, 320, 10, b ? bold : font); right(v, 550, b ? 12 : 10, b ? bold : font); y -= b ? 18 : 14; };
   row('Sous-total HT', eur(t.goods));
   if (t.discount) row(`Code ${o.promo}`, `-${eur(t.discount)}`);
+  if (t.express) row('Production express', eur(t.express));
+  if (t.reseller) row('Remise revendeur -10 %', `-${eur(t.reseller)}`);
   row('Livraison HT', t.shipping ? eur(t.shipping) : 'Offerte');
   row('Total HT', eur(t.ht), true);
   row('TVA 20 %', eur(t.vat));
@@ -57,7 +59,7 @@ export async function quotePdf(o: { number: string; date: Date; validUntil: Date
   text('Conditions', 40, 10, bold); y -= 14;
   for (const c of [
     'Paiement à la commande par carte bancaire ou par virement. La production démarre à réception du paiement.',
-    'Production en 7 jours ouvrés après paiement et validation de la maquette (bon à tirer), puis livraison en France et en Belgique.',
+    o.express ? 'Production express en 4 jours ouvrés après paiement et validation de la maquette (bon à tirer), puis livraison. Délais indicatifs.' : 'Production en 7 jours ouvrés après paiement et validation de la maquette (bon à tirer), puis livraison en France et en Belgique. Délais indicatifs.',
     'Articles personnalisés : pas de droit de rétractation (art. L221-28 3° du Code de la consommation). Un défaut d\'impression est refait à nos frais.',
     ...(COMPANY.iban ? [`Virement : IBAN ${COMPANY.iban}, référence ${o.number}.`] : []),
   ]) { for (const part of wrap(c, 105)) { text(part, 40, 8.5, font, muted); y -= 11; } y -= 3; }
