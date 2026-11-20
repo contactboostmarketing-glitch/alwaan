@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { isStaff, listReworks } from '@/lib/rework';
-import { attachOrders, isAbandoned } from '@/lib/reworkOrders';
+import { attachOrders, isAbandoned, lastOrdersError } from '@/lib/reworkOrders';
 
 /** Dossiers de retouche des commandes payées ; les paniers abandonnés sont seulement comptés. */
 export async function GET(req: Request) {
@@ -10,5 +10,5 @@ export async function GET(req: Request) {
   const pending = all.filter((r) => !r.order && !isAbandoned(r)).length;
   const abandoned = all.filter(isAbandoned);
   const last30 = abandoned.filter((r) => Date.now() - Date.parse(r.createdAt) < 30 * 864e5);
-  return NextResponse.json({ items, pending, abandoned: { total: abandoned.length, last30: last30.length } });
+  return NextResponse.json({ items, pending, abandoned: { total: abandoned.length, last30: last30.length }, ordersError: lastOrdersError || undefined });
 }

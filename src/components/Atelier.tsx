@@ -39,7 +39,7 @@ export function AtelierList() {
   useEffect(() => {
     if (!key) return;
     fetch('/api/retouche', { headers: { 'x-staff-key': key } }).then(async (r) => {
-      const d = await r.json(); if (!r.ok) { setErr(d.error); save(''); return; } setItems(d.items); setStats({ pending: d.pending, abandoned: d.abandoned });
+      const d = await r.json(); if (!r.ok) { setErr(d.error); save(''); return; } setItems(d.items); setStats({ pending: d.pending, abandoned: d.abandoned }); if (d.ordersError) setErr(`Lecture des commandes Shopify impossible : ${d.ordersError}`);
     }).catch(() => setErr('Connexion impossible.'));
   }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!key) return <KeyGate onKey={save} error={err} />;
@@ -56,6 +56,7 @@ export function AtelierList() {
           </Link>
         ))}</div>
       )}
+      {err && <p className="warnline">{err}</p>}
     </section>
   );
 }

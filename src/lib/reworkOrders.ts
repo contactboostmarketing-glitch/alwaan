@@ -28,10 +28,14 @@ async function recentOrders(): Promise<Map<string, NonNullable<Rework['order']>>
   return map;
 }
 
+/** Dernière erreur de lecture des commandes (affichée dans l'atelier pour diagnostic). */
+export let lastOrdersError = '';
+
 /** Complète les dossiers avec leur commande (enregistrée une fois trouvée). */
 export async function attachOrders(list: Rework[]): Promise<Rework[]> {
   if (!list.some((r) => !r.order)) return list;
-  const map = await recentOrders().catch(() => new Map());
+  lastOrdersError = '';
+  const map = await recentOrders().catch((e) => { lastOrdersError = String((e as Error).message).slice(0, 200); return new Map(); });
   for (const r of list) {
     const o = !r.order && map.get(r.id);
     if (o) { r.order = o; r.history.push({ at: new Date().toISOString(), event: `Commande ${o.name} payée` }); await saveRework(r); }
