@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getProduct } from '@/lib/catalog';
 import { LOGO_ID } from '@/lib/logoStore';
 import { getRework, isStaff, saveRework } from '@/lib/rework';
+import { attachOrders, tagOrder } from '@/lib/reworkOrders';
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -9,7 +10,7 @@ type Ctx = { params: Promise<{ id: string }> };
 export async function GET(req: Request, { params }: Ctx) {
   const r = await getRework((await params).id);
   if (!r) return NextResponse.json({ error: 'Lien introuvable.' }, { status: 404 });
-  if (isStaff(req)) return NextResponse.json(r);
+  if (isStaff(req)) { await attachOrders([r]); return NextResponse.json(r); }
   // Le client ne voit que ce qui le concerne, sans l'historique interne.
   const { decision, ...rest } = r;
   return NextResponse.json({ id: rest.id, status: rest.status, items: rest.items, proof: rest.proof, decision: decision && { at: decision.at, ok: decision.ok, comment: decision.comment } });
@@ -33,7 +34,9 @@ export async function POST(req: Request, { params }: Ctx) {
     r.status = 'envoye';
     r.decision = undefined;
     r.history.push({ at: now, event: 'Maquette retouchée envoyée au client' });
+    await attachOrders([r]);
     await saveRework(r);
+    await tagOrder(r);
     return NextResponse.json(r);
   }
 
@@ -48,6 +51,7 @@ export async function POST(req: Request, { params }: Ctx) {
     r.status = ok ? 'valide' : 'modif';
     r.history.push({ at: now, event: ok ? 'Maquette validée par le client (bon à tirer)' : 'Modification demandée par le client', detail: comment || undefined });
     await saveRework(r);
+    await tagOrder(r);
     return NextResponse.json({ status: r.status });
   }
   return NextResponse.json({ error: 'Action inconnue.' }, { status: 400 });

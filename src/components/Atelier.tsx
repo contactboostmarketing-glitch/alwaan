@@ -34,20 +34,23 @@ const when = (s?: string) => (s ? new Date(s).toLocaleString('fr-FR', { dateStyl
 export function AtelierList() {
   const { key, save } = useStaffKey();
   const [items, setItems] = useState<Rework[] | null>(null);
+  const [stats, setStats] = useState<{ pending: number; abandoned: { total: number; last30: number } } | null>(null);
   const [err, setErr] = useState('');
   useEffect(() => {
     if (!key) return;
     fetch('/api/retouche', { headers: { 'x-staff-key': key } }).then(async (r) => {
-      const d = await r.json(); if (!r.ok) { setErr(d.error); save(''); return; } setItems(d.items);
+      const d = await r.json(); if (!r.ok) { setErr(d.error); save(''); return; } setItems(d.items); setStats({ pending: d.pending, abandoned: d.abandoned });
     }).catch(() => setErr('Connexion impossible.'));
   }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!key) return <KeyGate onKey={save} error={err} />;
   return (
     <section className="wrap atelier"><h1>Retouches de logo</h1>
+      {stats && <p className="muted small">Commandes payées uniquement.{stats.pending ? ` ${stats.pending} paiement(s) en cours.` : ''} Paniers abandonnés avec retouche : {stats.abandoned.last30} sur 30 jours ({stats.abandoned.total} au total).</p>}
       {!items ? <p className="muted">Chargement…</p> : !items.length ? <p className="muted">Aucun dossier.</p> : (
         <div className="atl-list">{items.map((r) => (
           <Link key={r.id} href={`/atelier/retouche/${r.id}`} className="atl-row">
             <span className={`st st-${r.status}`}>{STATUS_LABEL[r.status]}</span>
+            <b>{r.order?.name}</b>
             <span>{r.items.map((i) => `${i.pieces} × ${getProduct(i.slug)?.name}`).join(', ')}</span>
             <small className="muted">{when(r.createdAt)}</small>
           </Link>
@@ -105,13 +108,14 @@ export function AtelierRework({ id }: { id: string }) {
     } catch (e) { setErr((e as Error).message || 'Erreur'); }
     setSending(false);
   };
-  const mail = `mailto:?subject=${encodeURIComponent('Votre maquette alwaan à valider')}&body=${encodeURIComponent(`Bonjour,\n\nNotre graphiste a retravaillé votre logo. Validez votre maquette en un clic :\n${link}\n\nL'impression démarre dès votre validation.\n\nL'équipe alwaan`)}`;
+  const mail = `mailto:${r.order?.email ? encodeURIComponent(r.order.email) : ''}?subject=${encodeURIComponent('Votre maquette alwaan à valider')}&body=${encodeURIComponent(`Bonjour,\n\nNotre graphiste a retravaillé votre logo. Validez votre maquette en un clic :\n${link}\n\nL'impression démarre dès votre validation.\n\nL'équipe alwaan`)}`;
   const wa = `https://wa.me/?text=${encodeURIComponent(`Votre maquette alwaan est prête, validez-la ici : ${link}`)}`;
 
   return (
     <section className="wrap atelier">
       <p><Link className="link small" href="/atelier">← Tous les dossiers</Link></p>
       <h1>Retouche du logo <span className={`st st-${r.status}`}>{STATUS_LABEL[r.status]}</span></h1>
+      <p className="muted">{r.order ? <>Commande <b>{r.order.name}</b>{r.order.email ? ` · ${r.order.email}` : ''}{r.order.cancelled ? ' · ANNULÉE' : ''}</> : 'Pas encore de commande payée : ne rien imprimer.'}</p>
       {r.decision && !r.decision.ok && <p className="warnline"><b>Demande du client :</b> {r.decision.comment}</p>}
       {r.status === 'valide' && <p className="okline">✓ Validé par le client le {when(r.decision?.at)} : à imprimer.</p>}
 

@@ -12,6 +12,7 @@ export type Rework = {
   proof?: Proof;
   decision?: { at: string; ok: boolean; comment?: string; ip?: string };
   history: { at: string; event: string; detail?: string }[];
+  order?: { id: string; name: string; email?: string; createdAt: string; cancelled?: boolean }; // commande Shopify payée qui contient ce dossier
 };
 
 export const STATUS_LABEL: Record<ReworkStatus, string> = { a_retoucher: 'À retoucher', envoye: 'Envoyé au client', valide: 'Validé : à imprimer', modif: 'Modification demandée' };
