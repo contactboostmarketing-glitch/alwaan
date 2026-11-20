@@ -7,6 +7,7 @@ import { categoryL, generalFaq, href, sectorL, tr, type Lang } from '@/i18n';
 import { HOME_EN_ABOUT } from '@/i18n/catalog-en';
 import { currentSeason, orderBy } from '@/lib/seasons';
 import { PACKS } from '@/lib/packs';
+import { GiftsBand } from '@/components/GiftsBand';
 
 const ABOUT_FR = [
   'alwaan imprime vos vêtements de travail et vos textiles promotionnels à votre logo : polos, t-shirts, chemises, tabliers, casquettes et vêtements haute visibilité EN ISO 20471. Nous équipons les restaurants, hôtels, commerces, artisans, entreprises du BTP et de la logistique, clubs et associations en France et en Belgique.',
@@ -33,6 +34,8 @@ export function HomeView({ lang }: { lang: Lang }) {
           {hero.map((s) => { const p = PRODUCTS.find((x) => x.slug === s)!; return <div key={s}><Garment slug={s} color={defaultColor(p)} zones={[defaultZone(p)]} /></div>; })}
         </div>
       </div></section>
+
+      <section className="section gifts-sec"><div className="wrap"><GiftsBand /></div></section>
 
       <section className="section"><div className="wrap">
         <Link className="team-feature" href={href(lang, '/lien-equipe')}>

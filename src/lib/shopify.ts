@@ -67,6 +67,7 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL, exp
       ...(l.logoCut && l.logoCut !== 'none' ? [{ key: 'Détourage', value: l.logoCut === 'all' ? 'Fond retiré, intérieur compris (validé sur la maquette)' : 'Fond retiré automatiquement (validé sur la maquette)' }] : []),
       ...(l.logoSourceId && l.logoSourceId !== l.logoId ? [{ key: 'Fichier d\'origine du client', value: `${origin}/api/logo/${l.logoSourceId}` }] : []),
       ...(l.text ? [{ key: 'Texte', value: l.text }] : []),
+      ...(l.design ? [{ key: 'Design particulier', value: `${l.design}${l.designText ? ` · ${l.designText}` : ''}` }] : []),
       ...(l.teamId ? [{ key: 'Liste nominative (nom, prénom, taille)', value: `${origin}/api/equipe/${l.teamId}/liste` }] : []),
       ...(l.printNames && namesAllowed(l) ? [{ key: 'Prénom imprimé', value: 'OUI : prénom de chaque personne sous le logo (voir la liste nominative)' }] : []),
       ...(l.logoRework ? [{ key: 'Retouche graphiste', value: 'OUI : NE PAS IMPRIMER avant validation du client' }] : []),
@@ -82,6 +83,12 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL, exp
       out.push({ merchandiseId: v.id, quantity: q, attributes: size === 'Total' ? [...attrs, { key: 'Tailles', value: 'À préciser avant production' }] : attrs });
     }
     const pieces = qtyOf(l);
+    // Design particulier : une ligne « creation-design » par pièce.
+    if (l.design) {
+      const [dv] = await vs(DESIGN_HANDLE);
+      if (!dv) throw new Error(`Produit introuvable dans Shopify : ${DESIGN_HANDLE}`);
+      out.push({ merchandiseId: dv.id, quantity: pieces, attributes: [{ key: 'Groupe', value: group }] });
+    }
     // Prénom imprimé sur chaque pièce : une ligne « marquage-prenom » par pièce.
     if (l.printNames && namesAllowed(l)) {
       const [nv] = await vs(NAME_HANDLE);
@@ -110,6 +117,7 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL, exp
 }
 export const REWORK_HANDLE = 'retouche-logo';
 export const NAME_HANDLE = 'marquage-prenom';
+export const DESIGN_HANDLE = 'creation-design';
 export const expressHandle = (amount: number) => `production-express-${amount}`;
 
 /**

@@ -148,6 +148,8 @@ export const NAME_FEE = 2, NAMES_MIN = 20;
 export const SAMPLE_MIN = 150, SAMPLE_EXTRA_DAYS = 5;
 /** Boutique club / entreprise : commission reversée au club sur les ventes HT de sa boutique (en bons d'achat). */
 export const SHOP_COMMISSION = 0.1;
+/** Particuliers : supplément « création design » par pièce (designs prêts à personnaliser), HT. */
+export const DESIGN_FEE = 5;
 /** Production express : forfait HT selon le nombre total de pièces de la commande. */
 export const EXPRESS_FEES: [number, number][] = [[10, 15], [20, 20], [30, 30], [Infinity, 60]];
 export const expressFee = (pieces: number) => EXPRESS_FEES.find(([max]) => pieces <= max)![1];

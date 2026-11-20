@@ -12,6 +12,7 @@ type Ctx = {
   sample: boolean;
   setSample: (v: boolean) => void;
   connected: boolean;
+  loaded: boolean; // panier relu depuis le navigateur
   reseller: boolean; // revendeur validé : -10 % sur tout (vérifié aussi côté serveur au paiement)
   setExpress: (v: boolean) => void;
   setPro: (v: boolean) => void;
@@ -58,7 +59,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [lines, pro, promo, express, sample, loaded]);
 
   const value: Ctx = {
-    lines, pro, promo, setPro, setPromo, express, setExpress, sample, setSample, voucher, setVoucher, connected: account.connected, reseller: account.reseller,
+    lines, pro, promo, setPro, setPromo, express, setExpress, sample, setSample, voucher, setVoucher, loaded, connected: account.connected, reseller: account.reseller,
     add: (l) => setLines((x) => [...x, l]),
     update: (i, l) => setLines((x) => x.map((y, j) => (j === i ? l : y))),
     remove: (i) => setLines((x) => x.filter((_, j) => j !== i)),

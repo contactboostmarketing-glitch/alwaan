@@ -1,7 +1,7 @@
 // Calcul des prix. Le même code tourne dans le navigateur (affichage) et sur le serveur (paiement),
 // le serveur ne fait jamais confiance aux montants envoyés par le client.
 import {
-  FREE_SHIPPING_HT, NAME_FEE, NAMES_MIN, PROMO_CODES, RESELLER_RATE, REWORK_FEE, SHIPPING_HT, expressFee, VAT, getProduct, tierFor, zonesFor,
+  DESIGN_FEE, FREE_SHIPPING_HT, NAME_FEE, NAMES_MIN, PROMO_CODES, RESELLER_RATE, REWORK_FEE, SHIPPING_HT, expressFee, VAT, getProduct, tierFor, zonesFor,
 } from './catalog';
 
 /** uploaded = logo fourni ; text = pas de logo, seulement un texte imprimé. */
@@ -23,6 +23,8 @@ export type LineConfig = {
   teamId?: string; // liste d'équipe (noms, prénoms, tailles) d'où vient cette ligne
   printNames?: boolean; // prénom imprimé sur chaque pièce (au-delà de NAMES_MIN pièces)
   shop?: string; // boutique club / entreprise d'où vient l'article
+  designText?: string; // textes saisis dans le design (pour l'atelier)
+  design?: string; // design particulier prêt à personnaliser (supplément DESIGN_FEE par pièce)
   logoStatus: LogoStatus;
   logoLowRes?: boolean; // logo de faible définition, accepté en connaissance de cause
   mockupId?: string; // maquette validée par le client (BAT), image stockée côté serveur
@@ -35,24 +37,25 @@ export const qtyOf = (l: Pick<LineConfig, 'qty'>) => Object.values(l.qty).reduce
 /** Le prénom imprimé n'est proposé qu'au-delà de NAMES_MIN pièces sur la ligne. */
 export const namesAllowed = (l: Pick<LineConfig, 'qty'>) => qtyOf(l) > NAMES_MIN;
 
-function parts(l: Pick<LineConfig, 'slug' | 'zones'> & { printNames?: boolean; qty?: Record<string, number> }) {
+function parts(l: Pick<LineConfig, 'slug' | 'zones'> & { printNames?: boolean; qty?: Record<string, number>; design?: string }) {
   const prod = getProduct(l.slug);
   if (!prod) throw new Error(`Produit inconnu : ${l.slug}`);
   const picked = zonesFor(prod).filter((z) => l.zones.includes(z.id));
   const sum = (zs: typeof picked) => zs.reduce((a, z) => a + z.price, 0);
   // fixed : zone à prix fixe (grand devant), sans remise de quantité.
   const names = l.printNames && l.qty && namesAllowed({ qty: l.qty }) ? NAME_FEE : 0;
-  return { garment: prod.price, marking: sum(picked.filter((z) => !z.fixed)), fixed: sum(picked.filter((z) => z.fixed)) + names };
+  const design = l.design ? DESIGN_FEE : 0;
+  return { garment: prod.price, marking: sum(picked.filter((z) => !z.fixed)), fixed: sum(picked.filter((z) => z.fixed)) + names + design };
 }
 
 /** Prix unitaire sans remise : vêtement + marquages. */
-export function unitBase(l: Pick<LineConfig, 'slug' | 'zones'> & { printNames?: boolean; qty?: Record<string, number> }): number {
+export function unitBase(l: Pick<LineConfig, 'slug' | 'zones'> & { printNames?: boolean; qty?: Record<string, number>; design?: string }): number {
   const { garment, marking, fixed } = parts(l);
   return round(garment + marking + fixed);
 }
 
 /** Prix unitaire pour `pool` pièces portant le même logo : la remise ne porte que sur le marquage (hors zones à prix fixe). */
-export function unitAt(l: Pick<LineConfig, 'slug' | 'zones'> & { printNames?: boolean; qty?: Record<string, number> }, pool: number): number {
+export function unitAt(l: Pick<LineConfig, 'slug' | 'zones'> & { printNames?: boolean; qty?: Record<string, number>; design?: string }, pool: number): number {
   const { garment, marking, fixed } = parts(l);
   return round(garment + fixed + marking * (1 - tierFor(pool)[1]));
 }

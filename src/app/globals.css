@@ -500,3 +500,22 @@ footer.site{background:var(--soft);margin-top:40px;padding-block:32px;font-size:
 .offer{background:#fff;border-radius:20px;padding:22px;max-width:400px;width:100%;text-align:center;display:grid;gap:8px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
 .offer-emoji{font-size:40px}.offer h2{margin:0;font-size:20px}
 .team-link{display:block;width:100%;margin:10px 0 0;padding:10px;border-radius:12px;background:#eef3ff;color:var(--blue);font-weight:700;text-decoration:none;text-align:center}
+/* Univers particuliers */
+.gifts{padding-top:10px;padding-bottom:40px}
+.occasions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+@media (max-width:560px){.occasions{grid-template-columns:1fr}}
+.occasion{display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center;padding:12px;border-radius:14px;background:#fff;border:1.5px solid var(--line);text-decoration:none;color:var(--ink)}
+.occasion span{grid-row:span 2;font-size:28px}.occasion small{color:var(--muted)}
+.occasion[aria-current="page"]{border-color:var(--cta);background:#fdf0f6}
+.gifts-sec{padding-top:10px;padding-bottom:0}
+.gifts-band{padding:18px;border-radius:20px;background:linear-gradient(135deg,#fdf0f6,#fff7e8)}
+.gifts-band h2{margin:0 0 4px}
+.gifts-strip{display:block;padding:10px 14px;border-radius:12px;background:#fdf0f6;color:var(--ink);text-decoration:none;font-size:14px}
+.studio{padding-top:10px;padding-bottom:40px}
+.studio-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+@media (max-width:760px){.studio-grid{grid-template-columns:1fr}}
+.studio-vis{background:var(--soft);border-radius:20px;padding:16px;position:sticky;top:10px}
+@media (max-width:760px){.studio-vis{position:static}}
+.studio-form{display:grid;gap:10px}
+.studio-field{display:grid;gap:4px;font-weight:600;font-size:14px}
+.studio-field input{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit;font-size:16px}
