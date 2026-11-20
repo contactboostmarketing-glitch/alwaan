@@ -33,6 +33,14 @@ npm run dev
 
 - Produits, catégories, métiers, zones de marquage, paliers de prix : `src/lib/catalog.ts`
 - Calcul des prix (partagé navigateur / serveur) : `src/lib/pricing.ts`
+
+### Grille de prix (HT)
+
+- Vêtement : prix d'achat × 2, sans remise de quantité.
+- Marquage par pièce : cœur ou anti-cœur 10 × 10 cm 4 €, dos 26 × 26 cm 6 €, grand devant 28 × 30 cm 8 € (prix fixe), nuque et épaules 2,50 €.
+  Cœur et dos à 5 € quand le prix de vente du textile dépasse 25 €.
+- Remise sur le marquage (hors grand devant) : -15 % dès 5 pièces, -20 % dès 10, -40 % dès 30. Les pièces au même logo se cumulent.
+- Shopify doit avoir les mêmes prix : `POST /api/shopify/setup` (en-tête `x-sync-key`, `?dry=1` pour simuler) crée les produits de marquage et aligne les prix.
 - Configurateur : `src/components/Configurator.tsx`
 - Panier et upsell : `src/components/CartView.tsx`
 - Paiement : `src/app/api/checkout/route.ts`, `src/lib/shopify.ts` (panier) et `src/lib/shopifyAdmin.ts` (remise exacte)
