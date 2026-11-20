@@ -26,11 +26,30 @@ export function HomeView({ lang }: { lang: Lang }) {
           <span className="season-kicker">{season.emoji} {sc.kicker}</span>
           <h1>{lang === 'en' ? <>Your workwear with <span>your logo</span>, delivered in 7 days</> : <>Vos tenues à <span>votre logo</span>, livrées en 7 jours</>}</h1>
           <p className="lead">{t('Votre logo, votre tenue en direct. Dès 1 pièce.')}</p>
-          <div className="ctas"><Link className="btn cta" href={href(lang, '/assistant')}>{t('Créer ma tenue en 1 minute')}</Link><Link className="btn line" href={href(lang, '/vetements/polos-personnalises')}>{t('Voir les vêtements')}</Link></div>
+          <div className="ctas"><Link className="btn cta" href={href(lang, '/assistant')}>{t('Créer ma tenue en 1 minute')}</Link><Link className="btn line" href={href(lang, '/lien-equipe')}>👥 {t('Lien d\'équipe')}</Link></div>
           <Perks items={[['eye', t('Maquette en direct')], ['one', t('Dès 1 pièce')], ['tag', t('-40 % dès 30 pièces')]]} />
         </div>
         <div className="hero-vis">
           {hero.map((s) => { const p = PRODUCTS.find((x) => x.slug === s)!; return <div key={s}><Garment slug={s} color={defaultColor(p)} zones={[defaultZone(p)]} /></div>; })}
+        </div>
+      </div></section>
+
+      <section className="section"><div className="wrap">
+        <Link className="team-feature" href={href(lang, '/lien-equipe')}>
+          <div className="tf-phone" aria-hidden="true">
+            <div className="tf-row"><b>Julie M.</b><span>M</span></div><div className="tf-row"><b>Karim B.</b><span>L</span></div><div className="tf-row"><b>Sophie D.</b><span>S</span></div><div className="tf-row new"><b>Marco R.</b><span>XL</span></div>
+          </div>
+          <div>
+            <span className="season-kicker">👥 {t('Exclusif alwaan')}</span>
+            <h2>{t('Un lien, et chacun donne sa taille')}</h2>
+            <p className="muted">{t('Plus de tableau de tailles : partagez un lien, votre panier se remplit tout seul.')}</p>
+            <span className="btn cta">{t('Découvrir le lien d\'équipe')}</span>
+          </div>
+        </Link>
+        <div className="advantages">
+          {([['🖼️', 'Maquette en direct', 'Votre logo sur le vêtement, en vrai'], ['✂️', 'Fond retiré tout seul', 'Votre logo prêt à imprimer'], ['✅', 'Maquette = bon à tirer', 'Imprimé exactement comme validé'], ['1️⃣', 'Dès 1 pièce', 'Et -40 % sur le marquage dès 30'], ['🏷️', 'Prénom imprimé', 'Au nom de chacun, dès 21 pièces'], ['⚡', 'Express 4 jours', 'Pour les urgences'], ['🛍️', 'Boutique club', 'Vos membres commandent seuls'], ['📸', 'Photo avant envoi', 'Contrôle de chaque commande']] as const).map(([e, b, s2]) => (
+            <div key={b} className="adv"><span>{e}</span><b>{t(b)}</b><small>{t(s2)}</small></div>
+          ))}
         </div>
       </div></section>
 

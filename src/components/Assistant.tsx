@@ -228,6 +228,17 @@ export function Assistant() {
     bump(p.slug, k, nt[0] - pieces);
   };
   const addPack = (p: Product) => { setPicked((x) => [...x, p.slug]); setPacks((x) => [...x, p.slug]); setQty((q) => ({ ...q, [p.slug]: spread(p, people || 10) })); };
+  const [teamBusy, setTeamBusy] = useState(false);
+  // Lien d'équipe : chaque personne donne sa taille pour chaque vêtement de la tenue.
+  const toTeam = async () => {
+    setTeamBusy(true); setMsg('');
+    const r = await fetch('/api/equipe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lines: lines.map((l) => ({ ...l, logo: undefined })) }) }).catch(() => null);
+    const d = r && r.ok ? await r.json() : null;
+    setTeamBusy(false);
+    if (!d?.id) { setMsg(t('Création du lien impossible. Réessayez.')); return; }
+    try { localStorage.setItem('alwaan-teams', JSON.stringify([{ id: d.id, key: d.adminKey, at: Date.now() }, ...JSON.parse(localStorage.getItem('alwaan-teams') || '[]')].slice(0, 20))); } catch {}
+    router.push(`${lk(`/equipe/${d.id}`)}?cle=${d.adminKey}`);
+  };
   const finish = () => {
     if (!pieces) return;
     if (uploading) { setMsg(t('Envoi du logo en cours, un instant…')); return; }
@@ -352,7 +363,8 @@ export function Assistant() {
         </>)}
 
         {step === 'qty' && (<>
-          <p className="bubble">{t('Combien de personnes ? Je répartis les tailles.')}</p>
+          <button className="team-cta" disabled={teamBusy} onClick={toTeam}><span>👥</span><span><b>{t('Laisser chacun donner sa taille')}</b><small>{t('Un lien à partager : nom, prénom et taille de chaque personne, le panier se remplit tout seul.')}</small></span></button>
+          <p className="bubble">{t('Ou combien de personnes ? Je répartis les tailles.')}</p>
           <div className="asst-people">{[5, 10, 20, 30].map((n) => <button key={n} aria-pressed={people === n} onClick={() => choosePeople(n)}>{n}</button>)}</div>
           {lines.map((l) => {
             const p = getProduct(l.slug)!, q = qtyOf(l), nt = nextTier(pieces), cur = tierFor(pieces), last = l === lines[lines.length - 1];

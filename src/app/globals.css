@@ -473,3 +473,30 @@ footer.site{background:var(--soft);margin-top:40px;padding-block:32px;font-size:
 .shop-item img{width:100%;aspect-ratio:1;object-fit:contain;background:var(--soft);border-radius:12px}
 .shop-item .chips{gap:4px;margin:6px 0}.shop-item .chip{padding:4px 9px;font-size:12px}
 .mb{margin-bottom:16px}
+.team-item{display:grid;grid-template-columns:84px 1fr;gap:10px;align-items:center;border:1.5px solid var(--line);border-radius:12px;padding:8px}
+.team-thumb{width:84px;height:84px;object-fit:contain;border-radius:10px;background:var(--soft)}
+.team-item .chips{gap:4px}.team-item .chip{padding:5px 10px;font-size:13px}
+.team-cta{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:14px;margin:6px 0 12px;border:2px solid var(--blue);border-radius:16px;background:linear-gradient(135deg,#eef3ff,#fff);cursor:pointer;font:inherit;color:var(--ink)}
+.team-cta>span:first-child{font-size:30px}
+.team-cta b{display:block;font-size:16px}.team-cta small{color:var(--muted);font-size:13px}
+.teamlp{padding-top:10px;padding-bottom:40px}
+.big-emoji{font-size:30px}
+/* Atout n°1 : le lien d'équipe */
+.team-feature{display:grid;grid-template-columns:180px 1fr;gap:20px;align-items:center;padding:20px;border-radius:20px;background:linear-gradient(135deg,#eaf1ff,#fdf0f6);text-decoration:none;color:var(--ink);border:2px solid #d9e4fb}
+.team-feature h2{margin:8px 0 6px}
+.team-feature .btn{margin-top:10px}
+@media (max-width:560px){.team-feature{grid-template-columns:1fr}.tf-phone{max-width:220px;margin:0 auto}}
+.tf-phone{background:#fff;border-radius:22px;border:6px solid #14213f;padding:12px 10px;display:grid;gap:6px;box-shadow:0 10px 26px rgba(20,33,63,.18)}
+.tf-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;background:var(--soft);border-radius:8px;padding:6px 8px}
+.tf-row span{font-weight:700;background:#fff;border-radius:6px;padding:1px 7px}
+.tf-row.new{background:#e5f6ee;animation:pop 2.4s ease-in-out infinite}
+@keyframes pop{0%,60%{opacity:.35;transform:translateY(4px)}75%,100%{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.tf-row.new{animation:none}}
+.advantages{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+@media (max-width:720px){.advantages{grid-template-columns:repeat(2,1fr)}}
+.adv{display:flex;flex-direction:column;gap:2px;padding:12px;border-radius:14px;background:var(--soft)}
+.adv span{font-size:24px}.adv b{font-size:14.5px}.adv small{color:var(--muted);font-size:12.5px;line-height:1.3}
+.offer-back{position:fixed;inset:0;z-index:60;background:rgba(20,33,63,.45);display:grid;place-items:center;padding:16px}
+.offer{background:#fff;border-radius:20px;padding:22px;max-width:400px;width:100%;text-align:center;display:grid;gap:8px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+.offer-emoji{font-size:40px}.offer h2{margin:0;font-size:20px}
+.team-link{display:block;width:100%;margin:10px 0 0;padding:10px;border-radius:12px;background:#eef3ff;color:var(--blue);font-weight:700;text-decoration:none;text-align:center}

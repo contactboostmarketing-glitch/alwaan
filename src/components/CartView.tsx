@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor, defaultZone, expressFee, SAMPLE_EXTRA_DAYS, SAMPLE_MIN } from '@/lib/catalog';
 import { attributionForCheckout, track } from '@/lib/track';
 import { addBusinessDays, deliveryDate, fmtDay } from '@/lib/delivery';
@@ -77,6 +77,7 @@ export function CartView() {
 
   return (
     <section className="wrap">
+      <SampleOffer eligible={t.pieces >= SAMPLE_MIN && !sample} onAccept={() => setSample(true)} hint={quoteOpen} />
       <h1>{tx('Votre panier')}</h1>
       <div className="cart">
         <div>
@@ -132,13 +133,7 @@ export function CartView() {
             <span><b>⚡ {tx('Production express')}</b><small>{tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), true), lang) })}</small></span>
             <b className="express-fee">+<Price raw ht={expressFee(t.pieces || 1)} /></b>
           </label>
-          {t.pieces >= SAMPLE_MIN && (
-            <label className={`express ${sample ? 'on' : ''}`}>
-              <input type="checkbox" checked={sample} onChange={(e) => setSample(e.target.checked)} />
-              <span><b>🧵 {tx('Échantillon avant la série')}</b><small>{tx('1 pièce imprimée envoyée pour validation, puis la série. +{n} jours.', { n: SAMPLE_EXTRA_DAYS })}</small></span>
-              <b className="express-fee">{tx('Offert')}</b>
-            </label>
-          )}
+          {sample && t.pieces >= SAMPLE_MIN && <div className="row save"><span>🧵 {tx('Échantillon avant la série')}</span><span>{tx('Offert')} · <button className="link mutedl small" onClick={() => setSample(false)}>{tx('Retirer')}</button></span></div>}
           <p className="eta">🚚 {tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(addBusinessDays(deliveryDate(new Date(), express), sample && t.pieces >= SAMPLE_MIN ? SAMPLE_EXTRA_DAYS : 0), lang) })}</p>
           {!(promo && voucher) && (
             <div className="promo-in"><input type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder={tx('Code promo')} aria-label={tx('Code promo')} /><button className="btn line small" onClick={applyCode}>{tx('Appliquer')}</button></div>
@@ -179,6 +174,42 @@ function CartLine({ l, i, pool, onRemove }: { l: LineConfig; i: number; pool: nu
         <div className="acts"><Link className="link" href={`${lk(`/produits/${p.slug}`)}?modifier=${i}`}>{tx('Modifier')}</Link><button className="link mutedl" onClick={onRemove}>{tx('Supprimer')}</button></div>
       </div>
       <div className="pr"><Price raw ht={lineTotal(l, pool)} /><small>{q} pcs · <Price raw ht={unitPrice(l, pool)} suffix={false} />/pc</small></div>
+    </div>
+  );
+}
+
+/**
+ * Échantillon avant série : proposé seulement si le client hésite (grosse commande, dès 150 pièces) :
+ * il s'apprête à quitter la page, reste inactif, revient d'un autre onglet ou télécharge un devis.
+ * Une seule fois par visite. Le but : lever le dernier frein et valider la commande tout de suite.
+ */
+function SampleOffer({ eligible, onAccept, hint }: { eligible: boolean; onAccept: () => void; hint: boolean }) {
+  const { t: tx } = useT();
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!eligible) return;
+    let shown = false; try { shown = sessionStorage.getItem('alwaan-sample-offer') === '1'; } catch {}
+    if (shown) return;
+    const show = () => { try { sessionStorage.setItem('alwaan-sample-offer', '1'); } catch {} setOpen(true); cleanup(); };
+    const onLeave = (e: MouseEvent) => { if (e.clientY <= 0) show(); };
+    const onVis = () => { if (document.visibilityState === 'visible') show(); };
+    const timer = window.setTimeout(show, 45_000);
+    document.addEventListener('mouseout', onLeave);
+    document.addEventListener('visibilitychange', onVis);
+    if (hint) show();
+    function cleanup() { window.clearTimeout(timer); document.removeEventListener('mouseout', onLeave); document.removeEventListener('visibilitychange', onVis); }
+    return cleanup;
+  }, [eligible, hint]);
+  if (!open || !eligible) return null;
+  return (
+    <div className="offer-back" role="dialog" aria-modal="true" aria-label={tx('Échantillon avant la série')} onClick={() => setOpen(false)}>
+      <div className="offer" onClick={(e) => e.stopPropagation()}>
+        <span className="offer-emoji">🧵</span>
+        <h2>{tx('Pas encore sûr ? Recevez d\'abord un échantillon')}</h2>
+        <p className="muted">{tx('On imprime 1 pièce de votre commande et on vous l\'envoie. Vous validez, on lance la série. Offert.')}</p>
+        <button className="btn cta block" onClick={() => { onAccept(); setOpen(false); }}>{tx('Oui, je veux mon échantillon')}</button>
+        <button className="link small" onClick={() => setOpen(false)}>{tx('Non merci, je commande directement')}</button>
+      </div>
     </div>
   );
 }

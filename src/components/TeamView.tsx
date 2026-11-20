@@ -10,8 +10,9 @@ import { useT } from '@/i18n/client';
 import { useCart } from './CartProvider';
 import { Price } from './Price';
 
-type Member = { id: string; first: string; last: string; size: string };
-type View = { id: string; title: string; line: Omit<LineConfig, 'qty'>; closed: boolean; count: number; sizes: string[]; admin?: boolean; members?: Member[] };
+type Member = { id: string; first: string; last: string; sizes: Record<string, string> };
+type TLine = Omit<LineConfig, 'qty'> & { sizes: string[] };
+type View = { id: string; title: string; lines: TLine[]; closed: boolean; count: number; admin?: boolean; members?: Member[] };
 
 export function TeamView({ id }: { id: string }) {
   const { t, l, lang } = useT();
@@ -20,7 +21,7 @@ export function TeamView({ id }: { id: string }) {
   const { add } = useCart();
   const [v, setV] = useState<View | null>(null);
   const [err, setErr] = useState('');
-  const [f, setF] = useState({ first: '', last: '', size: '' });
+  const [f, setF] = useState<{ first: string; last: string; sizes: Record<string, string> }>({ first: '', last: '', sizes: {} });
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [printNames, setPrintNames] = useState(false);
@@ -29,8 +30,9 @@ export function TeamView({ id }: { id: string }) {
   useEffect(() => { load(); }, [id, cle]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!v) return <section className="wrap bat-page"><p className="muted">{err || t('Chargement…')}</p></section>;
-  const p = productL(lang, getProduct(v.line.slug)!);
-  const shot = v.line.mockupId && <img className="team-shot" src={`/api/logo/${v.line.mockupId}?apercu`} alt={p.name} />; // eslint-disable-line @next/next/no-img-element
+  const pn = (slug: string) => productL(lang, getProduct(slug)!).name;
+  const shotOf = (ln: TLine, cls = 'team-shot') => ln.mockupId && <img className={cls} src={`/api/logo/${ln.mockupId}?apercu`} alt={pn(ln.slug)} />; // eslint-disable-line @next/next/no-img-element
+  const complete = v.lines.every((ln) => f.sizes[ln.slug]);
 
   if (!v.admin) {
     const submit = async () => {
@@ -44,18 +46,21 @@ export function TeamView({ id }: { id: string }) {
     return (
       <section className="wrap bat-page narrow">
         <h1>{v.title || t('Votre tenue')}</h1>
-        {shot}
-        <p className="muted">{p.name}</p>
         {v.closed ? <p className="nudge">{t('La liste est close.')}</p> : sent ? (<>
           <p className="okline">✓ {t('Merci {n}, c\'est noté !', { n: f.first })}</p>
-          <button className="link" onClick={() => { setF({ first: '', last: '', size: '' }); setSent(false); }}>{t('Ajouter une autre personne')}</button>
+          <button className="link" onClick={() => { setF({ first: '', last: '', sizes: {} }); setSent(false); }}>{t('Ajouter une autre personne')}</button>
         </>) : (
           <div className="quote-box">
             <input value={f.first} onChange={(e) => setF({ ...f, first: e.target.value })} placeholder={t('Prénom')} aria-label={t('Prénom')} autoComplete="given-name" />
             <input value={f.last} onChange={(e) => setF({ ...f, last: e.target.value })} placeholder={t('Nom')} aria-label={t('Nom')} autoComplete="family-name" />
-            <div className="lbl">{t('Votre taille')}</div>
-            <div className="chips">{v.sizes.map((s) => <button key={s} className="chip" aria-pressed={f.size === s} onClick={() => setF({ ...f, size: s })}>{s}</button>)}</div>
-            <button className="btn cta" disabled={busy || !f.first.trim() || !f.last.trim() || !f.size} onClick={submit}>{t('Envoyer')}</button>
+            {v.lines.map((ln) => (
+              <div key={ln.slug} className="team-item">
+                {shotOf(ln, 'team-thumb')}
+                <div><b>{pn(ln.slug)}</b><div className="lbl">{t('Votre taille')}</div>
+                  <div className="chips">{ln.sizes.map((s) => <button key={s} className="chip" aria-pressed={f.sizes[ln.slug] === s} onClick={() => setF({ ...f, sizes: { ...f.sizes, [ln.slug]: s } })}>{s}</button>)}</div></div>
+              </div>
+            ))}
+            <button className="btn cta" disabled={busy || !f.first.trim() || !f.last.trim() || !complete} onClick={submit}>{t('Envoyer')}</button>
             {err && <p className="err">{err}</p>}
           </div>
         )}
@@ -65,14 +70,18 @@ export function TeamView({ id }: { id: string }) {
 
   const members = v.members || [];
   const link = typeof window !== 'undefined' ? `${window.location.origin}${l(`/equipe/${id}`)}` : '';
-  const bySize = Object.fromEntries(v.sizes.map((s) => [s, members.filter((m) => m.size === s).length]));
+  const bySize = (ln: TLine) => Object.fromEntries(ln.sizes.map((s) => [s, members.filter((m) => m.sizes[ln.slug] === s).length]));
   const total = members.length;
   const canNames = total > NAMES_MIN;
   const act = async (body: Record<string, unknown>) => { await fetch(`/api/equipe/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cle, ...body }) }); load(); };
   const toCart = async () => {
     setBusy(true);
-    const logo = v.line.logoId ? await toDataUrl(`/api/logo/${v.line.logoId}?apercu`) : undefined;
-    add({ ...v.line, logo, qty: Object.fromEntries(Object.entries(bySize).filter(([, n]) => n)), teamId: id, printNames: canNames && printNames } as LineConfig);
+    const logoId = v.lines[0].logoId;
+    const logo = logoId ? await toDataUrl(`/api/logo/${logoId}?apercu`) : undefined;
+    for (const ln of v.lines) {
+      const { sizes, ...line } = ln; void sizes;
+      add({ ...line, logo, qty: Object.fromEntries(Object.entries(bySize(ln)).filter(([, n]) => n)), teamId: id, printNames: canNames && printNames } as LineConfig);
+    }
     router.push(l('/panier'));
   };
   const msg = encodeURIComponent(t('Donne ta taille pour ta tenue : {u}', { u: link }));
@@ -86,8 +95,11 @@ export function TeamView({ id }: { id: string }) {
       <div className="atl-files"><a className="btn line small" href={`https://wa.me/?text=${msg}`} target="_blank" rel="noopener">WhatsApp</a><a className="btn line small" href={`mailto:?subject=${encodeURIComponent(t('Ta taille pour la tenue'))}&body=${msg}`}>Email</a></div>
       <p className="warnline small">{t('Gardez cette page : elle seule permet de voir les réponses.')}</p>
 
-      <div className="team-head">{shot}<div><b>{p.name}</b><div className="prod-sizes">{v.sizes.map((s) => <span key={s}>{s} <b>×{bySize[s]}</b></span>)}</div><b>{t('{n} personnes', { n: total })}</b></div></div>
-      <ul className="team-list">{members.map((m) => <li key={m.id}><span>{m.first} {m.last}</span><b>{m.size}</b><button className="link mutedl small" onClick={() => act({ remove: m.id })}>{t('Retirer')}</button></li>)}</ul>
+      <p><b>{t('{n} personnes', { n: total })}</b></p>
+      {v.lines.map((ln) => { const c = bySize(ln); return (
+        <div key={ln.slug} className="team-head">{shotOf(ln)}<div><b>{pn(ln.slug)}</b><div className="prod-sizes">{ln.sizes.map((s) => <span key={s}>{s} <b>×{c[s]}</b></span>)}</div></div></div>
+      ); })}
+      <ul className="team-list">{members.map((m) => <li key={m.id}><span>{m.first} {m.last}</span><b>{v.lines.map((ln) => m.sizes[ln.slug]).join(' · ')}</b><button className="link mutedl small" onClick={() => act({ remove: m.id })}>{t('Retirer')}</button></li>)}</ul>
 
       {canNames ? (
         <label className={`express ${printNames ? 'on' : ''}`}><input type="checkbox" checked={printNames} onChange={(e) => setPrintNames(e.target.checked)} />
@@ -95,7 +107,7 @@ export function TeamView({ id }: { id: string }) {
       ) : <p className="muted small">{t('Prénom imprimé possible au-delà de {n} pièces.', { n: NAMES_MIN })}</p>}
 
       <div className="bat-actions">
-        <button className="btn cta" disabled={!total || busy} onClick={toCart}>{t('Mettre {n} pièces au panier', { n: total })}</button>
+        <button className="btn cta" disabled={!total || busy} onClick={toCart}>{t('Mettre {n} pièces au panier', { n: total * v.lines.length })}</button>
         <button className="link small" onClick={() => act({ closed: !v.closed })}>{v.closed ? t('Rouvrir la liste') : t('Clore la liste')}</button>
       </div>
     </section>
