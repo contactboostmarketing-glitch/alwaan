@@ -5,12 +5,12 @@ export const SITE_URL = normalize(process.env.NEXT_PUBLIC_SITE_URL || 'https://a
 export const publicOrigin = (req: Request) =>
   normalize(process.env.NEXT_PUBLIC_SITE_URL || process.env.URL || new URL(req.url).origin);
 
-/** Indexation par les moteurs : fermée tant que le site n'est pas lancé (variable Netlify SITE_INDEXABLE=true au lancement). */
-export const INDEXABLE = process.env.SITE_INDEXABLE === 'true';
+/** Indexation par les moteurs : ouverte depuis le lancement. SITE_INDEXABLE=false dans Netlify la referme (site de test, maintenance). */
+export const INDEXABLE = process.env.SITE_INDEXABLE !== 'false';
 
 export const SITE_NAME = 'alwaan';
 
-/** Société éditrice (source : annuaire officiel des entreprises, INSEE). Capital et RCS à confirmer. */
+/** Société éditrice (source : annuaire officiel des entreprises, INSEE ; capital et RCS confirmés par le dirigeant). */
 export const COMPANY = {
   name: process.env.COMPANY_NAME || 'YCOM',
   brand: 'alwaan',
@@ -19,8 +19,8 @@ export const COMPANY = {
   siren: '990 444 291',
   siret: process.env.COMPANY_SIRET || '990 444 291 00019',
   vat: process.env.COMPANY_VAT || 'FR76 990444291',
-  rcs: process.env.COMPANY_RCS || 'RCS Lille Métropole 990 444 291',
-  capital: process.env.COMPANY_CAPITAL || '',
+  rcs: process.env.COMPANY_RCS || 'RCS Lille 990 444 291',
+  capital: process.env.COMPANY_CAPITAL || '1 000 €',
   email: process.env.COMPANY_EMAIL || '',
   phone: process.env.NEXT_PUBLIC_PHONE || '',
   iban: process.env.COMPANY_IBAN || '',
