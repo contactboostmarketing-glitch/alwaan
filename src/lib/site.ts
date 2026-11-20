@@ -1,7 +1,12 @@
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://alwaan.fr').replace(/\/$/, '');
+/** Domaine principal sans www (www.alwaan.fr redirige vers alwaan.fr). */
+const normalize = (u: string) => u.replace(/\/$/, '').replace('://www.alwaan.fr', '://alwaan.fr');
+export const SITE_URL = normalize(process.env.NEXT_PUBLIC_SITE_URL || 'https://alwaan.fr');
 /** Adresse publique pour les liens envoyés (emails, commandes) : réglage, sinon adresse principale Netlify, sinon celle de la requête. */
 export const publicOrigin = (req: Request) =>
-  (process.env.NEXT_PUBLIC_SITE_URL || process.env.URL || new URL(req.url).origin).replace(/\/$/, '');
+  normalize(process.env.NEXT_PUBLIC_SITE_URL || process.env.URL || new URL(req.url).origin);
+
+/** Indexation par les moteurs : fermée tant que le site n'est pas lancé (variable Netlify SITE_INDEXABLE=true au lancement). */
+export const INDEXABLE = process.env.SITE_INDEXABLE === 'true';
 
 export const SITE_NAME = 'alwaan';
 export const TAGLINE = 'Tenues professionnelles personnalisées';

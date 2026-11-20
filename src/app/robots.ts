@@ -1,7 +1,9 @@
 import type { MetadataRoute } from 'next';
-import { SITE_URL } from '@/lib/site';
+import { INDEXABLE, SITE_URL } from '@/lib/site';
 
-// Les robots des moteurs IA (GPTBot, PerplexityBot, Google-Extended…) sont autorisés : utile pour le GEO.
+// Avant le lancement : rien n'est indexé. Après (SITE_INDEXABLE=true) : tout sauf panier, merci et API ;
+// les robots des moteurs IA (GPTBot, PerplexityBot, Google-Extended…) sont autorisés, utile pour le GEO.
 export default function robots(): MetadataRoute.Robots {
+  if (!INDEXABLE) return { rules: [{ userAgent: '*', disallow: '/' }] };
   return { rules: [{ userAgent: '*', allow: '/', disallow: ['/panier', '/merci', '/api/'] }], sitemap: `${SITE_URL}/sitemap.xml` };
 }

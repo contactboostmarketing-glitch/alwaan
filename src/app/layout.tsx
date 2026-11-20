@@ -5,7 +5,7 @@ import { CookieBanner } from '@/components/CookieBanner';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { JsonLd } from '@/components/ui';
-import { SITE_NAME, SITE_URL, TAGLINE } from '@/lib/site';
+import { INDEXABLE, SITE_NAME, SITE_URL, TAGLINE } from '@/lib/site';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
@@ -16,6 +16,7 @@ export const metadata: Metadata = {
   title: { default: `${SITE_NAME} · ${TAGLINE}`, template: `%s · ${SITE_NAME}` },
   description: 'Polos, t-shirts, tabliers, casquettes et haute visibilité à votre logo. Dès 1 pièce, maquette en direct avec votre logo, livraison en 7 jours.',
   openGraph: { siteName: SITE_NAME, locale: 'fr_FR', type: 'website' },
+  robots: INDEXABLE ? undefined : { index: false, follow: false },
   alternates: { canonical: '/', languages: { 'fr-FR': '/', 'fr-BE': '/', 'x-default': '/' } },
 };
 export const viewport: Viewport = { themeColor: '#ffffff', viewportFit: 'cover' };
