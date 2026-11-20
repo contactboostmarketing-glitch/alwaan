@@ -399,6 +399,8 @@ export const EN: Record<string, string> = {
   "Particulier ?": "Shopping for yourself?",
   "Idées cadeaux, EVJF, anniversaires : designs prêts à personnaliser": "Gift ideas, hen parties, birthdays: ready-made designs to personalise",
   "Cadeaux": "Gifts",
+  "Commandez avant le {d} pour l'avoir à temps": "Order by {d} to get it in time",
+  "Encore possible en production express": "Still possible with express production",
   // Emplacements de l'assistant
   'Cœur': 'Chest',
   'Discret et pro, 10 × 10 cm': 'Discreet and pro, 10 × 10 cm',

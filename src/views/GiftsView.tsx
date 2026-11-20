@@ -8,6 +8,7 @@ import { unitAt } from '@/lib/pricing';
 import { Garment } from '@/components/Garment';
 import { Price } from '@/components/Price';
 import { RetailMode } from '@/components/RetailMode';
+import { EventBanner } from '@/components/EventBanner';
 import { Breadcrumbs, Perks } from '@/components/ui';
 import { href, tr, type Lang } from '@/i18n';
 import { alternates } from '@/i18n/seo';
@@ -45,6 +46,7 @@ export function GiftsView({ lang, occasion }: { lang: Lang; occasion?: string })
         <h1>{o ? `${o.emoji} ${o[lang].name}` : t('Idées cadeaux à personnaliser')}</h1>
         <p className="lead">{t('Choisissez un design, écrivez votre texte, c\'est prêt. Dès 1 pièce.')}</p>
         <Perks items={[['eye', t('Aperçu en direct')], ['one', t('Dès 1 pièce')], ['truck', t('7 jours')]]} />
+        <EventBanner />
         <div className="occasions">{OCCASIONS.map((x) => (
           <Link key={x.id} className="occasion" aria-current={x.id === occasion ? 'page' : undefined} href={`${href(lang, '/idees-cadeaux')}/${x.id}`}><span>{x.emoji}</span><b>{x[lang].name}</b><small>{x[lang].sub}</small></Link>
         ))}</div>

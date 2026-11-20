@@ -14,6 +14,10 @@ export const OCCASIONS: Occasion[] = [
   { id: 'evjf-evg', emoji: '💍', fr: { name: 'EVJF & EVG', sub: 'Team Bride, Team Groom' }, en: { name: 'Hen & stag parties', sub: 'Team Bride, Team Groom' } },
   { id: 'anniversaire', emoji: '🎂', fr: { name: 'Anniversaires', sub: 'Âge, année, prénom' }, en: { name: 'Birthdays', sub: 'Age, year, name' } },
   { id: 'famille', emoji: '👨‍👩‍👧', fr: { name: 'Famille & fêtes', sub: 'Papa, maman, Noël, naissance' }, en: { name: 'Family & holidays', sub: 'Dad, mum, Christmas, baby' } },
+  { id: 'papi-mamie', emoji: '👵', fr: { name: 'Papi & mamie', sub: 'Super papi, mamie en or' }, en: { name: 'Grandparents', sub: 'Super grandpa, golden granny' } },
+  { id: 'retraite', emoji: '🏖️', fr: { name: 'Retraite', sub: 'Officiellement en retraite' }, en: { name: 'Retirement', sub: 'Officially retired' } },
+  { id: 'saint-valentin', emoji: '❤️', fr: { name: 'Saint-Valentin', sub: 'Pour les amoureux' }, en: { name: 'Valentine’s Day', sub: 'For lovers' } },
+  { id: 'sport', emoji: '⚽', fr: { name: 'Sport & potes', sub: 'Nom et numéro, équipe' }, en: { name: 'Sport & mates', sub: 'Name and number, team' } },
 ];
 
 const D = "Impact, 'Arial Black', 'Helvetica Neue', Arial, sans-serif";
@@ -60,6 +64,33 @@ export const DESIGNS: Design[] = [
     fields: [{ key: 'mois', fr: 'Arrivée prévue', en: 'Due date', def: 'Mars 2027', max: 14 }],
     svg: (v, ink, a) => svg(txt(500, 380, 110, D, ink, 'BIENTÔT', 'letter-spacing="24"') + heart(500, 520, 4, a) + txt(500, 700, 130, S, a, 'Baby') + txt(500, 820, 70, D, ink, v.mois, 'letter-spacing="8"')) },
 ];
+
+DESIGNS.push(
+  { id: 'super-papi', occasion: 'papi-mamie', fr: 'Super papi', en: 'Super grandpa', products: ['t-shirt-dogo', 'casquette-mercury', 'tablier-benoit', 'polo-pegaso'], colors: ['#1d2a5c', '#2f8a4d', '#ffffff'],
+    fields: [{ key: 'titre', fr: 'Titre', en: 'Title', def: 'SUPER PAPI', max: 14 }, { key: 'prenoms', fr: 'Petits-enfants', en: 'Grandchildren', def: 'Léo · Emma · Jade', max: 30 }],
+    svg: (v, ink, a) => svg(star(500, 250, 60, a) + txt(500, 470, 170, D, ink, v.titre, 'textLength="740" lengthAdjust="spacingAndGlyphs"') + `<line x1="200" y1="540" x2="800" y2="540" stroke="${a}" stroke-width="10"/>` + txt(500, 650, 70, G, ink, 'aimé par', 'font-style="italic"') + txt(500, 770, 90, S, a, v.prenoms)) },
+  { id: 'mamie-en-or', occasion: 'papi-mamie', fr: 'Mamie en or', en: 'Golden granny', products: ['t-shirt-dogo', 't-shirt-fox', 'tablier-benoit'], colors: ['#ffffff', '#d43f8d', '#9aa0a6'],
+    fields: [{ key: 'titre', fr: 'Titre', en: 'Title', def: 'Mamie', max: 12 }, { key: 'texte', fr: 'Sous-titre', en: 'Subtitle', def: 'en or depuis 2018', max: 24 }],
+    svg: (v, ink, a) => svg(heart(500, 270, 3.4, a) + txt(500, 560, 240, S, ink, v.titre) + txt(500, 720, 80, G, a, v.texte, 'font-style="italic"') + heart(220, 640, 1.4, a) + heart(780, 640, 1.4, a)) },
+  { id: 'papi-depuis', occasion: 'papi-mamie', fr: 'Papi depuis…', en: 'Grandpa since…', products: ['t-shirt-dogo', 'casquette-mercury', 'polo-pegaso'], colors: ['#151a2d', '#1d2a5c', '#9aa0a6'],
+    fields: [{ key: 'titre', fr: 'Titre', en: 'Title', def: 'PAPI', max: 10 }, { key: 'annee', fr: 'Depuis', en: 'Since', def: '2020', max: 4 }],
+    svg: (v, ink, a) => svg(txt(500, 380, 90, G, a, 'officiellement', 'font-style="italic"') + txt(500, 600, 260, D, ink, v.titre, 'textLength="700" lengthAdjust="spacingAndGlyphs"') + txt(500, 740, 90, D, a, `DEPUIS ${v.annee}`, 'letter-spacing="14"')) },
+  { id: 'retraite-officielle', occasion: 'retraite', fr: 'Officiellement en retraite', en: 'Officially retired', products: ['t-shirt-dogo', 'casquette-mercury', 'polo-pegaso', 'tablier-benoit'], colors: ['#2fb3d6', '#ffffff', '#1d2a5c'],
+    fields: [{ key: 'prenom', fr: 'Prénom', en: 'Name', def: 'Jean-Pierre', max: 16 }, { key: 'annee', fr: 'Année', en: 'Year', def: '2026', max: 4 }],
+    svg: (v, ink, a) => svg(txt(500, 330, 80, D, ink, 'OFFICIELLEMENT', 'letter-spacing="10"') + txt(500, 520, 200, S, a, 'Retraité') + txt(500, 650, 110, D, ink, v.prenom, 'textLength="600" lengthAdjust="spacingAndGlyphs"') + txt(500, 780, 70, D, a, `DEPUIS ${v.annee} · PLUS DE RÉVEIL`, 'textLength="680" lengthAdjust="spacingAndGlyphs"')) },
+  { id: 'retraite-mission', occasion: 'retraite', fr: 'Mission accomplie', en: 'Mission accomplished', products: ['t-shirt-dogo', 'casquette-mercury'], colors: ['#2f8a4d', '#151a2d', '#ffffff'],
+    fields: [{ key: 'annees', fr: 'Années de carrière', en: 'Years of career', def: '42 ans de carrière', max: 26 }],
+    svg: (v, ink, a) => svg(`<rect x="140" y="260" width="720" height="480" rx="30" fill="none" stroke="${ink}" stroke-width="12" stroke-dasharray="40 20"/>` + txt(500, 440, 120, D, ink, 'MISSION', 'letter-spacing="20"') + txt(500, 580, 120, D, a, 'ACCOMPLIE', 'letter-spacing="12"') + txt(500, 690, 60, G, ink, v.annees, 'font-style="italic"') + txt(500, 830, 70, D, ink, 'RETRAITE ✓', 'letter-spacing="12"')) },
+  { id: 'love', occasion: 'saint-valentin', fr: 'Love + date', en: 'Love + date', products: ['t-shirt-dogo', 't-shirt-fox'], colors: ['#ffffff', '#c8302f', '#d43f8d'],
+    fields: [{ key: 'prenoms', fr: 'Vos prénoms', en: 'Your names', def: 'Léa & Hugo', max: 22 }, { key: 'date', fr: 'Depuis le', en: 'Since', def: '14.02.2019', max: 14 }],
+    svg: (v, ink, a) => svg(txt(500, 470, 280, S, a, 'Love') + heart(760, 300, 2.6, a) + txt(500, 640, 100, G, ink, v.prenoms, 'font-style="italic"') + txt(500, 770, 70, D, ink, v.date, 'letter-spacing="14"')) },
+  { id: 'maillot', occasion: 'sport', fr: 'Maillot nom + numéro', en: 'Name + number jersey', products: ['t-shirt-dogo', 't-shirt-atomic-150'], colors: ['#3a5bd0', '#c8302f', '#ffffff', '#151a2d'],
+    fields: [{ key: 'nom', fr: 'Nom', en: 'Name', def: 'MARTIN', max: 12 }, { key: 'numero', fr: 'Numéro', en: 'Number', def: '10', max: 3 }],
+    svg: (v, ink) => svg(txt(500, 330, 120, D, ink, v.nom.toUpperCase(), 'textLength="600" lengthAdjust="spacingAndGlyphs"') + txt(500, 800, 470, D, ink, v.numero)) },
+  { id: 'meilleure-maman', occasion: 'famille', fr: 'Meilleure maman', en: 'Best mum', products: ['t-shirt-dogo', 't-shirt-fox', 'tablier-benoit'], colors: ['#ffffff', '#d43f8d', '#f2d33b'],
+    fields: [{ key: 'titre', fr: 'Titre', en: 'Title', def: 'Maman', max: 12 }, { key: 'texte', fr: 'Sous-titre', en: 'Subtitle', def: 'la meilleure du monde', max: 26 }],
+    svg: (v, ink, a) => svg(star(240, 300, 40, a) + star(760, 300, 40, a) + txt(500, 520, 230, S, a, v.titre) + txt(500, 680, 80, G, ink, v.texte, 'font-style="italic"') + heart(500, 790, 1.8, a)) },
+);
 
 export const getDesign = (id: string) => DESIGNS.find((d) => d.id === id);
 export const designsOf = (occasion: string) => DESIGNS.filter((d) => d.occasion === occasion);
