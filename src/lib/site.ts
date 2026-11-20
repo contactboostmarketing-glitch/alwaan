@@ -23,7 +23,9 @@ export const COMPANY = {
   capital: process.env.COMPANY_CAPITAL || '1 000 €',
   email: process.env.COMPANY_EMAIL || 'contact@alwaan.fr',
   phone: process.env.NEXT_PUBLIC_PHONE || '',
-  iban: process.env.COMPANY_IBAN || '',
+  // Coordonnées bancaires (Qonto), affichées pour les virements et sur les devis.
+  iban: process.env.COMPANY_IBAN || 'FR76 1695 8000 0194 8869 7526 491',
+  bic: process.env.COMPANY_BIC || 'QNTOFRP1XXX',
 };
 export const TAGLINE = 'Tenues professionnelles personnalisées';
 

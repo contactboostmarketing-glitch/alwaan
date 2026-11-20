@@ -61,7 +61,7 @@ export async function quotePdf(o: { number: string; date: Date; validUntil: Date
     'Paiement à la commande par carte bancaire ou par virement. La production démarre à réception du paiement.',
     o.express ? 'Production express en 4 jours ouvrés après paiement et validation de la maquette (bon à tirer), puis livraison. Délais indicatifs.' : 'Production en 7 jours ouvrés après paiement et validation de la maquette (bon à tirer), puis livraison en France et en Belgique. Délais indicatifs.',
     'Articles personnalisés : pas de droit de rétractation (art. L221-28 3° du Code de la consommation). Un défaut d\'impression est refait à nos frais.',
-    ...(COMPANY.iban ? [`Virement : IBAN ${COMPANY.iban}, référence ${o.number}.`] : []),
+    ...(COMPANY.iban ? [`Virement (clients pros) : IBAN ${COMPANY.iban}, BIC ${COMPANY.bic}, référence ${o.number}.`] : []),
   ]) { for (const part of wrap(c, 105)) { text(part, 40, 8.5, font, muted); y -= 11; } y -= 3; }
   y -= 8; text('Commander ce devis en ligne :', 40, 10, bold); y -= 13; text(o.link, 40, 9, font, pink);
   return doc.save();

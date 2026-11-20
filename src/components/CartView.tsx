@@ -14,7 +14,7 @@ import { categoryL, colorName, productL, zonesL } from '@/i18n';
 
 export function CartView() {
   const { lines, remove, add, promo, setPromo, pro, express, setExpress, reseller, sample, setSample, voucher, setVoucher, connected, clear } = useCart();
-  const [transfer, setTransfer] = useState<{ name: string; total: number; iban?: string; holder: string } | null>(null);
+  const [transfer, setTransfer] = useState<{ name: string; total: number; iban?: string; bic?: string; holder: string } | null>(null);
   const { t: tx, l: lk, lang } = useT();
   const [code, setCode] = useState('');
   const [cgv, setCgv] = useState(false);
@@ -28,7 +28,7 @@ export function CartView() {
     <section className="wrap empty transfer-ok">
       <h1>✓ {tx('Commande {n} enregistrée', { n: transfer.name })}</h1>
       <p>{tx('Montant à régler par virement')} : <b>{eur(transfer.total, lang)} {tx('TTC')}</b></p>
-      {transfer.iban ? <div className="iban"><span>{tx('Bénéficiaire')} : <b>{transfer.holder}</b></span><span>IBAN : <b>{transfer.iban}</b></span><span>{tx('Référence')} : <b>{transfer.name}</b></span></div>
+      {transfer.iban ? <div className="iban"><span>{tx('Bénéficiaire')} : <b>{transfer.holder}</b></span><span>IBAN : <b>{transfer.iban}</b></span>{transfer.bic && <span>BIC : <b>{transfer.bic}</b></span>}<span>{tx('Référence')} : <b>{transfer.name}</b></span></div>
         : <p className="muted">{tx('Nos coordonnées bancaires vous sont envoyées par email.')}</p>}
       <p className="muted small">{tx('Un récapitulatif vous a été envoyé par email. La production démarre dès réception du virement.')}</p>
       <Link className="btn line" href={lk('/compte')}>{tx('Mon compte')}</Link>

@@ -56,8 +56,8 @@ export async function POST(req: Request) {
       // Virement : réservé aux pros connectés à leur compte.
       if (body?.payment === 'virement') {
         if (!customerEmail || !body?.pro) return NextResponse.json({ error: 'Le virement est réservé aux professionnels connectés à leur compte.' }, { status: 403 });
-        const o = await createTransferOrder(lines, { email: customerEmail, promo, note: 'Client professionnel', origin, attributes: attr, express, reseller, voucher, iban: COMPANY.iban });
-        return NextResponse.json({ transfer: { ...o, iban: COMPANY.iban, holder: COMPANY.name } });
+        const o = await createTransferOrder(lines, { email: customerEmail, promo, note: 'Client professionnel', origin, attributes: attr, express, reseller, voucher, iban: `${COMPANY.iban} (BIC ${COMPANY.bic})` });
+        return NextResponse.json({ transfer: { ...o, iban: COMPANY.iban, bic: COMPANY.bic, holder: COMPANY.name } });
       }
       const url = await createShopifyCheckout(lines, { promo, note: (body?.pro ? 'Client professionnel' : 'Client particulier') + (lang === 'en' ? ' · anglophone' : ''), origin, attributes: attr, lang, express, reseller, voucher });
       return NextResponse.json({ url });
