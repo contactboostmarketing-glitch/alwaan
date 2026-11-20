@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CATEGORIES, COLOR_NAMES, MAX_DISCOUNT, PRODUCTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor } from '@/lib/catalog';
+import { CATEGORIES, CLASH, COLOR_NAMES, MAX_DISCOUNT, PRODUCTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor } from '@/lib/catalog';
 import { lineTotal, logoKey, qtyOf, unitAt, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
@@ -86,9 +86,8 @@ export function Configurator({ slug }: { slug: string }) {
   const flash = (m: string) => { setToast(m); setTimeout(() => setToast(''), 3200); };
 
   const toggleZone = (id: string) => {
-    // Cœur et grand devant occupent la même face : l'un remplace l'autre.
-    const clash: Record<string, string> = { heart: 'chest', chest: 'heart' };
-    set({ zones: cfg.zones.includes(id) ? cfg.zones.filter((z) => z !== id) : [...cfg.zones.filter((z) => z !== clash[id]), id] });
+    // Le grand devant recouvre le cœur et l'anti-cœur : l'un remplace les autres.
+    set({ zones: cfg.zones.includes(id) ? cfg.zones.filter((z) => z !== id) : [...cfg.zones.filter((z) => !(CLASH[id] || []).includes(z)), id] });
     setView(zones.find((z) => z.id === id)!.view);
   };
   const setQty = (s: string, v: number) => set({ qty: { ...cfg.qty, [s]: Math.max(0, Math.floor(v) || 0) } });
@@ -159,7 +158,7 @@ export function Configurator({ slug }: { slug: string }) {
         <p className="muted small">Cette maquette sert de bon à tirer : l&apos;impression reprend exactement ce que vous voyez (emplacement, couleurs, texte).</p>
         <div ref={shots} className="offscreen" aria-hidden="true">
           <Garment slug={slug} color={cfg.color} view="front" zones={cfg.zones} logo={cfg.logo} text={cfg.text} />
-          {cfg.zones.includes('back') ? <Garment slug={slug} color={cfg.color} view="back" zones={cfg.zones} logo={cfg.logo} text={cfg.text} /> : null}
+          {zones.some((z) => z.view === 'back' && cfg.zones.includes(z.id)) ? <Garment slug={slug} color={cfg.color} view="back" zones={cfg.zones} logo={cfg.logo} text={cfg.text} /> : null}
         </div>
       </div>
 
@@ -196,7 +195,7 @@ export function Configurator({ slug }: { slug: string }) {
           <div className="chips">
             {zones.map((z) => (
               <button key={z.id} className="zone" aria-pressed={cfg.zones.includes(z.id)} onClick={() => toggleZone(z.id)}>
-                {z.name}<small>{z.size} · +<Price ht={z.price} suffix={false} /></small>
+                {z.name}<small>{z.size} · +<Price ht={z.price} suffix={false} />{z.fixed ? ' fixe' : ''}</small>
               </button>
             ))}
           </div>
@@ -220,7 +219,7 @@ export function Configurator({ slug }: { slug: string }) {
             ))}
           </div>
           {others > 0 && <p className="muted small">+ {others} pièce{others > 1 ? 's' : ''} avec ce logo déjà dans le panier, comptée{others > 1 ? 's' : ''} pour la remise.</p>}
-          {cfg.zones.length > 0 && (nt ? (
+          {zones.some((z) => cfg.zones.includes(z.id) && !z.fixed) && (nt ? (
             <div className="nudge"><span>Plus que <b>{nt[0] - pool}</b> pour <b>-{Math.round(nt[1] * 100)} %</b> sur le marquage</span><button className="btn line small" onClick={reachTier}>Passer à {nt[0] - others}</button></div>
           ) : cur[1] === MAX_DISCOUNT ? <div className="nudge ok">Meilleur prix de marquage atteint (-{Math.round(MAX_DISCOUNT * 100)} %)</div> : null)}
           <div className="tiers">

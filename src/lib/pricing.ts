@@ -28,20 +28,22 @@ export const qtyOf = (l: Pick<LineConfig, 'qty'>) => Object.values(l.qty).reduce
 function parts(l: Pick<LineConfig, 'slug' | 'zones'>) {
   const prod = getProduct(l.slug);
   if (!prod) throw new Error(`Produit inconnu : ${l.slug}`);
-  const marking = zonesFor(prod).filter((z) => l.zones.includes(z.id)).reduce((a, z) => a + z.price, 0);
-  return { garment: prod.price, marking };
+  const picked = zonesFor(prod).filter((z) => l.zones.includes(z.id));
+  const sum = (zs: typeof picked) => zs.reduce((a, z) => a + z.price, 0);
+  // fixed : zone à prix fixe (grand devant), sans remise de quantité.
+  return { garment: prod.price, marking: sum(picked.filter((z) => !z.fixed)), fixed: sum(picked.filter((z) => z.fixed)) };
 }
 
 /** Prix unitaire sans remise : vêtement + marquages. */
 export function unitBase(l: Pick<LineConfig, 'slug' | 'zones'>): number {
-  const { garment, marking } = parts(l);
-  return round(garment + marking);
+  const { garment, marking, fixed } = parts(l);
+  return round(garment + marking + fixed);
 }
 
-/** Prix unitaire pour `pool` pièces portant le même logo : la remise ne porte que sur le marquage. */
+/** Prix unitaire pour `pool` pièces portant le même logo : la remise ne porte que sur le marquage (hors zones à prix fixe). */
 export function unitAt(l: Pick<LineConfig, 'slug' | 'zones'>, pool: number): number {
-  const { garment, marking } = parts(l);
-  return round(garment + marking * (1 - tierFor(pool)[1]));
+  const { garment, marking, fixed } = parts(l);
+  return round(garment + fixed + marking * (1 - tierFor(pool)[1]));
 }
 
 /** Clé du logo : les pièces au même logo (ou au même texte) cumulent leurs quantités pour la remise marquage. */

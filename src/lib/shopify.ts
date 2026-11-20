@@ -4,7 +4,7 @@
 // Variables d'environnement :
 //   SHOPIFY_STORE_DOMAIN       ex. alwaan.myshopify.com
 //   SHOPIFY_STOREFRONT_TOKEN   jeton public Storefront (Back office → Applications → Headless)
-import { COLOR_NAMES, ZONES, getProduct, zonesFor } from './catalog';
+import { COLOR_NAMES, ZONES, getProduct, zonesFor, type Zone } from './catalog';
 import { cartTotals, lineFull, qtyOf, round, type LineConfig } from './pricing';
 import { adminEnabled, createExactDiscount } from './shopifyAdmin';
 import { SITE_URL } from './site';
@@ -39,8 +39,12 @@ async function variantsOf(handle: string): Promise<Variant[]> {
 
 const opt = (v: Variant, name: string) => v.selectedOptions.find((o) => o.name === name)?.value;
 
-/** Les marquages sont des produits Shopify à part (« marquage-heart »…), facturés par pièce marquée. */
-const MARK_HANDLE: Record<string, string> = Object.fromEntries(ZONES.map((z) => [z.id, `marquage-${z.id}`]));
+/**
+ * Les marquages sont des produits Shopify à part (« marquage-heart »…), facturés par pièce marquée.
+ * Quand le prix de la zone diffère du prix standard (cœur et dos à 5 € sur les vêtements de plus de 15 € d'achat),
+ * on utilise le produit « marquage-<zone>-premium ».
+ */
+export const markHandle = (z: Zone) => `marquage-${z.id}${z.price !== ZONES.find((x) => x.id === z.id)?.price ? '-premium' : ''}`;
 
 export type CartLineInput = { merchandiseId: string; quantity: number; attributes: { key: string; value: string }[] };
 
@@ -72,8 +76,9 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL): Pr
       out.push({ merchandiseId: v.id, quantity: q, attributes: size === 'Total' ? [...attrs, { key: 'Tailles', value: 'À préciser avant production' }] : attrs });
     }
     const pieces = qtyOf(l);
-    for (const z of l.zones) {
-      const [mv] = await vs(MARK_HANDLE[z]);
+    for (const z of zonesFor(p).filter((x) => l.zones.includes(x.id))) {
+      const [mv] = await vs(markHandle(z));
+      if (!mv) throw new Error(`Produit de marquage introuvable dans Shopify : ${markHandle(z)}`);
       out.push({ merchandiseId: mv.id, quantity: pieces, attributes: [{ key: 'Groupe', value: group }] });
     }
   }

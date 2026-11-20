@@ -16,7 +16,7 @@ import { LOW_RES, imageSize } from './Configurator';
 type Place = 'heart' | 'chest' | 'back' | 'heart-back';
 const PLACES: { id: Place; name: string; sub: string; zones: string[]; reco?: boolean }[] = [
   { id: 'heart', name: 'Cœur', sub: 'Discret et pro, 10 × 10 cm', zones: ['heart'] },
-  { id: 'chest', name: 'Grand devant', sub: 'Jusqu\'à 26 × 26 cm', zones: ['chest'] },
+  { id: 'chest', name: 'Grand devant', sub: 'Jusqu\'à 28 × 30 cm', zones: ['chest'] },
   { id: 'heart-back', name: 'Cœur + dos', sub: 'Visible de loin', zones: ['heart', 'back'], reco: true },
   { id: 'back', name: 'Dos seul', sub: 'Jusqu\'à 26 × 26 cm', zones: ['back'] },
 ];
