@@ -41,7 +41,7 @@ const opt = (v: Variant, name: string) => v.selectedOptions.find((o) => o.name =
 
 /**
  * Les marquages sont des produits Shopify à part (« marquage-heart »…), facturés par pièce marquée.
- * Quand le prix de la zone diffère du prix standard (cœur et dos à 5 € sur les vêtements de plus de 15 € d'achat),
+ * Quand le prix de la zone diffère du prix standard (cœur et dos à 5 € sur les vêtements de plus de 25 € d'achat),
  * on utilise le produit « marquage-<zone>-premium ».
  */
 export const markHandle = (z: Zone) => `marquage-${z.id}${z.price !== ZONES.find((x) => x.id === z.id)?.price ? '-premium' : ''}`;

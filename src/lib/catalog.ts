@@ -124,7 +124,7 @@ export const ZONES: Zone[] = [
   { id: 'neck', name: 'Nuque', view: 'back', x: 50, y: 22, w: 14, size: '8 × 4 cm', price: 2.5 },
 ];
 /** Au-delà de ce prix d'achat HT, le marquage cœur et le marquage dos passent à un prix unique. */
-export const PREMIUM_COST = 15, PREMIUM_MARK = 5, PREMIUM_ZONES = ['heart', 'back'];
+export const PREMIUM_COST = 25, PREMIUM_MARK = 5, PREMIUM_ZONES = ['heart', 'back'];
 /** Zones qui se recouvrent : en choisir une retire les autres. */
 export const CLASH: Record<string, string[]> = { chest: ['heart', 'antiheart'], heart: ['chest'], antiheart: ['chest'] };
 
