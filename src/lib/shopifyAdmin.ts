@@ -23,7 +23,7 @@ async function adminToken(): Promise<string> {
     cache: 'no-store',
   });
   const j = await r.json().catch(() => ({}));
-  if (!r.ok || !j.access_token) throw new Error(`Jeton Admin Shopify refusé (${r.status})`);
+  if (!r.ok || !j.access_token) throw new Error(`Jeton Admin Shopify refusé (${r.status} ${String(j.error || '').slice(0, 60)})`);
   cached = { token: j.access_token, expires: Date.now() + (Number(j.expires_in) || 3600) * 1000 };
   return cached.token;
 }

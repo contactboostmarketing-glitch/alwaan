@@ -36,7 +36,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ url });
     } catch (e) {
       console.error('[checkout shopify]', e);
-      return NextResponse.json({ error: 'Le paiement est momentanément indisponible. Réessayez dans un instant.' }, { status: 502 });
+      // Code de diagnostic sans donnée sensible (aucun identifiant ni montant interne).
+      const m = String((e as Error)?.message || '');
+      const code = m.includes('identifiants Admin') ? 'ADMIN_NON_CONFIGURE'
+        : m.includes('Jeton Admin') ? 'ADMIN_REFUSE'
+        : m.includes('Shopify Admin') ? 'ADMIN_API'
+        : m.includes('Création de la remise') ? 'REMISE_REFUSEE'
+        : m.includes('pas été acceptée') ? 'REMISE_NON_APPLIQUEE'
+        : m.includes('Écart de prix') ? 'ECART_PRIX'
+        : 'PANIER';
+      return NextResponse.json({ error: 'Le paiement est momentanément indisponible. Réessayez dans un instant.', code }, { status: 502 });
     }
   }
 
