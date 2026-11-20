@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { COLOR_NAMES, PROMO_CODES, getProduct, sizesFor, zonesFor } from '@/lib/catalog';
+import { COLOR_NAMES, PROMO_CODES, getProduct, sizesFor, zonesFor, SAMPLE_MIN } from '@/lib/catalog';
 import { cartTotals, logoKey, pools, qtyOf, unitPrice, type LineConfig } from '@/lib/pricing';
 import { createRework } from '@/lib/rework';
 import { saveCart } from '@/lib/savedCart';
 import { sessionEmail } from '@/lib/customer';
 import { isReseller } from '@/lib/reseller';
+import { lookupCode } from '@/lib/vouchers';
 import { SITE_URL, publicOrigin } from '@/lib/site';
 import { sanitize } from '@/lib/cartSanitize';
 import { createShopifyCheckout, shopifyEnabled } from '@/lib/shopify';
@@ -25,6 +26,10 @@ export async function POST(req: Request) {
   // Remise revendeur : vérifiée côté serveur (compte connecté + statut validé), jamais sur parole du navigateur.
   const customerEmail = await sessionEmail(req, publicOrigin(req));
   const reseller = await isReseller(customerEmail);
+  // Code parrain (pas pour soi-même) ou bon d'achat non utilisé, vérifiés ici.
+  const code = typeof body?.voucher === 'string' ? await lookupCode(body.voucher) : null;
+  const voucherOk = code && !(code.kind === 'parrain' && customerEmail && code.email === customerEmail.toLowerCase()) ? code : null;
+  const voucher = voucherOk ? { amount: voucherOk.amount, min: voucherOk.min } : null;
   const promo = body?.promo && PROMO_CODES[String(body.promo).toUpperCase()] ? String(body.promo).toUpperCase() : null;
 
   // Shopify en priorité : panier, paiement et commandes gérés dans le back office.
@@ -43,8 +48,11 @@ export async function POST(req: Request) {
       const lang = body?.lang === 'en' ? 'en' : 'fr';
       if (lang === 'en') attr._langue = 'en';
       if (express) attr._express = 'oui';
+      // Échantillon avant série (dès 150 pièces) : l'atelier envoie 1 pièce et attend la validation du client.
+      if (body?.sample === true && lines.reduce((a, l) => a + qtyOf(l), 0) >= SAMPLE_MIN) attr._echantillon = 'oui';
       if (reseller) attr._revendeur = 'oui';
-      const url = await createShopifyCheckout(lines, { promo, note: (body?.pro ? 'Client professionnel' : 'Client particulier') + (lang === 'en' ? ' · anglophone' : ''), origin, attributes: attr, lang, express, reseller });
+      if (voucherOk) attr[voucherOk.kind === 'parrain' ? '_parrain' : '_bon'] = String(body.voucher).trim().toUpperCase();
+      const url = await createShopifyCheckout(lines, { promo, note: (body?.pro ? 'Client professionnel' : 'Client particulier') + (lang === 'en' ? ' · anglophone' : ''), origin, attributes: attr, lang, express, reseller, voucher });
       return NextResponse.json({ url });
     } catch (e) {
       console.error('[checkout shopify]', e);
@@ -66,7 +74,7 @@ export async function POST(req: Request) {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) return NextResponse.json({ error: 'Paiement en cours de configuration.' }, { status: 503 });
   const stripe = new Stripe(key);
-  const t = cartTotals(lines, promo, express, reseller);
+  const t = cartTotals(lines, promo, express, reseller, voucher);
   const cents = (n: number) => Math.round(n * 100);
 
   const pool = pools(lines);

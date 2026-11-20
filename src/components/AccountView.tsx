@@ -9,10 +9,11 @@ import { useT } from '@/i18n/client';
 
 type Me = {
   enabled: boolean; connected?: boolean; firstName?: string; email?: string;
-  orders?: { id: string; name: string; date: string; total: number; status?: string; statusUrl?: string; reorder?: string; express?: boolean; items: { title: string; quantity: number; variant?: string }[] }[];
+  orders?: { id: string; name: string; date: string; total: number; status?: string; statusUrl?: string; reorder?: string; express?: boolean; photos?: string[]; items: { title: string; quantity: number; variant?: string }[] }[];
   quotes?: { id: string; number?: string; date: string; validUntil?: string; totalHT: number }[];
   logos?: { id: string; bat?: string; order: string }[];
   reseller?: { status: 'en_attente' | 'valide' | 'refuse'; company: string } | null;
+  referral?: string | null; bons?: { code: string; amount: number; used: boolean }[];
 };
 
 export function AccountView() {
@@ -47,6 +48,7 @@ export function AccountView() {
       {!me.orders?.length ? <p className="muted">{t('Aucune commande pour l\'instant.')}</p> : me.orders.map((o) => (
         <article key={o.id} className="acct-card">
           <header><b>{o.name}</b><small className="muted">{day(o.date)}</small>{o.express && <span className="st st-modif">⚡ Express</span>}<b className="acct-total">{eur(o.total, lang)}</b></header>
+          {!!o.photos?.length && <div className="qc">{o.photos.map((p) => <a key={p} href={`/api/logo/${p}?apercu`} target="_blank" rel="noopener" title={t('Photo de contrôle')}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={`/api/logo/${p}?apercu`} alt={t('Photo de contrôle')} /></a>)}</div>}
           <p className="small muted">{o.items.slice(0, 4).map((i) => `${i.quantity} × ${i.title}`).join(' · ')}{o.items.length > 4 ? ' …' : ''}</p>
           <div className="atl-files">
             {o.statusUrl && <a className="btn line small" href={o.statusUrl} target="_blank" rel="noopener">{t('Suivi')}</a>}
@@ -74,6 +76,16 @@ export function AccountView() {
           </div>
         ))}</div>
       )}
+
+      {me.referral && (<>
+        <h2>{t('Parrainage')}</h2>
+        <p className="muted small">{t('Un confrère commande avec votre code : il a 20 € de remise (dès 150 € HT), vous recevez un bon de 20 €.')}</p>
+        <div className="asst-say"><input readOnly value={`${typeof window !== 'undefined' ? window.location.origin : ''}/?parrain=${me.referral}`} onFocus={(e) => e.target.select()} aria-label={t('Lien de parrainage')} />
+          <button onClick={() => navigator.clipboard?.writeText(`${window.location.origin}/?parrain=${me.referral}`)}>{t('Copier')}</button></div>
+        <div className="atl-files"><span className="st">{t('Votre code')} : <b>{me.referral}</b></span>
+          <a className="btn line small" href={`https://wa.me/?text=${encodeURIComponent(t('Je te recommande alwaan pour tes tenues pro : 20 € offerts avec mon lien {u}', { u: `https://alwaan.fr/?parrain=${me.referral}` }))}`} target="_blank" rel="noopener">WhatsApp</a></div>
+        {!!me.bons?.length && <div className="atl-files">{me.bons.map((b) => <span key={b.code} className={`st ${b.used ? '' : 'st-valide'}`}>🎁 {b.code} · {b.amount} € {b.used ? `(${t('utilisé')})` : ''}</span>)}</div>}
+      </>)}
 
       <ResellerBox status={me.reseller?.status} onDone={load} />
     </section>

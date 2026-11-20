@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { EXPRESS_FEES, PRODUCTS, REWORK_FEE, ZONES, zonesFor, type Zone } from '@/lib/catalog';
-import { REWORK_HANDLE, expressHandle, markHandle } from '@/lib/shopify';
+import { EXPRESS_FEES, NAME_FEE, PRODUCTS, REWORK_FEE, ZONES, zonesFor, type Zone } from '@/lib/catalog';
+import { NAME_HANDLE, REWORK_HANDLE, expressHandle, markHandle } from '@/lib/shopify';
 import { admin, adminEnabled } from '@/lib/shopifyAdmin';
 import { publicOrigin } from '@/lib/site';
 
@@ -126,6 +126,8 @@ export async function POST(req: Request) {
     for (const { handle, zone } of markingProducts()) marquages.push(await upsertMarking(handle, zone, pubs, dry));
     marquages.push(await upsertSimple(REWORK_HANDLE, 'Retouche du logo par notre graphiste', REWORK_FEE,
       '<p>Le logo est retravaillé (fond, netteté, vectorisation) puis la maquette est renvoyée au client avant impression. Forfait par logo.</p>', 'Service', pubs, dry));
+    marquages.push(await upsertSimple(NAME_HANDLE, 'Marquage prénom (par pièce)', NAME_FEE,
+      '<p>Prénom de chaque personne imprimé sous le logo, au-delà de 20 pièces.</p>', 'Marquage', pubs, dry));
     for (const [, fee] of EXPRESS_FEES) marquages.push(await upsertSimple(expressHandle(fee), `Production express (${fee} €)`, fee,
       '<p>Production express en 4 jours ouvrés. Forfait selon le nombre de pièces de la commande.</p>', 'Service', pubs, dry));
     const vetements = [];

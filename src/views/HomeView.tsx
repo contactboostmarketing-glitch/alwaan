@@ -5,6 +5,8 @@ import { Price } from '@/components/Price';
 import { Faq, Icon, MoreInfo, Perks, ProductCard } from '@/components/ui';
 import { categoryL, generalFaq, href, sectorL, tr, type Lang } from '@/i18n';
 import { HOME_EN_ABOUT } from '@/i18n/catalog-en';
+import { currentSeason, orderBy } from '@/lib/seasons';
+import { PACKS } from '@/lib/packs';
 
 const ABOUT_FR = [
   'alwaan imprime vos vêtements de travail et vos textiles promotionnels à votre logo : polos, t-shirts, chemises, tabliers, casquettes et vêtements haute visibilité EN ISO 20471. Nous équipons les restaurants, hôtels, commerces, artisans, entreprises du BTP et de la logistique, clubs et associations en France et en Belgique.',
@@ -14,12 +16,14 @@ const ABOUT_FR = [
 
 export function HomeView({ lang }: { lang: Lang }) {
   const t = (s: string) => tr(lang, s);
-  const hero = ['polo-pegaso', 'tablier-benoit', 'casquette-mercury', 'gilet-hv-beta'];
+  const season = currentSeason(), sc = season[lang], until = orderBy(season);
+  const hero = season.featured;
+  const seasonVars = { '--season': season.accent, '--season-soft': season.soft } as React.CSSProperties;
   return (
     <>
-      <section className="hero"><div className="wrap">
+      <section className="hero" data-season={season.id} style={seasonVars}><span className="season-deco" aria-hidden="true">{season.emoji}</span><div className="wrap">
         <div>
-          <span className="muted strong">{t('Restaurants, hôtels, artisans, associations')}</span>
+          <span className="season-kicker">{season.emoji} {sc.kicker}</span>
           <h1>{lang === 'en' ? <>Your workwear with <span>your logo</span>, delivered in 7 days</> : <>Vos tenues à <span>votre logo</span>, livrées en 7 jours</>}</h1>
           <p className="lead">{t('Votre logo, votre tenue en direct. Dès 1 pièce.')}</p>
           <div className="ctas"><Link className="btn cta" href={href(lang, '/assistant')}>{t('Créer ma tenue en 1 minute')}</Link><Link className="btn line" href={href(lang, '/vetements/polos-personnalises')}>{t('Voir les vêtements')}</Link></div>
@@ -28,6 +32,18 @@ export function HomeView({ lang }: { lang: Lang }) {
         <div className="hero-vis">
           {hero.map((s) => { const p = PRODUCTS.find((x) => x.slug === s)!; return <div key={s}><Garment slug={s} color={defaultColor(p)} zones={[defaultZone(p)]} /></div>; })}
         </div>
+      </div></section>
+
+      <section className="section season" style={seasonVars}><div className="wrap">
+        <div className="season-card">
+          <div>
+            <h2>{sc.title}</h2>
+            <p className="muted">{sc.text}</p>
+            {until && <p className="season-deadline">⏰ {lang === 'en' ? `Order by ${until.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} to receive it before Christmas` : `Commandez avant le ${until.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} pour être livré avant Noël`}</p>}
+            <Link className="btn cta" href={href(lang, '/assistant')}>{sc.cta}</Link>
+          </div>
+        </div>
+        <div className="grid mt">{season.featured.map((slug) => PRODUCTS.find((x) => x.slug === slug)).filter(Boolean).map((p) => <ProductCard key={p!.slug} p={p!} lang={lang} />)}</div>
       </div></section>
 
       <section className="section"><div className="wrap">
@@ -44,6 +60,17 @@ export function HomeView({ lang }: { lang: Lang }) {
             );
           })}
         </div>
+      </div></section>
+
+      <section className="section"><div className="wrap">
+        <div className="sec-head"><h2>{t('Packs prêts à commander')}</h2></div>
+        <div className="packs">{PACKS.map((pk) => (
+          <Link key={pk.id} className="pack" href={`${href(lang, '/assistant')}?pack=${pk.id}`}>
+            <span className="pack-vis" aria-hidden="true">{pk.products.map((s) => { const p = PRODUCTS.find((x) => x.slug === s)!; return <Garment key={s} slug={s} color={defaultColor(p)} zones={[defaultZone(p)]} />; })}</span>
+            <strong>{pk.emoji} {pk[lang].name}</strong><small>{pk[lang].sub}</small>
+            <span className="price">{t('dès')} <Price ht={pk.products.reduce((a, s) => a + fromPrice(PRODUCTS.find((x) => x.slug === s)!), 0)} /> <small>{t('par personne')}</small></span>
+          </Link>
+        ))}</div>
       </div></section>
 
       <section className="section soft"><div className="wrap">

@@ -142,6 +142,10 @@ export const PROMO_CODES: Record<string, number> = { BIENVENUE: 0.1 };
 export const REWORK_FEE = 4;
 /** Remise des revendeurs validés (Kbis vérifié) : sur tout, hors livraison. */
 export const RESELLER_RATE = 0.1;
+/** Prénom imprimé sur chaque pièce (sous le logo) : prix HT par pièce, proposé au-delà de NAMES_MIN pièces. */
+export const NAME_FEE = 2, NAMES_MIN = 20;
+/** Échantillon avant série : 1 pièce imprimée envoyée pour validation, offerte dès SAMPLE_MIN pièces. */
+export const SAMPLE_MIN = 150, SAMPLE_EXTRA_DAYS = 5;
 /** Production express : forfait HT selon le nombre total de pièces de la commande. */
 export const EXPRESS_FEES: [number, number][] = [[10, 15], [20, 20], [30, 30], [Infinity, 60]];
 export const expressFee = (pieces: number) => EXPRESS_FEES.find(([max]) => pieces <= max)![1];

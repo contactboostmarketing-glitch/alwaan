@@ -1,10 +1,10 @@
 'use client';
 import Link from 'next/link';
 import { useState } from 'react';
-import { CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor, defaultZone, expressFee } from '@/lib/catalog';
+import { CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor, defaultZone, expressFee, SAMPLE_EXTRA_DAYS, SAMPLE_MIN } from '@/lib/catalog';
 import { attributionForCheckout, track } from '@/lib/track';
-import { deliveryDate, fmtDay } from '@/lib/delivery';
-import { cartTotals, eur, lineTotal, logoKey, pools, qtyOf, unitAt, unitPrice, type LineConfig } from '@/lib/pricing';
+import { addBusinessDays, deliveryDate, fmtDay } from '@/lib/delivery';
+import { namesAllowed, cartTotals, eur, lineTotal, logoKey, pools, qtyOf, unitAt, unitPrice, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
 import { Price } from './Price';
@@ -13,7 +13,7 @@ import { categoryL, colorName, productL, zonesL } from '@/i18n';
 
 
 export function CartView() {
-  const { lines, remove, add, promo, setPromo, pro, express, setExpress, reseller } = useCart();
+  const { lines, remove, add, promo, setPromo, pro, express, setExpress, reseller, sample, setSample, voucher, setVoucher } = useCart();
   const { t: tx, l: lk, lang } = useT();
   const [code, setCode] = useState('');
   const [cgv, setCgv] = useState(false);
@@ -27,7 +27,7 @@ export function CartView() {
     <section className="wrap empty"><h1>{tx('Votre panier est vide')}</h1><p className="muted">{tx('Choisissez un vêtement pour commencer.')}</p><Link className="btn cta" href={lk('/')}>{tx('Voir les vêtements')}</Link></section>
   );
 
-  const t = cartTotals(lines, promo, express, reseller);
+  const t = cartTotals(lines, promo, express, reseller, voucher);
   const pool = pools(lines);
   const firstPool = lines.reduce((a, l) => a + (logoKey(l) === logoKey(lines[0]) ? qtyOf(l) : 0), 0);
   const first = lines[0];
@@ -40,9 +40,14 @@ export function CartView() {
     if (!Object.values(qty).some(Boolean)) qty = { [sizes[0]]: q };
     add({ slug, color: p.colors.includes(first.color) ? first.color : defaultColor(p), zones: [defaultZone(p)], qty, logo: first.logo, logoName: first.logoName, logoId: first.logoId, logoSourceId: first.logoSourceId, logoCut: first.logoCut, logoRework: first.logoRework, logoStatus: first.logoStatus, text: first.text, pack: true });
   };
-  const applyCode = () => {
+  const applyCode = async () => {
     const c = code.trim().toUpperCase();
-    if (PROMO_CODES[c]) { setPromo(c); setMsg(''); } else setMsg(tx('Ce code n\'existe pas ou a expiré.'));
+    // Code promo (%), code parrain ou bon d'achat : vérifiés par le serveur.
+    const d = await fetch(`/api/code?c=${encodeURIComponent(c)}`).then((r) => r.json()).catch(() => ({ ok: false }));
+    if (!d.ok) { setMsg(tx('Ce code n\'existe pas ou a expiré.')); return; }
+    setMsg('');
+    if (d.kind === 'promo') setPromo(c); else setVoucher({ code: d.code, kind: d.kind, amount: d.amount, min: d.min });
+    setCode('');
   };
   const downloadQuote = async () => {
     setQuoting(true); setMsg('');
@@ -63,7 +68,7 @@ export function CartView() {
     track('begin_checkout', { value: t.ht, items: lines.map((l) => ({ item_id: l.slug, item_name: getProduct(l.slug)?.name || l.slug, quantity: qtyOf(l) })) });
     try {
       const r = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ promo, pro, lang, express, attribution: attributionForCheckout(), lines: lines.map(({ logo, ...l }) => ({ ...l, hasLogoPreview: !!logo })) }) });
+        body: JSON.stringify({ promo, pro, lang, express, voucher: voucher?.code, sample: sample && t.pieces >= SAMPLE_MIN, attribution: attributionForCheckout(), lines: lines.map(({ logo, ...l }) => ({ ...l, hasLogoPreview: !!logo })) }) });
       const d = await r.json();
       if (d.url) window.location.href = d.url; else setMsg(d.error || tx('Le paiement n\'est pas encore configuré.'));
     } catch { setMsg(tx('Connexion impossible. Réessayez dans un instant.')); }
@@ -114,6 +119,8 @@ export function CartView() {
           {t.rework > 0 && <div className="row"><span>{tx('Retouche logo (graphiste)')}</span><span><Price raw ht={t.rework} /></span></div>}
           {t.discount > 0 && <div className="row save"><span>{tx('Code')} {promo}</span><span>-<Price raw ht={t.discount} /></span></div>}
           {t.reseller > 0 && <div className="row save"><span>{tx('Remise revendeur -10 %')}</span><span>-<Price raw ht={t.reseller} /></span></div>}
+          {t.voucher > 0 && voucher && <div className="row save"><span>{tx(voucher.kind === 'parrain' ? 'Parrainage' : 'Bon d\'achat')} {voucher.code}</span><span>-<Price raw ht={t.voucher} /></span></div>}
+          {voucher && !t.voucher && <p className="muted small">{tx('Code {c} : -{a} € dès {m} € HT d\'articles', { c: voucher.code, a: voucher.amount, m: voucher.min })}</p>}
           {t.express > 0 && <div className="row"><span>⚡ {tx('Production express')}</span><span><Price raw ht={t.express} /></span></div>}
           <div className="row"><span>{tx('Livraison')}</span><span>{t.shipping ? <Price raw ht={t.shipping} /> : tx('Offerte')}</span></div>
           {pro && <><div className="row"><span>{tx('Total HT')}</span><span>{eur(t.ht, lang)}</span></div><div className="row"><span>{tx('TVA 20 %')}</span><span>{eur(t.vat, lang)}</span></div></>}
@@ -125,8 +132,15 @@ export function CartView() {
             <span><b>⚡ {tx('Production express')}</b><small>{tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), true), lang) })}</small></span>
             <b className="express-fee">+<Price raw ht={expressFee(t.pieces || 1)} /></b>
           </label>
-          <p className="eta">🚚 {tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), express), lang) })}</p>
-          {!promo && (
+          {t.pieces >= SAMPLE_MIN && (
+            <label className={`express ${sample ? 'on' : ''}`}>
+              <input type="checkbox" checked={sample} onChange={(e) => setSample(e.target.checked)} />
+              <span><b>🧵 {tx('Échantillon avant la série')}</b><small>{tx('1 pièce imprimée envoyée pour validation, puis la série. +{n} jours.', { n: SAMPLE_EXTRA_DAYS })}</small></span>
+              <b className="express-fee">{tx('Offert')}</b>
+            </label>
+          )}
+          <p className="eta">🚚 {tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(addBusinessDays(deliveryDate(new Date(), express), sample && t.pieces >= SAMPLE_MIN ? SAMPLE_EXTRA_DAYS : 0), lang) })}</p>
+          {!(promo && voucher) && (
             <div className="promo-in"><input type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder={tx('Code promo')} aria-label={tx('Code promo')} /><button className="btn line small" onClick={applyCode}>{tx('Appliquer')}</button></div>
           )}
           <label className="consent"><input type="checkbox" checked={cgv} onChange={(e) => setCgv(e.target.checked)} /><span>{tx('J\'accepte les')} <Link href="/cgv">{tx('CGV')}</Link> {tx('(articles personnalisés : pas de rétractation)')}</span></label>
@@ -161,6 +175,7 @@ function CartLine({ l, i, pool, onRemove }: { l: LineConfig; i: number; pool: nu
         <small>{colorName(lang, l.color)} · {zonesL(lang, p0).filter((z) => l.zones.includes(z.id)).map((z) => z.name).join(' + ')}{pool > q ? ` · ${tx('{n} pièces au même logo', { n: pool })}` : ''}</small>
         <small>{Object.entries(l.qty).filter(([, v]) => v).map(([s, v]) => `${s} ×${v}`).join(', ')}</small>
         <small>{logo} · {bat}</small>
+        {l.teamId && <small>👥 {tx('Liste d\'équipe')}{l.printNames && namesAllowed(l) ? ` · ${tx('prénoms imprimés')}` : ''}</small>}
         <div className="acts"><Link className="link" href={`${lk(`/produits/${p.slug}`)}?modifier=${i}`}>{tx('Modifier')}</Link><button className="link mutedl" onClick={onRemove}>{tx('Supprimer')}</button></div>
       </div>
       <div className="pr"><Price raw ht={lineTotal(l, pool)} /><small>{q} pcs · <Price raw ht={unitPrice(l, pool)} suffix={false} />/pc</small></div>

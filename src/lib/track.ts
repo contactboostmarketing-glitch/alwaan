@@ -19,6 +19,9 @@ export function captureAttribution() {
     const fresh = old.at && Date.now() - Date.parse(old.at) < 90 * 864e5 ? old : {};
     if (Object.keys(found).length) localStorage.setItem(ATTR, JSON.stringify({ ...found, landing: u.pathname.slice(0, 200), at: new Date().toISOString() }));
     else if (!fresh.at) localStorage.setItem(ATTR, JSON.stringify({ landing: u.pathname.slice(0, 200), at: new Date().toISOString(), utm_source: document.referrer ? new URL(document.referrer).hostname.slice(0, 100) : 'direct' }));
+    // Lien de parrainage : le code est proposé automatiquement dans le panier.
+    const ref = u.searchParams.get('parrain');
+    if (ref && /^REF-[A-Z0-9]{4,8}$/i.test(ref)) localStorage.setItem('alwaan-voucher', ref.toUpperCase());
     // Cookie _fbc attendu par Meta quand on arrive d'une publicité Facebook / Instagram.
     if (found.fbclid) document.cookie = `_fbc=fb.1.${Date.now()}.${found.fbclid}; path=/; max-age=${90 * 86400}; SameSite=Lax`;
   } catch {}

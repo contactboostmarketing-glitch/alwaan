@@ -122,8 +122,9 @@ export function Configurator({ slug }: { slug: string }) {
     set({ logoId: undefined, logoLowRes: false });
     await pick(f);
   };
-  const submit = async () => {
-    if (!q) { flash(t('Indiquez au moins une pièce')); return; }
+  // forTeam : la liste d'équipe fixe les quantités ensuite, elles ne sont pas exigées ici.
+  const submit = async (forTeam = false) => {
+    if (!q && !forTeam) { flash(t('Indiquez au moins une pièce')); return; }
     if (!cfg.zones.length) { flash(t('Choisissez au moins un emplacement')); return; }
     if (uploading) { flash(t('Envoi du logo en cours, un instant…')); return; }
     if (cfg.logoStatus === 'uploaded' && lg?.hasBg && !lg.decided && !cfg.logoRework) { flash(t('Votre logo a un fond : choisissez avec ou sans fond.')); return; }
@@ -138,6 +139,17 @@ export function Configurator({ slug }: { slug: string }) {
     setSaving(false);
     if (!mockupId) { flash(t('Enregistrement de la maquette impossible. Réessayez.')); return; }
     const item = { ...cfg, mockupId, approvedAt: new Date().toISOString() };
+    if (forTeam) {
+      // Liste d'équipe : on enregistre l'article validé, puis l'acheteur partage le lien.
+      setSaving(true);
+      const r = await fetch('/api/equipe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ line: { ...item, logo: undefined } }) }).catch(() => null);
+      const d = r && r.ok ? await r.json() : null;
+      setSaving(false);
+      if (!d?.id) { flash(t('Création du lien impossible. Réessayez.')); return; }
+      try { localStorage.setItem('alwaan-teams', JSON.stringify([{ id: d.id, key: d.adminKey, slug: p.slug, at: Date.now() }, ...JSON.parse(localStorage.getItem('alwaan-teams') || '[]')].slice(0, 20))); } catch {}
+      router.push(`${l(`/equipe/${d.id}`)}?cle=${d.adminKey}`);
+      return;
+    }
     if (editIndex !== null) { update(editIndex, item); router.push(l('/panier')); return; }
     add(item);
     track('add_to_cart', { value: lineTotal(item, pool), items: [{ item_id: p.slug, item_name: p.name, quantity: qtyOf(item) }] });
@@ -247,8 +259,9 @@ export function Configurator({ slug }: { slug: string }) {
             </>)}
             <p className="eta">🚚 {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(), lang) })} · <span className="muted">{t('express possible')}</span></p>
           </div>
-          <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /><span>{t('Je valide ma maquette')} <b>{t('(bon à tirer)')}</b></span></label>
-          <button className="btn cta" onClick={submit} disabled={saving}>{t(saving ? 'Enregistrement de la maquette…' : editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier')}</button>
+          <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /><span>{t('Je valide ma maquette')} <b>{t('(bon à tirer)')}</b> {t('et je détiens les droits sur ce logo')}</span></label>
+          <button className="btn cta" onClick={() => submit()} disabled={saving}>{t(saving ? 'Enregistrement de la maquette…' : editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier')}</button>
+          {editIndex === null && <button className="link small team-link" onClick={() => submit(true)} disabled={saving}>👥 {t('Récupérer les noms et tailles de l\'équipe par un lien')}</button>}
         </div>
         <Perks items={[['eye', t('Imprimé comme la maquette')], ['lock', t('Paiement sécurisé')], ['redo', t('Défaut refait')], ['truck', t('7 jours')]]} />
       </div>

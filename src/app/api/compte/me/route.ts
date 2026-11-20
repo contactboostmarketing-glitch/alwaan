@@ -3,6 +3,8 @@ import { customerEnabled, customerQuery, getSession, type Session } from '@/lib/
 import { cartTotals } from '@/lib/pricing';
 import { getReseller, quotesOfEmail } from '@/lib/reseller';
 import { getCart } from '@/lib/savedCart';
+import { getPhotos } from '@/lib/qcPhotos';
+import { bonsOf, ensureReferralCode } from '@/lib/vouchers';
 import { publicOrigin } from '@/lib/site';
 
 type Attr = { key: string; value: string | null };
@@ -42,12 +44,16 @@ export async function GET(req: Request) {
       items: items.map((l) => ({ title: l.title, quantity: l.quantity, variant: l.variantTitle || undefined })),
     };
   });
+  const photos = await Promise.all(orders.map((o) => getPhotos(o.name)));
+  orders.forEach((o, i) => Object.assign(o, { photos: photos[i] }));
   const quotes = (await Promise.all((email ? await quotesOfEmail(email) : []).map(getCart))).filter(Boolean).map((c) => ({
     id: c!.id, number: c!.quote?.number, date: c!.createdAt, validUntil: c!.quote?.validUntil, totalHT: cartTotals(c!.lines, c!.promo, c!.express).ht,
   }));
   const r = email ? await getReseller(email) : null;
+  const referral = email ? await ensureReferralCode(email) : null;
+  const bons = email ? (await bonsOf(email)).map((b) => ({ code: b.code, amount: b.amount, used: !!b.usedBy })) : [];
   const res = NextResponse.json({ enabled: true, connected: true, firstName: d.customer.firstName, email, orders, quotes, logos: [...logos.values()],
-    reseller: r ? { status: r.status, company: r.company } : null });
+    reseller: r ? { status: r.status, company: r.company } : null, referral, bons });
   if (setCookieHeader) res.headers.append('Set-Cookie', setCookieHeader);
   return res;
 }

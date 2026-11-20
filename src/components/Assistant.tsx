@@ -12,6 +12,7 @@ import { Price } from './Price';
 import { snapshot, toDataUrl, uploadMockup } from '@/lib/mockup';
 import { track } from '@/lib/track';
 import { CutoutChoice, ReworkOption, useLogo } from './LogoCutout';
+import { PACKS } from '@/lib/packs';
 import { useT } from '@/i18n/client';
 import { categoryL, colorName, productL } from '@/i18n';
 
@@ -101,6 +102,12 @@ export function Assistant() {
   const [saved, setSaved] = useState<'idle' | 'saving' | 'ok'>('idle');
   const reprise = useSearchParams().get('reprise');
   const reuseLogo = useSearchParams().get('logo');
+  const packId = useSearchParams().get('pack');
+  // Pack choisi sur l'accueil : vêtements et emplacement déjà sélectionnés, il reste le logo.
+  useEffect(() => {
+    const pk = PACKS.find((x) => x.id === packId);
+    if (pk) { setPicked(pk.products); setPlace(pk.place); }
+  }, [packId]);
   // Logo déjà utilisé (espace client « Réutiliser ») : on le reprend tel quel, déjà préparé pour l'impression.
   useEffect(() => {
     if (!reuseLogo || !/^[a-f0-9]{32}\.[a-z]{2,5}$/.test(reuseLogo)) return;
@@ -335,7 +342,7 @@ export function Assistant() {
             {products.map((p) => <figure key={p.slug} data-slug={p.slug}><Garment slug={p.slug} color={colorFor(p)} zones={zonesOf(p, place)} logo={logo?.preview} text={logo?.status === 'text' ? text : undefined} /><figcaption>{p.name}</figcaption></figure>)}
             {zonesOf(g0, place).includes('back') && <figure data-slug={g0.slug}><Garment slug={g0.slug} color={colorFor(g0)} view="back" zones={zonesOf(g0, place)} logo={logo?.preview} text={logo?.status === 'text' ? text : undefined} /><figcaption>{g0.name} · dos</figcaption></figure>}
           </div>
-          <p className="muted small">{t('Cette maquette sert de bon à tirer : ce que vous voyez est imprimé.')}</p>
+          <p className="muted small">{t('Cette maquette sert de bon à tirer : ce que vous voyez est imprimé.')} {t('En validant, vous confirmez détenir les droits sur ce logo.')}</p>
           {saveBox}
           <div className="asst-quick">
             <button onClick={() => go('color')}>{t('Changer la couleur')}</button>

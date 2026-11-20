@@ -5,7 +5,7 @@
 //   SHOPIFY_STORE_DOMAIN       ex. alwaan.myshopify.com
 //   SHOPIFY_STOREFRONT_TOKEN   jeton public Storefront (Back office → Applications → Headless)
 import { COLOR_NAMES, ZONES, getProduct, zonesFor, type Zone } from './catalog';
-import { cartTotals, lineFull, qtyOf, reworkLogos, round, type LineConfig } from './pricing';
+import { cartTotals, lineFull, namesAllowed, qtyOf, reworkLogos, round, type LineConfig } from './pricing';
 import { adminEnabled, createExactDiscount } from './shopifyAdmin';
 import { SITE_URL } from './site';
 
@@ -62,11 +62,13 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL, exp
       { key: 'Groupe', value: group },
       { key: 'Emplacements', value: zonesFor(getProduct(l.slug)!).filter((z) => l.zones.includes(z.id)).map((z) => `${z.name} (${z.size})`).join(' + ') },
       { key: 'Logo', value: l.logoStatus === 'text' ? 'Aucun : texte seul' : `Fourni${l.logoName ? ` (${l.logoName})` : ''}${l.logoLowRes ? ' · PETITE DÉFINITION acceptée par le client' : ''}` },
-      ...(l.mockupId ? [{ key: 'Maquette validée (BAT)', value: `${origin}/api/logo/${l.mockupId}` }, { key: 'BAT validé le', value: new Date(l.approvedAt || Date.now()).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) }] : []),
+      ...(l.mockupId ? [{ key: 'Maquette validée (BAT)', value: `${origin}/api/logo/${l.mockupId}` }, { key: 'Droits sur le logo', value: 'Confirmés par le client à la validation' }, { key: 'BAT validé le', value: new Date(l.approvedAt || Date.now()).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) }] : []),
       ...(l.logoId ? [{ key: 'Fichier logo à imprimer', value: `${origin}/api/logo/${l.logoId}` }] : []),
       ...(l.logoCut && l.logoCut !== 'none' ? [{ key: 'Détourage', value: l.logoCut === 'all' ? 'Fond retiré, intérieur compris (validé sur la maquette)' : 'Fond retiré automatiquement (validé sur la maquette)' }] : []),
       ...(l.logoSourceId && l.logoSourceId !== l.logoId ? [{ key: 'Fichier d\'origine du client', value: `${origin}/api/logo/${l.logoSourceId}` }] : []),
       ...(l.text ? [{ key: 'Texte', value: l.text }] : []),
+      ...(l.teamId ? [{ key: 'Liste nominative (nom, prénom, taille)', value: `${origin}/api/equipe/${l.teamId}/liste` }] : []),
+      ...(l.printNames && namesAllowed(l) ? [{ key: 'Prénom imprimé', value: 'OUI : prénom de chaque personne sous le logo (voir la liste nominative)' }] : []),
       ...(l.logoRework ? [{ key: 'Retouche graphiste', value: 'OUI : NE PAS IMPRIMER avant validation du client' }] : []),
       ...(l.reworkId ? [{ key: 'Dossier retouche (atelier)', value: `${origin}/atelier/retouche/${l.reworkId}` }] : []),
     ];
@@ -80,6 +82,12 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL, exp
       out.push({ merchandiseId: v.id, quantity: q, attributes: size === 'Total' ? [...attrs, { key: 'Tailles', value: 'À préciser avant production' }] : attrs });
     }
     const pieces = qtyOf(l);
+    // Prénom imprimé sur chaque pièce : une ligne « marquage-prenom » par pièce.
+    if (l.printNames && namesAllowed(l)) {
+      const [nv] = await vs(NAME_HANDLE);
+      if (!nv) throw new Error(`Produit de marquage introuvable dans Shopify : ${NAME_HANDLE}`);
+      out.push({ merchandiseId: nv.id, quantity: pieces, attributes: [{ key: 'Groupe', value: group }] });
+    }
     for (const z of zonesFor(p).filter((x) => l.zones.includes(x.id))) {
       const [mv] = await vs(markHandle(z));
       if (!mv) throw new Error(`Produit de marquage introuvable dans Shopify : ${markHandle(z)}`);
@@ -101,6 +109,7 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL, exp
   return out;
 }
 export const REWORK_HANDLE = 'retouche-logo';
+export const NAME_HANDLE = 'marquage-prenom';
 export const expressHandle = (amount: number) => `production-express-${amount}`;
 
 /**
@@ -109,11 +118,11 @@ export const expressHandle = (amount: number) => `production-express-${amount}`;
  * on applique donc un code unique du montant de l'écart (paliers de quantité, pack, code promo),
  * puis on vérifie le sous-total obtenu avant d'envoyer le client au paiement.
  */
-export async function createShopifyCheckout(lines: LineConfig[], opts: { promo?: string | null; note?: string; origin?: string; attributes?: Record<string, string>; lang?: 'fr' | 'en'; express?: boolean; reseller?: boolean } = {}) {
-  const t = cartTotals(lines, opts.promo, opts.express, opts.reseller);
+export async function createShopifyCheckout(lines: LineConfig[], opts: { promo?: string | null; note?: string; origin?: string; attributes?: Record<string, string>; lang?: 'fr' | 'en'; express?: boolean; reseller?: boolean; voucher?: { amount: number; min: number } | null } = {}) {
+  const t = cartTotals(lines, opts.promo, opts.express, opts.reseller, opts.voucher);
   const shopLines = await toShopifyLines(lines, opts.origin, t.express);
   const catalogue = round(lines.reduce((a, l) => a + lineFull(l), 0) + t.rework + t.express);
-  const expected = round(t.goods - t.discount + t.express - t.reseller); // montant des articles affiché sur le site, HT
+  const expected = round(t.goods - t.discount + t.express - t.reseller - t.voucher); // montant des articles affiché sur le site, HT
   const gap = round(catalogue - expected);
 
   let codes: string[] = [];

@@ -440,3 +440,30 @@ footer.site{background:var(--soft);margin-top:40px;padding-block:32px;font-size:
   .acctlink{width:32px;height:32px;margin-right:2px}
   .cartlink{padding:6px 8px}
 }
+.qc{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
+.qc img{width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+/* Saisons : couleur d'accent et décor léger, l'accueil vit au fil de l'année */
+.hero[data-season]{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--season-soft,#eef3ff) 0%,#fff 60%)}
+.season-deco{position:absolute;right:-10px;top:8px;font-size:120px;opacity:.13;transform:rotate(-12deg);pointer-events:none;line-height:1}
+.season-kicker{display:inline-block;font-weight:700;font-size:14px;color:var(--season,#2b63d9);background:#fff;border:1.5px solid var(--season,#2b63d9);border-radius:999px;padding:4px 12px}
+.section.season{padding-top:22px}
+.season-card{background:var(--season-soft,#eef3ff);border-left:6px solid var(--season,#2b63d9);border-radius:16px;padding:18px}
+.season-card h2{margin:0 0 6px}
+.season-card .btn{margin-top:10px}
+.season-deadline{font-weight:700;color:var(--season,#c8302f);margin:8px 0 0}
+.bat-page.narrow{max-width:480px}
+.team-shot{display:block;width:100%;max-height:300px;object-fit:contain;border-radius:14px;border:1px solid var(--line);background:#fff;margin:10px 0}
+.team-head{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;margin:14px 0}
+.team-head .team-shot{max-height:120px;margin:0}
+.team-list{list-style:none;padding:0;margin:0 0 12px;border-top:1px solid var(--line)}
+.team-list li{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.team-list li span{flex:1}
+.team-title{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;font:inherit;margin:8px 0}
+.team-link{display:block;margin:8px auto 0;text-align:center}
+.packs{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.pack{display:flex;flex-direction:column;gap:4px;padding:12px;border:1.5px solid var(--line);border-radius:16px;background:#fff;text-decoration:none;color:var(--ink)}
+.pack:hover{border-color:var(--blue)}
+.pack-vis{display:flex;gap:2px;justify-content:center;background:var(--soft);border-radius:12px;padding:8px}
+.pack-vis svg{width:33%;height:auto}
+.pack small{color:var(--muted)}
+.pack .price{font-weight:700;margin-top:4px}

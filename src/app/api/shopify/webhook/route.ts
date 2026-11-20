@@ -5,6 +5,8 @@ import { sendGA4, sendMeta, type Sale } from '@/lib/conversions';
 import { getRework, saveRework } from '@/lib/rework';
 import { tagOrder } from '@/lib/reworkOrders';
 import { SITE_URL } from '@/lib/site';
+import { admin } from '@/lib/shopifyAdmin';
+import { REFERRAL_REWARD, issueBon, lookupCode, markBonUsed } from '@/lib/vouchers';
 
 /**
  * Webhook Shopify « commande payée » (enregistré par /api/shopify/setup).
@@ -58,10 +60,23 @@ export async function POST(req: Request) {
     }
   }
 
+  // Parrainage : bon utilisé → marqué ; code parrain → bon de 20 € au parrain si c'est la 1re commande du filleul.
+  let parrainage = '';
+  try {
+    if (attr.bon) await markBonUsed(attr.bon, o.name);
+    if (attr.parrain) {
+      const p = await lookupCode(attr.parrain);
+      const d = await admin<{ order: { customer: { numberOfOrders: string } | null } | null }>(`query($id: ID!) { order(id: $id) { customer { numberOfOrders } } }`, { id: o.admin_graphql_api_id });
+      const first = Number(d.order?.customer?.numberOfOrders ?? 1) <= 1;
+      if (p?.kind === 'parrain' && first && p.email !== (sale.email || '').toLowerCase()) parrainage = (await issueBon(p.email, REFERRAL_REWARD, o.name)).code;
+      else parrainage = first ? 'refusé (même client)' : 'refusé (pas une 1re commande)';
+    }
+  } catch (e) { parrainage = `erreur ${(e as Error).message}`; }
+
   await putJSON('commandes', key, {
     id: key, gid: o.admin_graphql_api_id, name: o.name, createdAt: o.created_at, value: sale.value, email: sale.email,
     panier: attr.panier, source: attr.utm_source, campaign: attr.utm_campaign, gclid: !!attr.gclid, fbclid: !!attr.fbclid,
-    retouches: [...reworkIds], conversions: [ga, meta],
+    retouches: [...reworkIds], conversions: [ga, meta], parrainage,
   });
   return NextResponse.json({ ok: true });
 }

@@ -205,11 +205,12 @@ export function AtelierProduction() {
         return (
           <article key={o.id} className={`prod-card ${o.blocked ? 'blocked' : ''}`}>
             <header>
-              <b>{o.name}</b>{o.express && <span className="st st-modif">⚡ EXPRESS</span>}
+              <b>{o.name}</b>{o.express && <span className="st st-modif">⚡ EXPRESS</span>}{o.sample && <span className="st st-a_retoucher">🧵 ÉCHANTILLON AVANT SÉRIE</span>}
               <span className={`st ${o.blocked ? 'st-modif' : late ? 'st-modif' : 'st-valide'}`}>{o.blocked ? 'Attente BAT client' : late ? `En retard · ${day(o.due)}` : `À expédier le ${day(o.due)}`}</span>
               <small className="muted">{o.pieces} pcs · payé le {day(o.createdAt)}</small>
             </header>
             {o.note && <p className="small muted">{o.note}</p>}
+            <QcPhotos order={o.name} initial={o.photos} staffKey={key} />
             {o.groups.map((g, i) => (
               <div key={i} className="prod-group">
                 <div><b>{g.label}</b> <small className="muted">{g.zones}{g.text ? ` · texte « ${g.text} »` : ''}</small></div>
@@ -261,5 +262,27 @@ export function AtelierResellers() {
         </article>
       ))}
     </section>
+  );
+}
+
+/** Photo de contrôle avant expédition : prise au téléphone depuis le tableau de production. */
+function QcPhotos({ order, initial, staffKey }: { order: string; initial: string[]; staffKey: string }) {
+  const [photos, setPhotos] = useState(initial);
+  const [busy, setBusy] = useState(false);
+  const onFile = async (f?: File) => {
+    if (!f) return;
+    setBusy(true);
+    const up = await uploadFile(f, `controle-${order.replace(/\D/g, '')}.jpg`);
+    if (up.id) {
+      const r = await fetch('/api/atelier/photo', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-staff-key': staffKey }, body: JSON.stringify({ order, photoId: up.id }) });
+      const d = await r.json().catch(() => ({})); if (d.photos) setPhotos(d.photos);
+    }
+    setBusy(false);
+  };
+  return (
+    <div className="qc no-print">
+      {photos.map((p) => <a key={p} href={`/api/logo/${p}?apercu`} target="_blank" rel="noopener">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={`/api/logo/${p}?apercu`} alt="Photo de contrôle" /></a>)}
+      <label className="btn line small">{busy ? 'Envoi…' : photos.length ? '+ Photo' : '📷 Photo de contrôle'}<input type="file" accept="image/*" capture="environment" hidden onChange={(e) => onFile(e.target.files?.[0])} /></label>
+    </div>
   );
 }

@@ -2,27 +2,29 @@
 // avec la date d'expédition à tenir et le blocage tant que le client n'a pas validé un BAT retouché.
 import { addBusinessDays, EXPRESS_DAYS, PRODUCTION_DAYS } from './delivery';
 import { admin } from './shopifyAdmin';
+import { getPhotos } from './qcPhotos';
 
 type Attr = { key: string; value: string | null };
 type Li = { title: string; quantity: number; variantTitle: string | null; customAttributes: Attr[]; product: { handle: string } | null };
-type Ord = { id: string; name: string; createdAt: string; tags: string[]; note: string | null; lineItems: { nodes: Li[] } };
+type Ord = { id: string; name: string; createdAt: string; tags: string[]; note: string | null; customAttributes: Attr[]; lineItems: { nodes: Li[] } };
 
 export type ProdGroup = {
   label: string; zones: string; bat?: string; logo?: string; source?: string; text?: string; rework: boolean;
   sizes: { variant: string; qty: number }[]; pieces: number;
 };
-export type ProdOrder = { id: string; name: string; createdAt: string; due: string; express: boolean; blocked: boolean; tags: string[]; note?: string; groups: ProdGroup[]; pieces: number };
+export type ProdOrder = { sample: boolean; photos: string[]; id: string; name: string; createdAt: string; due: string; express: boolean; blocked: boolean; tags: string[]; note?: string; groups: ProdGroup[]; pieces: number };
 
 const attr = (l: Li, k: string) => l.customAttributes.find((a) => a.key === k)?.value || undefined;
 
 export async function productionOrders(): Promise<ProdOrder[]> {
   const since = new Date(Date.now() - 60 * 864e5).toISOString().slice(0, 10);
   const d = await admin<{ orders: { nodes: Ord[] } }>(
-    `query($q: String!) { orders(first: 100, sortKey: CREATED_AT, reverse: true, query: $q) { nodes { id name createdAt tags note
+    `query($q: String!) { orders(first: 100, sortKey: CREATED_AT, reverse: true, query: $q) { nodes { id name createdAt tags note customAttributes { key value }
       lineItems(first: 100) { nodes { title quantity variantTitle customAttributes { key value } product { handle } } } } } }`,
     { q: `financial_status:paid fulfillment_status:unfulfilled -status:cancelled created_at:>=${since}` },
   );
-  return d.orders.nodes.map((o) => {
+  const photos = await Promise.all(d.orders.nodes.map((o) => getPhotos(o.name)));
+  return d.orders.nodes.map((o, oi) => {
     const groups = new Map<string, ProdGroup>();
     const express = o.lineItems.nodes.some((l) => (l.product?.handle || '').startsWith('production-express'));
     for (const l of o.lineItems.nodes) {
@@ -40,7 +42,7 @@ export async function productionOrders(): Promise<ProdOrder[]> {
     const list = [...groups.values()];
     const waitingBat = list.some((g) => g.rework) && !o.tags.includes('BAT-valide');
     return {
-      id: o.id, name: o.name, createdAt: o.createdAt, tags: o.tags, note: o.note || undefined,
+      sample: o.customAttributes.some((a) => a.key === '_echantillon' && a.value === 'oui'), photos: photos[oi], id: o.id, name: o.name, createdAt: o.createdAt, tags: o.tags, note: o.note || undefined,
       due: addBusinessDays(new Date(o.createdAt), express ? EXPRESS_DAYS : PRODUCTION_DAYS).toISOString(), express,
       blocked: waitingBat, groups: list, pieces: list.reduce((a, g) => a + g.pieces, 0),
     };
