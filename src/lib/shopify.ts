@@ -4,7 +4,7 @@
 // Variables d'environnement :
 //   SHOPIFY_STORE_DOMAIN       ex. alwaan.myshopify.com
 //   SHOPIFY_STOREFRONT_TOKEN   jeton public Storefront (Back office → Applications → Headless)
-import { COLOR_NAMES, ZONES, getProduct } from './catalog';
+import { COLOR_NAMES, ZONES, getProduct, zonesFor } from './catalog';
 import { cartTotals, lineFull, qtyOf, round, type LineConfig } from './pricing';
 import { adminEnabled, createExactDiscount } from './shopifyAdmin';
 import { SITE_URL } from './site';
@@ -56,7 +56,7 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL): Pr
     const group = `Article ${i + 1} · ${p.name}`;
     const attrs = [
       { key: 'Groupe', value: group },
-      { key: 'Emplacements', value: l.zones.map((z) => ZONES.find((x) => x.id === z)?.name).join(' + ') },
+      { key: 'Emplacements', value: zonesFor(getProduct(l.slug)!).filter((z) => l.zones.includes(z.id)).map((z) => `${z.name} (${z.size})`).join(' + ') },
       { key: 'Logo', value: l.logoStatus === 'text' ? 'Aucun : texte seul' : `Fourni${l.logoName ? ` (${l.logoName})` : ''}${l.logoLowRes ? ' · PETITE DÉFINITION acceptée par le client' : ''}` },
       ...(l.mockupId ? [{ key: 'Maquette validée (BAT)', value: `${origin}/api/logo/${l.mockupId}` }, { key: 'BAT validé le', value: new Date(l.approvedAt || Date.now()).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) }] : []),
       ...(l.logoId ? [{ key: 'Fichier logo', value: `${origin}/api/logo/${l.logoId}` }] : []),

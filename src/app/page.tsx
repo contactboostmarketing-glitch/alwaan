@@ -14,10 +14,10 @@ export default function Home() {
           <h1>Vos tenues à <span>votre logo</span>, livrées en 7 jours</h1>
           <p className="lead">Déposez votre logo, voyez tout de suite votre tenue, validez et c'est parti. Sans minimum de commande.</p>
           <div className="ctas"><Link className="btn cta" href="/assistant">Créer ma tenue en 1 minute</Link><Link className="btn line" href="/vetements/polos-personnalises">Voir les vêtements</Link></div>
-          <Checks items={['Maquette en direct avec votre logo', 'Dès 1 pièce', 'Prix dégressifs jusqu\'à -38 %']} />
+          <Checks items={['Maquette en direct avec votre logo', 'Dès 1 pièce', 'Marquage jusqu\'à -40 % dès 30 pièces']} />
         </div>
         <div className="hero-vis">
-          {hero.map((s) => { const p = PRODUCTS.find((x) => x.slug === s)!; return <div key={s}><Garment slug={s} color={defaultColor(p)} zones={[p.shape === 'cap' ? 'chest' : 'heart']} /></div>; })}
+          {hero.map((s) => { const p = PRODUCTS.find((x) => x.slug === s)!; return <div key={s}><Garment slug={s} color={defaultColor(p)} zones={['heart']} /></div>; })}
         </div>
       </div></section>
 

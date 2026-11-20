@@ -26,7 +26,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
           <div><h1>{c.name} personnalisés</h1><p className="mt8">{c.intro}</p></div>
           <Checks items={['Dès 1 pièce', 'Maquette en direct', 'Livré en 7 jours']} />
         </div>
-        <p className="muted small mb">{list.length} modèles · prix dès 250 pièces, logo compris</p>
+        <p className="muted small mb">{list.length} modèles · prix dès 30 pièces, logo cœur compris</p>
         <div className="grid">{list.map((p) => <ProductCard key={p.slug} p={p} />)}</div>
         <div className="seo">
           <div className="txt"><h2>Bien choisir son {c.singular} personnalisé</h2>{c.details?.map((d) => <p key={d.slice(0, 30)}>{d}</p>)}<h2 className="mt">Questions fréquentes</h2><Faq items={[...c.faq, ...GENERAL_FAQ.slice(0, 2)]} /></div>

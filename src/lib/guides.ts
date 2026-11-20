@@ -14,7 +14,7 @@ export type Guide = {
   faq: [string, string][];
 };
 
-const tiersText = TIERS.filter(([, d]) => d > 0).map(([m, d]) => `-${Math.round(d * 100)} % dès ${m} pièces`).join(', ');
+const tiersText = `sur le marquage, ${TIERS.filter(([, d]) => d > 0).map(([m, d]) => `-${Math.round(d * 100)} % dès ${m} pièces`).join(', ')} (les pièces au même logo se cumulent, tous vêtements confondus)`;
 
 export const GUIDES: Guide[] = [
   {
@@ -175,7 +175,7 @@ export const GUIDES: Guide[] = [
     intro: 'Pour un événement, le t-shirt personnalisé fédère votre groupe et le rend visible. Trois questions guident le choix.',
     sections: [
       { h2: 'Usage unique ou durable ?', p: ['Pour un événement d\'un jour, un 150 g/m² suffit et reste le plus économique. Pour un club qui portera ses t-shirts toute la saison, préférez 180 g/m² ou plus.'] },
-      { h2: 'Le budget par personne', p: [`Le prix baisse automatiquement avec la quantité : ${tiersText}. Commander toutes les tailles ensemble permet d\'atteindre plus vite un palier.`] },
+      { h2: 'Le budget par personne', p: [`Le marquage baisse automatiquement avec la quantité : ${tiersText}. Commander toutes les tailles ensemble permet d\'atteindre plus vite un palier.`] },
       { h2: 'Le délai', p: ['Comptez 7 jours ouvrés de production et de livraison, 4 en express : anticipez d\'au moins deux semaines avant votre événement.'] },
     ],
     faq: [['Peut-on mélanger les tailles ?', 'Oui, toutes les tailles d\'un même modèle comptent ensemble pour le prix dégressif.']],
@@ -189,8 +189,8 @@ export const GUIDES: Guide[] = [
     intro: 'Le prix d\'un vêtement personnalisé dépend de trois éléments : le vêtement, le marquage et la quantité commandée.',
     sections: [
       { h2: 'Le vêtement', p: ['Le grammage, la matière et la coupe font varier le prix de base : un t-shirt 150 g/m² coûte moins cher qu\'une veste softshell.'] },
-      { h2: 'Le marquage', p: ['Chaque emplacement imprimé (cœur, poitrine, dos, nuque) s\'ajoute au prix de la pièce. Un logo au cœur et un grand logo au dos est la combinaison la plus courante pour une équipe.'] },
-      { h2: 'La quantité', p: [`Plus vous commandez, plus le prix unitaire baisse : ${tiersText}. Le site vous indique combien de pièces il manque pour atteindre le palier suivant.`] },
+      { h2: 'Le marquage', p: ['Chaque emplacement imprimé s\'ajoute au prix du vêtement : cœur (logo jusqu\'à 10 × 10 cm) 4 € HT, grand devant ou dos (jusqu\'à 26 × 26 cm) 6 € HT. Un logo au cœur et un grand logo au dos est la combinaison la plus courante pour une équipe.'] },
+      { h2: 'La quantité', p: [`Plus vous commandez, plus le marquage baisse : ${tiersText}. Le site vous indique combien de pièces il manque pour atteindre le palier suivant.`] },
     ],
     faq: [['Y a-t-il des frais de préparation ?', 'Non. Avec l\'impression DTF, il n\'y a ni frais de création d\'écran ni frais de programme.']],
   },

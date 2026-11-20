@@ -2,8 +2,8 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CATEGORIES, COLOR_NAMES, PRODUCTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor } from '@/lib/catalog';
-import { lineTotal, qtyOf, unitBase, unitPrice, type LineConfig } from '@/lib/pricing';
+import { CATEGORIES, COLOR_NAMES, MAX_DISCOUNT, PRODUCTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor } from '@/lib/catalog';
+import { lineTotal, logoKey, qtyOf, unitAt, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
 import { Price } from './Price';
@@ -14,7 +14,7 @@ function initial(slug: string): LineConfig {
   const sizes = sizesFor(p);
   const demo = [1, 3, 4, 2];
   return {
-    slug, color: defaultColor(p), zones: [p.shape === 'cap' ? 'chest' : 'heart'],
+    slug, color: defaultColor(p), zones: ['heart'],
     qty: Object.fromEntries(sizes.map((s, i) => [s, sizes.length === 1 ? 10 : demo[i] || 0])),
     logoStatus: 'uploaded', text: '',
   };
@@ -75,21 +75,27 @@ export function Configurator({ slug }: { slug: string }) {
   }, [sameLogo, lines.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const q = qtyOf(cfg);
-  const cur = tierFor(q);
-  const nt = nextTier(q);
-  const base = useMemo(() => unitBase(cfg), [cfg]);
+  // Pièces du panier qui portent déjà ce logo : elles comptent pour la remise marquage.
+  const others = cfg.logoId || cfg.logoStatus === 'text'
+    ? lines.reduce((a, l, i) => a + (i !== editIndex && logoKey(l) === logoKey(cfg) ? qtyOf(l) : 0), 0) : 0;
+  const pool = q + others;
+  const cur = tierFor(pool);
+  const nt = nextTier(pool);
+  const at = (n: number) => unitAt(cfg, n);
   const set = (patch: Partial<LineConfig>) => setCfg((c) => ({ ...c, ...patch }));
   const flash = (m: string) => { setToast(m); setTimeout(() => setToast(''), 3200); };
 
   const toggleZone = (id: string) => {
-    set({ zones: cfg.zones.includes(id) ? cfg.zones.filter((z) => z !== id) : [...cfg.zones, id] });
+    // Cœur et grand devant occupent la même face : l'un remplace l'autre.
+    const clash: Record<string, string> = { heart: 'chest', chest: 'heart' };
+    set({ zones: cfg.zones.includes(id) ? cfg.zones.filter((z) => z !== id) : [...cfg.zones.filter((z) => z !== clash[id]), id] });
     setView(zones.find((z) => z.id === id)!.view);
   };
   const setQty = (s: string, v: number) => set({ qty: { ...cfg.qty, [s]: Math.max(0, Math.floor(v) || 0) } });
   const reachTier = () => {
     if (!nt) return;
     const keys = Object.keys(cfg.qty), k = keys[Math.min(2, keys.length - 1)];
-    setQty(k, cfg.qty[k] + nt[0] - q);
+    setQty(k, cfg.qty[k] + nt[0] - pool);
   };
   const [uploading, setUploading] = useState(false);
   /** Envoie le fichier d'origine au serveur (pour l'atelier) ; l'aperçu reste calculé dans le navigateur. */
@@ -153,7 +159,7 @@ export function Configurator({ slug }: { slug: string }) {
         <p className="muted small">Cette maquette sert de bon à tirer : l&apos;impression reprend exactement ce que vous voyez (emplacement, couleurs, texte).</p>
         <div ref={shots} className="offscreen" aria-hidden="true">
           <Garment slug={slug} color={cfg.color} view="front" zones={cfg.zones} logo={cfg.logo} text={cfg.text} />
-          {cfg.zones.includes('back') || cfg.zones.includes('neck') ? <Garment slug={slug} color={cfg.color} view="back" zones={cfg.zones} logo={cfg.logo} text={cfg.text} /> : null}
+          {cfg.zones.includes('back') ? <Garment slug={slug} color={cfg.color} view="back" zones={cfg.zones} logo={cfg.logo} text={cfg.text} /> : null}
         </div>
       </div>
 
@@ -161,7 +167,7 @@ export function Configurator({ slug }: { slug: string }) {
         <div>
           <h1 className="pdp-title">{p.name}</h1>
           <p className="muted">{p.type} · {p.composition}</p>
-          <p className="from">dès <b><Price ht={base * (1 - TIERS[TIERS.length - 1][1])} /></b> la pièce, logo compris</p>
+          <p className="from">dès <b><Price ht={at(TIERS[TIERS.length - 1][0])} /></b> la pièce, logo compris</p>
         </div>
 
         <div className="blk">
@@ -186,11 +192,11 @@ export function Configurator({ slug }: { slug: string }) {
         </div>
 
         <div className="blk">
-          <div className="lbl">Emplacements <span>prix par pièce</span></div>
+          <div className="lbl">Emplacements <span>marquage par pièce</span></div>
           <div className="chips">
             {zones.map((z) => (
               <button key={z.id} className="zone" aria-pressed={cfg.zones.includes(z.id)} onClick={() => toggleZone(z.id)}>
-                {z.name}<small>+<Price ht={z.price} suffix={false} /></small>
+                {z.name}<small>{z.size} · +<Price ht={z.price} suffix={false} /></small>
               </button>
             ))}
           </div>
@@ -213,18 +219,19 @@ export function Configurator({ slug }: { slug: string }) {
               </div>
             ))}
           </div>
-          {nt ? (
-            <div className="nudge"><span>Plus que <b>{nt[0] - q}</b> pour passer à <b>-{Math.round(nt[1] * 100)} %</b></span><button className="btn line small" onClick={reachTier}>Passer à {nt[0]}</button></div>
-          ) : <div className="nudge ok">Meilleur tarif atteint</div>}
+          {others > 0 && <p className="muted small">+ {others} pièce{others > 1 ? 's' : ''} avec ce logo déjà dans le panier, comptée{others > 1 ? 's' : ''} pour la remise.</p>}
+          {cfg.zones.length > 0 && (nt ? (
+            <div className="nudge"><span>Plus que <b>{nt[0] - pool}</b> pour <b>-{Math.round(nt[1] * 100)} %</b> sur le marquage</span><button className="btn line small" onClick={reachTier}>Passer à {nt[0] - others}</button></div>
+          ) : cur[1] === MAX_DISCOUNT ? <div className="nudge ok">Meilleur prix de marquage atteint (-{Math.round(MAX_DISCOUNT * 100)} %)</div> : null)}
           <div className="tiers">
-            {TIERS.map(([m, d]) => <div key={m} className={m === cur[0] ? 'on' : ''}><b><Price ht={base * (1 - d)} suffix={false} /></b>{m}+ pcs</div>)}
+            {TIERS.map(([m, d]) => <div key={m} className={m === cur[0] ? 'on' : ''}><b><Price ht={at(m)} suffix={false} /></b>{m}+ pcs{d ? <small>marquage -{Math.round(d * 100)} %</small> : null}</div>)}
           </div>
         </div>
 
         <div className="addrow">
           <div>
-            <small className="muted">{q} pièce{q > 1 ? 's' : ''} · {q ? <Price ht={unitPrice(cfg)} /> : '—'} / pièce</small>
-            <div className="tot"><Price ht={lineTotal(cfg)} /></div>
+            <small className="muted">{q} pièce{q > 1 ? 's' : ''} · {q ? <Price ht={at(pool)} /> : '—'} / pièce</small>
+            <div className="tot"><Price ht={lineTotal(cfg, pool)} /></div>
           </div>
           <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /><span>Je valide cette maquette comme <b>bon à tirer</b> : emplacement, couleurs et texte sont corrects.</span></label>
           <button className="btn cta" onClick={submit} disabled={saving}>{saving ? 'Enregistrement de la maquette…' : editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier'}</button>
@@ -249,7 +256,7 @@ function SameLogo({ current, logo }: { current: string; logo?: string }) {
       <div className="samegrid">
         {picks.map((x) => (
           <Link key={x.slug} className="pcard" href={`/produits/${x.slug}?meme-logo=1`}>
-            <div className="img"><Garment slug={x.slug} color={defaultColor(x)} zones={[x.shape === 'cap' ? 'chest' : 'heart']} logo={logo} /></div>
+            <div className="img"><Garment slug={x.slug} color={defaultColor(x)} zones={['heart']} logo={logo} /></div>
             <strong>{CATEGORIES.find((c) => c.slug === x.category)!.name}</strong>
             <small>{x.name}</small>
           </Link>

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { COLOR_NAMES, PROMO_CODES, ZONES, getProduct, sizesFor, zonesFor } from '@/lib/catalog';
-import { cartTotals, qtyOf, unitPrice, type LineConfig } from '@/lib/pricing';
+import { COLOR_NAMES, PROMO_CODES, getProduct, sizesFor, zonesFor } from '@/lib/catalog';
+import { cartTotals, pools, qtyOf, unitPrice, type LineConfig } from '@/lib/pricing';
 import { SITE_URL, publicOrigin } from '@/lib/site';
 import { LOGO_ID } from '@/lib/logoStore';
 import { createShopifyCheckout, shopifyEnabled } from '@/lib/shopify';
@@ -61,15 +61,16 @@ export async function POST(req: Request) {
   const t = cartTotals(lines, promo);
   const cents = (n: number) => Math.round(n * 100);
 
-  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = lines.map((l) => {
+  const pool = pools(lines);
+  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = lines.map((l, i) => {
     const p = getProduct(l.slug)!;
     const sizes = Object.entries(l.qty).filter(([, v]) => v).map(([s, v]) => `${s}×${v}`).join(', ');
-    const zones = l.zones.map((z) => ZONES.find((x) => x.id === z)?.name).join(' + ');
+    const zones = zonesFor(p).filter((z) => l.zones.includes(z.id)).map((z) => `${z.name} ${z.size}`).join(' + ');
     return {
       quantity: qtyOf(l),
       price_data: {
-        currency: 'eur', tax_behavior: 'exclusive', unit_amount: cents(unitPrice(l)),
-        product_data: { name: `${p.name} · ${COLOR_NAMES[l.color]}`, description: `${zones} · ${sizes}${l.pack ? ' · pack -10 %' : ''}`.slice(0, 500) },
+        currency: 'eur', tax_behavior: 'exclusive', unit_amount: cents(unitPrice(l, pool[i])),
+        product_data: { name: `${p.name} · ${COLOR_NAMES[l.color]}`, description: `${zones} · ${sizes}`.slice(0, 500) },
       },
     };
   });

@@ -4,8 +4,8 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CATEGORIES, COLOR_NAMES, PACK_DISCOUNT, PRODUCTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor, type Product } from '@/lib/catalog';
-import { lineFull, lineTotal, qtyOf, unitBase, unitPrice, type LineConfig } from '@/lib/pricing';
+import { CATEGORIES, COLOR_NAMES, MAX_DISCOUNT, PRODUCTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor, type Product } from '@/lib/catalog';
+import { lineFull, lineTotal, qtyOf, unitAt, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { preview } from './Configurator';
 import { Garment, isDark } from './Garment';
@@ -15,10 +15,10 @@ import { LOW_RES, imageSize } from './Configurator';
 
 type Place = 'heart' | 'chest' | 'back' | 'heart-back';
 const PLACES: { id: Place; name: string; sub: string; zones: string[]; reco?: boolean }[] = [
-  { id: 'heart', name: 'Cœur', sub: 'Discret et pro', zones: ['heart'] },
-  { id: 'chest', name: 'Poitrine', sub: 'Grand, bien visible', zones: ['chest'] },
+  { id: 'heart', name: 'Cœur', sub: 'Discret et pro, 10 × 10 cm', zones: ['heart'] },
+  { id: 'chest', name: 'Grand devant', sub: 'Jusqu\'à 26 × 26 cm', zones: ['chest'] },
   { id: 'heart-back', name: 'Cœur + dos', sub: 'Visible de loin', zones: ['heart', 'back'], reco: true },
-  { id: 'back', name: 'Dos seul', sub: 'Effet maillot', zones: ['back'] },
+  { id: 'back', name: 'Dos seul', sub: 'Jusqu\'à 26 × 26 cm', zones: ['back'] },
 ];
 /** Un modèle par catégorie : le best-seller. */
 const CHOICES: Product[] = CATEGORIES.map((c) => PRODUCTS.find((p) => p.category === c.slug && p.bestseller) ?? PRODUCTS.find((p) => p.category === c.slug)!);
@@ -31,7 +31,7 @@ function zonesOf(p: Product, place: Place | null): string[] {
   if (!place) return [];
   const valid = zonesFor(p).map((z) => z.id);
   const z = PLACES.find((x) => x.id === place)!.zones.filter((x) => valid.includes(x));
-  return z.length ? z : [p.shape === 'cap' ? 'chest' : valid[0]];
+  return z.length ? z : [valid[0]];
 }
 function spread(p: Product, n: number): Record<string, number> {
   const sizes = sizesFor(p);
@@ -141,9 +141,10 @@ export function Assistant() {
     logo: logo?.preview, logoId: logo?.id, logoName: logo?.name, logoStatus: logo?.status ?? 'uploaded', logoLowRes: lowRes, pack: packs.includes(p.slug),
     mockupId: mockups[p.slug], approvedAt: mockups[p.slug] ? new Date().toISOString() : undefined,
   })), [picked, color, place, qty, logo, packs, text, lowRes, mockups]); // eslint-disable-line react-hooks/exhaustive-deps
-  const total = lines.reduce((a, l) => a + lineTotal(l), 0);
-  const full = lines.reduce((a, l) => a + lineFull(l), 0);
+  // Même logo sur tous les vêtements : toutes les pièces comptent pour la remise marquage.
   const pieces = lines.reduce((a, l) => a + qtyOf(l), 0);
+  const total = lines.reduce((a, l) => a + lineTotal(l, pieces), 0);
+  const full = lines.reduce((a, l) => a + lineFull(l), 0);
 
   const onFile = async (f?: File) => {
     if (!f) return;
@@ -201,9 +202,9 @@ export function Assistant() {
   const choosePeople = (n: number) => { setPeople(n); setQty(Object.fromEntries(products.map((p) => [p.slug, spread(p, n)]))); };
   const bump = (slug: string, size: string, d: number) => setQty((q) => ({ ...q, [slug]: { ...(q[slug] || {}), [size]: Math.max(0, (q[slug]?.[size] || 0) + d) } }));
   const reach = (p: Product) => {
-    const q = qtyOf({ qty: qty[p.slug] || {} }), nt = nextTier(q); if (!nt) return;
+    const nt = nextTier(pieces); if (!nt) return;
     const sizes = sizesFor(p), k = sizes.includes('L') ? 'L' : sizes[0];
-    bump(p.slug, k, nt[0] - q);
+    bump(p.slug, k, nt[0] - pieces);
   };
   const addPack = (p: Product) => { setPicked((x) => [...x, p.slug]); setPacks((x) => [...x, p.slug]); setQty((q) => ({ ...q, [p.slug]: spread(p, people || 10) })); };
   const finish = () => {
@@ -288,7 +289,7 @@ export function Assistant() {
                 <button key={p.slug} className="asst-opt" aria-pressed={on} onClick={() => setPicked((x) => on ? x.filter((s) => s !== p.slug) : [...x, p.slug])}>
                   {on && <span className="tick">✓</span>}
                   <Garment slug={p.slug} color={defaultColor(p)} zones={zonesOf(p, place)} logo={logo?.preview} text={logo?.status === 'text' ? text : undefined} />
-                  <strong>{CATEGORIES.find((c) => c.slug === p.category)!.name}</strong><small>{p.name} · dès <Price ht={unitBase({ slug: p.slug, zones: zonesOf(p, place) }) * (1 - TIERS[TIERS.length - 1][1])} /></small>
+                  <strong>{CATEGORIES.find((c) => c.slug === p.category)!.name}</strong><small>{p.name} · dès <Price ht={unitAt({ slug: p.slug, zones: zonesOf(p, place) }, TIERS[TIERS.length - 1][0])} /></small>
                 </button>
               );
             })}
@@ -326,27 +327,27 @@ export function Assistant() {
           <p className="bubble">Combien de personnes à équiper ? Je répartis les tailles pour vous, vous ajustez si besoin.</p>
           <div className="asst-people">{[5, 10, 20, 30].map((n) => <button key={n} aria-pressed={people === n} onClick={() => choosePeople(n)}>{n}</button>)}</div>
           {lines.map((l) => {
-            const p = getProduct(l.slug)!, q = qtyOf(l), nt = nextTier(q), cur = tierFor(q);
+            const p = getProduct(l.slug)!, q = qtyOf(l), nt = nextTier(pieces), cur = tierFor(pieces), last = l === lines[lines.length - 1];
             return (
               <div className="asst-block" key={l.slug}>
                 <div className="asst-head"><div className="mini"><Garment slug={p.slug} color={l.color} zones={l.zones} logo={logo?.preview} text={logo?.status === 'text' ? text : undefined} /></div>
-                  <div><strong>{p.name}{l.pack ? ` · pack -${PACK_DISCOUNT * 100} %` : ''}</strong><small>{COLOR_NAMES[l.color]} · {q} pièce{q > 1 ? 's' : ''}{q ? <> · <Price ht={unitPrice(l)} />/pc</> : null}</small></div></div>
+                  <div><strong>{p.name}</strong><small>{COLOR_NAMES[l.color]} · {q} pièce{q > 1 ? 's' : ''}{q ? <> · <Price ht={unitAt(l, pieces)} />/pc</> : null}</small></div></div>
                 <div className="sizes">
                   {Object.keys(l.qty).map((s) => (
                     <div className="sz" key={s}><b>{s}</b><div className="ctr"><button onClick={() => bump(p.slug, s, -1)} aria-label={`Retirer ${p.name} ${s}`}>−</button><output>{l.qty[s] || 0}</output><button onClick={() => bump(p.slug, s, 1)} aria-label={`Ajouter ${p.name} ${s}`}>+</button></div></div>
                   ))}
                 </div>
-                {nt ? <div className="nudge"><span>+{nt[0] - q} et vous passez à <b>-{Math.round(nt[1] * 100)} %</b></span><button className="btn line small" onClick={() => reach(p)}>Ajouter</button></div>
-                  : cur[1] ? <div className="nudge ok">Meilleur prix atteint</div> : null}
+                {last && pieces > 0 && (nt ? <div className="nudge"><span>+{nt[0] - pieces} pièce{nt[0] - pieces > 1 ? 's' : ''} et le marquage passe à <b>-{Math.round(nt[1] * 100)} %</b>{lines.length > 1 ? ' sur tous vos vêtements' : ''}</span><button className="btn line small" onClick={() => reach(p)}>Ajouter</button></div>
+                  : cur[1] === MAX_DISCOUNT ? <div className="nudge ok">Meilleur prix de marquage atteint (-{Math.round(MAX_DISCOUNT * 100)} %)</div> : null)}
               </div>
             );
           })}
           {ups.length > 0 && people && (<>
-            <p className="bubble">Votre logo est déjà prêt : ajoutez des articles assortis en un tap, <b>-10 %</b>.</p>
+            <p className="bubble">Votre logo est déjà prêt : ajoutez des articles assortis en un tap. <b>Les pièces se cumulent</b> et le marquage baisse sur toute la commande.</p>
             {ups.map((p) => (
               <div className="up" key={p.slug}>
                 <div className="img"><Garment slug={p.slug} color={colorFor(p)} zones={zonesOf(p, place)} logo={logo?.preview} text={logo?.status === 'text' ? text : undefined} /></div>
-                <div><strong>{p.name}</strong><small>Même logo, {people} pièces · <Price ht={unitBase({ slug: p.slug, zones: zonesOf(p, place) }) * (1 - tierFor(people)[1]) * (1 - PACK_DISCOUNT)} />/pc</small></div>
+                <div><strong>{p.name}</strong><small>Même logo, {people} pièces · <Price ht={unitAt({ slug: p.slug, zones: zonesOf(p, place) }, pieces + people)} />/pc</small></div>
                 <button className="btn line small" onClick={() => addPack(p)}>Ajouter</button>
               </div>
             ))}
@@ -354,7 +355,7 @@ export function Assistant() {
           {pieces > 0 && saved !== 'ok' && saveBox}
           {pieces > 0 && (
             <div className="recap">
-              {lines.filter((l) => qtyOf(l)).map((l) => <div key={l.slug}><span>{qtyOf(l)} × {getProduct(l.slug)!.name}</span><span><Price ht={lineTotal(l)} /></span></div>)}
+              {lines.filter((l) => qtyOf(l)).map((l) => <div key={l.slug}><span>{qtyOf(l)} × {getProduct(l.slug)!.name}</span><span><Price ht={lineTotal(l, pieces)} /></span></div>)}
               {full - total > 1 && <div className="save"><span>Vous économisez</span><span><Price ht={full - total} /></span></div>}
               <div className="tot"><span>Total</span><span><Price ht={total} /></span></div>
               {people ? <div className="muted"><span>Soit par personne équipée</span><span><Price ht={total / people} /></span></div> : null}

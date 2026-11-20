@@ -1,8 +1,8 @@
 'use client';
 import Link from 'next/link';
 import { useState } from 'react';
-import { CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PACK_DISCOUNT, PROMO_CODES, ZONES, defaultColor, getProduct, sizesFor, tierFor } from '@/lib/catalog';
-import { cartTotals, eur, lineTotal, qtyOf, unitBase, unitPrice, type LineConfig } from '@/lib/pricing';
+import { CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor } from '@/lib/catalog';
+import { cartTotals, eur, lineTotal, logoKey, pools, qtyOf, unitAt, unitPrice, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
 import { Price } from './Price';
@@ -25,6 +25,8 @@ export function CartView() {
   );
 
   const t = cartTotals(lines, promo);
+  const pool = pools(lines);
+  const firstPool = lines.reduce((a, l) => a + (logoKey(l) === logoKey(lines[0]) ? qtyOf(l) : 0), 0);
   const first = lines[0];
   const firstProd = getProduct(first.slug)!;
   const ups = (COMPLETE_THE_LOOK[firstProd.category] || []).filter((s) => !lines.some((l) => l.slug === s));
@@ -33,7 +35,7 @@ export function CartView() {
     const sizes = sizesFor(p), q = qtyOf(first);
     let qty: Record<string, number> = sizes.length === 1 ? { [sizes[0]]: q } : Object.fromEntries(sizes.map((s) => [s, first.qty[s] || 0]));
     if (!Object.values(qty).some(Boolean)) qty = { [sizes[0]]: q };
-    add({ slug, color: p.colors.includes(first.color) ? first.color : defaultColor(p), zones: [p.shape === 'cap' ? 'chest' : 'heart'], qty, logo: first.logo, logoName: first.logoName, logoId: first.logoId, logoStatus: first.logoStatus, text: first.text, pack: true });
+    add({ slug, color: p.colors.includes(first.color) ? first.color : defaultColor(p), zones: ['heart'], qty, logo: first.logo, logoName: first.logoName, logoId: first.logoId, logoStatus: first.logoStatus, text: first.text, pack: true });
   };
   const applyCode = () => {
     const c = code.trim().toUpperCase();
@@ -56,7 +58,7 @@ export function CartView() {
       <h1>Votre panier</h1>
       <div className="cart">
         <div>
-          {lines.map((l, i) => <CartLine key={i} l={l} i={i} onRemove={() => remove(i)} />)}
+          {lines.map((l, i) => <CartLine key={i} l={l} i={i} pool={pool[i]} onRemove={() => remove(i)} />)}
           <div className="addmore">
             <span>Ajouter un autre vêtement avec le même logo :</span>
             <div className="chips">
@@ -68,15 +70,15 @@ export function CartView() {
           </div>
           {ups.length > 0 && (
             <>
-              <div className="sec-head mt"><h2>Complétez la tenue</h2><span className="muted">Même logo, même quantité, -10 %</span></div>
+              <div className="sec-head mt"><h2>Complétez la tenue</h2><span className="muted">Même logo : les pièces se cumulent, le marquage baisse</span></div>
               <div className="ups">
                 {ups.map((s) => {
                   const p = getProduct(s)!, q = qtyOf(first), color = p.colors.includes(first.color) ? first.color : defaultColor(p);
-                  const u = unitBase({ slug: s, zones: [p.shape === 'cap' ? 'chest' : 'heart'] }) * (1 - tierFor(q)[1]);
+                  const u = unitAt({ slug: s, zones: ['heart'] }, firstPool + q);
                   return (
                     <div className="up" key={s}>
-                      <div className="img"><Garment slug={s} color={color} zones={[p.shape === 'cap' ? 'chest' : 'heart']} logo={first.logo} /></div>
-                      <div><strong>{p.name}</strong><small>{q} pièces avec votre logo · <s><Price ht={u} suffix={false} /></s> <Price ht={u * (1 - PACK_DISCOUNT)} />/pc</small></div>
+                      <div className="img"><Garment slug={s} color={color} zones={['heart']} logo={first.logo} /></div>
+                      <div><strong>{p.name}</strong><small>{q} pièces avec votre logo · <Price ht={u} />/pc</small></div>
                       <button className="btn line small" onClick={() => addUp(s)}>Ajouter</button>
                     </div>
                   );
@@ -114,7 +116,7 @@ export function CartView() {
   );
 }
 
-function CartLine({ l, i, onRemove }: { l: LineConfig; i: number; onRemove: () => void }) {
+function CartLine({ l, i, pool, onRemove }: { l: LineConfig; i: number; pool: number; onRemove: () => void }) {
   const p = getProduct(l.slug);
   if (!p) return null;
   const q = qtyOf(l);
@@ -125,12 +127,12 @@ function CartLine({ l, i, onRemove }: { l: LineConfig; i: number; onRemove: () =
       <div className="img"><Garment slug={l.slug} color={l.color} zones={l.zones} logo={l.logo} /></div>
       <div>
         <Link href={`/produits/${p.slug}`}><strong>{p.name}</strong></Link>
-        <small>{COLOR_NAMES[l.color]} · {l.zones.map((z) => ZONES.find((x) => x.id === z)?.name).join(' + ')}{l.pack ? ' · pack -10 %' : ''}</small>
+        <small>{COLOR_NAMES[l.color]} · {zonesFor(p).filter((z) => l.zones.includes(z.id)).map((z) => z.name).join(' + ')}{pool > q ? ` · ${pool} pièces au même logo` : ''}</small>
         <small>{Object.entries(l.qty).filter(([, v]) => v).map(([s, v]) => `${s} ×${v}`).join(', ')}</small>
         <small>{logo} · {bat}</small>
         <div className="acts"><Link className="link" href={`/produits/${p.slug}?modifier=${i}`}>Modifier</Link><button className="link mutedl" onClick={onRemove}>Supprimer</button></div>
       </div>
-      <div className="pr"><Price ht={lineTotal(l)} /><small>{q} pcs · <Price ht={unitPrice(l)} suffix={false} />/pc</small></div>
+      <div className="pr"><Price ht={lineTotal(l, pool)} /><small>{q} pcs · <Price ht={unitPrice(l, pool)} suffix={false} />/pc</small></div>
     </div>
   );
 }

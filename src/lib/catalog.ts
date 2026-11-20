@@ -29,7 +29,8 @@ export type Product = {
   name: string;
   type: string;
   sizes: string; // "S–5XL" ou "TU"
-  price: number; // prix HT de base, hors marquage
+  cost: number; // prix d'achat HT fournisseur (Roly), provisoire tant que les tarifs ne sont pas reçus
+  price: number; // prix de vente HT du vêtement nu = sellPrice(cost), hors marquage
   shape: Shape;
   colors: string[];
   composition: string;
@@ -44,7 +45,7 @@ export const COLOR_NAMES: Record<string, string> = {
 const ALL = ['#ffffff', '#f2d33b', '#e8892b', '#c8302f', '#8b1e2d', '#d43f8d', '#3a5bd0', '#1d2a5c', '#2fb3d6', '#2f8a4d', '#9aa0a6', '#151a2d'];
 
 export const GENERAL_FAQ: [string, string][] = [
-  ['Y a-t-il un minimum de commande ?', 'Non, vous pouvez commander dès 1 pièce. Le prix unitaire baisse automatiquement à partir de 10, 25, 50, 100 et 250 pièces.'],
+  ['Y a-t-il un minimum de commande ?', 'Non, vous pouvez commander dès 1 pièce. Le marquage baisse automatiquement : -15 % dès 5 pièces, -20 % dès 10 et -40 % dès 30. Les pièces qui portent le même logo se cumulent, même sur des vêtements différents.'],
   ['Quand vais-je recevoir ma commande ?', '7 jours ouvrés après votre commande, 4 jours en express. La date estimée s\'affiche dans le panier.'],
   ['Quel fichier de logo envoyer ?', 'Un PNG à fond transparent ou un SVG, le plus grand possible (au moins 800 pixels de large). Le site vous prévient si votre logo est en petite définition. Pas de logo ? Vous pouvez imprimer un simple texte.'],
   ['Puis-je retourner un vêtement personnalisé ?', 'Les articles marqués à votre logo sont fabriqués sur mesure et ne bénéficient pas du droit de rétractation (article L221-28 3° du Code de la consommation). Un défaut d\'impression ou une erreur de notre part est refait à nos frais.'],
@@ -84,8 +85,12 @@ export const SECTORS: Sector[] = [
     intro: 'T-shirts, casquettes et polos personnalisés pour salons, clubs, associations et fêtes.', categories: ['t-shirts-personnalises', 'casquettes-personnalisees', 'polos-personnalises'] },
 ];
 
-const p = (slug: string, category: string, name: string, type: string, sizes: string, price: number, shape: Shape, colors: string[], composition: string, bestseller = false): Product =>
-  ({ slug, category, name, type, sizes, price, shape, colors, composition, bestseller });
+/** Prix de vente HT du vêtement : prix d'achat × 2,5, ou × 2 au-delà de 12 € d'achat. */
+export const COEF = 2.5, COEF_HIGH = 2, COEF_THRESHOLD = 12;
+export const sellPrice = (cost: number) => Math.round(cost * (cost > COEF_THRESHOLD ? COEF_HIGH : COEF) * 100) / 100;
+
+const p = (slug: string, category: string, name: string, type: string, sizes: string, cost: number, shape: Shape, colors: string[], composition: string, bestseller = false): Product =>
+  ({ slug, category, name, type, sizes, cost, price: sellPrice(cost), shape, colors, composition, bestseller });
 
 export const PRODUCTS: Product[] = [
   p('polo-pegaso', 'polos-personnalises', 'Polo Pegaso', 'Polo piqué premium', 'S–5XL', 9.9, 'polo', ALL, '65 % polyester, 35 % coton · 210 g/m²', true),
@@ -107,18 +112,17 @@ export const PRODUCTS: Product[] = [
   p('parka-hv-epsilon', 'haute-visibilite-personnalisee', 'Parka HV Epsilon', 'Imperméable, capuche, classe 3', 'S–4XL', 42.9, 'hvjacket', ['#d7f22c', '#ff7a1a'], 'Polyester enduit PU'),
 ];
 
-export type Zone = { id: string; name: string; view: 'front' | 'back'; x: number; y: number; w: number; price: number };
+/** Zones de marquage DTF. size = gabarit maximal en cm (le logo y est inscrit). */
+export type Zone = { id: string; name: string; view: 'front' | 'back'; x: number; y: number; w: number; size: string; price: number };
 export const ZONES: Zone[] = [
-  { id: 'heart', name: 'Cœur', view: 'front', x: 62, y: 36, w: 16, price: 2.5 },
-  { id: 'chest', name: 'Poitrine', view: 'front', x: 50, y: 44, w: 34, price: 3.9 },
-  { id: 'back', name: 'Grand dos', view: 'back', x: 50, y: 44, w: 46, price: 4.9 },
-  { id: 'neck', name: 'Nuque', view: 'back', x: 50, y: 22, w: 16, price: 1.9 },
+  { id: 'heart', name: 'Cœur', view: 'front', x: 62, y: 36, w: 16, size: '10 × 10 cm', price: 4 },
+  { id: 'chest', name: 'Grand devant', view: 'front', x: 50, y: 46, w: 40, size: '26 × 26 cm', price: 6 },
+  { id: 'back', name: 'Dos', view: 'back', x: 50, y: 44, w: 46, size: '26 × 26 cm', price: 6 },
 ];
 
-/** [quantité minimale, remise] */
-export const TIERS: [number, number][] = [[1, 0], [10, 0.1], [25, 0.18], [50, 0.25], [100, 0.32], [250, 0.38]];
-export const MAX_DISCOUNT = 0.38;
-export const PACK_DISCOUNT = 0.1;
+/** Remise sur le marquage uniquement : [pièces minimum, remise]. Le vêtement n'a pas de remise. */
+export const TIERS: [number, number][] = [[1, 0], [5, 0.15], [10, 0.2], [30, 0.4]];
+export const MAX_DISCOUNT = TIERS[TIERS.length - 1][1];
 export const FREE_SHIPPING_HT = 150;
 export const SHIPPING_HT = 9.9;
 export const VAT = 0.2;
@@ -166,7 +170,7 @@ export const productsIn = (cat: string) => PRODUCTS.filter((x) => x.category ===
 export const defaultColor = (prod: Product) => (prod.colors.includes('#1d2a5c') ? '#1d2a5c' : prod.colors[0]);
 
 export function zonesFor(prod: Product): Zone[] {
-  if (prod.shape === 'cap') return [{ ...ZONES[1], name: 'Face', y: 45, w: 30 }];
+  if (prod.shape === 'cap') return [{ ...ZONES[0], name: 'Face', x: 50, y: 45, w: 30 }];
   if (prod.shape === 'apron') return ZONES.filter((z) => z.view === 'front');
   return ZONES;
 }
@@ -181,7 +185,10 @@ export function tierFor(q: number): [number, number] {
   return t;
 }
 export const nextTier = (q: number) => TIERS.find((x) => x[0] > q);
-export const fromPrice = (prod: Product) => (prod.price + zonesFor(prod)[0].price) * (1 - MAX_DISCOUNT);
+/** Prix le plus bas affiché (« dès ») : vêtement + marquage cœur au meilleur palier. */
+export const fromPrice = (prod: Product) => prod.price + zonesFor(prod)[0].price * (1 - MAX_DISCOUNT);
+/** Prix le plus haut : vêtement + toutes les zones, sans remise. */
+export const topPrice = (prod: Product) => prod.price + zonesFor(prod).reduce((a, z) => a + z.price, 0);
 
 /** Upsell « Complétez la tenue » selon la catégorie du premier article. */
 export const COMPLETE_THE_LOOK: Record<string, string[]> = {

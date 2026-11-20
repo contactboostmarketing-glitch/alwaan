@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { CATEGORIES, COLOR_NAMES, GENERAL_FAQ, PRODUCTS, SECTORS, fromPrice, getCategory, getProduct } from '@/lib/catalog';
+import { CATEGORIES, COLOR_NAMES, GENERAL_FAQ, PRODUCTS, SECTORS, fromPrice, getCategory, getProduct, topPrice } from '@/lib/catalog';
 import { Configurator } from '@/components/Configurator';
 import { Breadcrumbs, Faq, JsonLd, ProductCard } from '@/components/ui';
 import { SITE_URL } from '@/lib/site';
@@ -56,7 +56,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <JsonLd data={{
         '@context': 'https://schema.org', '@type': 'Product', name: p.name, description: `${p.type}. ${p.composition}.`,
         brand: { '@type': 'Brand', name: 'alwaan' }, category: c.name, color: p.colors.map((x) => COLOR_NAMES[x]).join(', '), material: p.composition,
-        offers: { '@type': 'AggregateOffer', priceCurrency: 'EUR', lowPrice: (fromPrice(p) * 1.2).toFixed(2), highPrice: ((p.price + 13.2) * 1.2).toFixed(2), availability: 'https://schema.org/InStock', url: `${SITE_URL}/produits/${p.slug}` },
+        offers: { '@type': 'AggregateOffer', priceCurrency: 'EUR', lowPrice: (fromPrice(p) * 1.2).toFixed(2), highPrice: (topPrice(p) * 1.2).toFixed(2), availability: 'https://schema.org/InStock', url: `${SITE_URL}/produits/${p.slug}` },
       }} />
     </>
   );

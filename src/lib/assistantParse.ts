@@ -28,7 +28,7 @@ const Schema = z.object({
 // Stable d'une requête à l'autre : mis en cache côté Anthropic.
 const SYSTEM = `Tu remplis le formulaire de commande d'une boutique de vêtements professionnels personnalisés (impression DTF).
 À partir de la demande du client, choisis uniquement parmi le catalogue ci-dessous. Si un type de vêtement est demandé sans modèle précis, prends le modèle marqué "best-seller" de cette catégorie. Ne devine rien qui n'est pas dans la demande : utilise "aucune", "aucun" ou 0.
-Emplacements : heart = cœur, chest = poitrine / devant en grand, back = dos, heart-back = cœur et dos.
+Emplacements : heart = cœur, chest = grand devant (poitrine en grand, 26 × 26 cm), back = dos, heart-back = cœur et dos.
 
 Catalogue (slug · nom · catégorie · couleurs) :
 ${PRODUCTS.map((p) => `${p.slug} · ${p.name} · ${CATEGORIES.find((c) => c.slug === p.category)!.name}${p.bestseller ? ' · best-seller' : ''} · ${p.colors.map((c) => COLOR_NAMES[c]).join(', ')}`).join('\n')}`;

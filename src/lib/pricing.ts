@@ -1,7 +1,7 @@
 // Calcul des prix. Le même code tourne dans le navigateur (affichage) et sur le serveur (paiement),
 // le serveur ne fait jamais confiance aux montants envoyés par le client.
 import {
-  FREE_SHIPPING_HT, PACK_DISCOUNT, PROMO_CODES, SHIPPING_HT, VAT, getProduct, tierFor, zonesFor,
+  FREE_SHIPPING_HT, PROMO_CODES, SHIPPING_HT, VAT, getProduct, tierFor, zonesFor,
 } from './catalog';
 
 /** uploaded = logo fourni ; text = pas de logo, seulement un texte imprimé. */
@@ -20,26 +20,48 @@ export type LineConfig = {
   logoLowRes?: boolean; // logo de faible définition, accepté en connaissance de cause
   mockupId?: string; // maquette validée par le client (BAT), image stockée côté serveur
   approvedAt?: string;
-  pack?: boolean;
+  pack?: boolean; // ajouté depuis une suggestion « même logo » (information, sans remise propre)
 };
 
 export const qtyOf = (l: Pick<LineConfig, 'qty'>) => Object.values(l.qty).reduce((a, b) => a + (b > 0 ? Math.floor(b) : 0), 0);
 
-export function unitBase(l: Pick<LineConfig, 'slug' | 'zones'>): number {
+function parts(l: Pick<LineConfig, 'slug' | 'zones'>) {
   const prod = getProduct(l.slug);
   if (!prod) throw new Error(`Produit inconnu : ${l.slug}`);
-  const valid = zonesFor(prod);
-  return prod.price + valid.filter((z) => l.zones.includes(z.id)).reduce((a, z) => a + z.price, 0);
+  const marking = zonesFor(prod).filter((z) => l.zones.includes(z.id)).reduce((a, z) => a + z.price, 0);
+  return { garment: prod.price, marking };
 }
 
-export function unitPrice(l: LineConfig): number {
-  return round(unitBase(l) * (1 - tierFor(qtyOf(l))[1]) * (l.pack ? 1 - PACK_DISCOUNT : 1));
+/** Prix unitaire sans remise : vêtement + marquages. */
+export function unitBase(l: Pick<LineConfig, 'slug' | 'zones'>): number {
+  const { garment, marking } = parts(l);
+  return round(garment + marking);
 }
-export const lineTotal = (l: LineConfig) => round(unitPrice(l) * qtyOf(l));
+
+/** Prix unitaire pour `pool` pièces portant le même logo : la remise ne porte que sur le marquage. */
+export function unitAt(l: Pick<LineConfig, 'slug' | 'zones'>, pool: number): number {
+  const { garment, marking } = parts(l);
+  return round(garment + marking * (1 - tierFor(pool)[1]));
+}
+
+/** Clé du logo : les pièces au même logo (ou au même texte) cumulent leurs quantités pour la remise marquage. */
+export const logoKey = (l: Pick<LineConfig, 'logoId' | 'logoName' | 'text' | 'logoStatus' | 'slug'>) =>
+  l.logoId || (l.logoStatus === 'text' ? `t:${(l.text || '').trim().toLowerCase()}` : l.logoName ? `n:${l.logoName}` : `s:${l.slug}`);
+
+/** Nombre de pièces au même logo dans tout le panier, pour chaque ligne. */
+export function pools(lines: LineConfig[]): number[] {
+  const by = new Map<string, number>();
+  for (const l of lines) by.set(logoKey(l), (by.get(logoKey(l)) || 0) + qtyOf(l));
+  return lines.map((l) => by.get(logoKey(l)) || 0);
+}
+
+export const unitPrice = (l: LineConfig, pool = qtyOf(l)) => unitAt(l, pool);
+export const lineTotal = (l: LineConfig, pool = qtyOf(l)) => round(unitAt(l, pool) * qtyOf(l));
 export const lineFull = (l: LineConfig) => round(unitBase(l) * qtyOf(l));
 
 export function cartTotals(lines: LineConfig[], promo?: string | null) {
-  const goods = round(lines.reduce((a, l) => a + lineTotal(l), 0));
+  const pool = pools(lines);
+  const goods = round(lines.reduce((a, l, i) => a + lineTotal(l, pool[i]), 0));
   const rate = promo ? PROMO_CODES[promo.toUpperCase()] ?? 0 : 0;
   const discount = round(goods * rate);
   const net = goods - discount;
