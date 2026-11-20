@@ -63,7 +63,9 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL): Pr
       { key: 'Emplacements', value: zonesFor(getProduct(l.slug)!).filter((z) => l.zones.includes(z.id)).map((z) => `${z.name} (${z.size})`).join(' + ') },
       { key: 'Logo', value: l.logoStatus === 'text' ? 'Aucun : texte seul' : `Fourni${l.logoName ? ` (${l.logoName})` : ''}${l.logoLowRes ? ' · PETITE DÉFINITION acceptée par le client' : ''}` },
       ...(l.mockupId ? [{ key: 'Maquette validée (BAT)', value: `${origin}/api/logo/${l.mockupId}` }, { key: 'BAT validé le', value: new Date(l.approvedAt || Date.now()).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) }] : []),
-      ...(l.logoId ? [{ key: 'Fichier logo', value: `${origin}/api/logo/${l.logoId}` }] : []),
+      ...(l.logoId ? [{ key: 'Fichier logo à imprimer', value: `${origin}/api/logo/${l.logoId}` }] : []),
+      ...(l.logoCut && l.logoCut !== 'none' ? [{ key: 'Détourage', value: l.logoCut === 'all' ? 'Fond retiré, intérieur compris (validé sur la maquette)' : 'Fond retiré automatiquement (validé sur la maquette)' }] : []),
+      ...(l.logoSourceId && l.logoSourceId !== l.logoId ? [{ key: 'Fichier d\'origine du client', value: `${origin}/api/logo/${l.logoSourceId}` }] : []),
       ...(l.text ? [{ key: 'Texte', value: l.text }] : []),
     ];
     const variants = await vs(p.slug);

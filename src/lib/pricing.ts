@@ -15,7 +15,9 @@ export type LineConfig = {
   text?: string;
   logo?: string; // aperçu (data URL) côté navigateur ; le fichier d'origine est stocké côté serveur (logoId)
   logoName?: string;
-  logoId?: string; // fichier d'origine stocké côté serveur (/api/logo/<id>)
+  logoId?: string; // fichier à imprimer (détouré si demandé), stocké côté serveur (/api/logo/<id>)
+  logoSourceId?: string; // fichier d'origine envoyé par le client
+  logoCut?: 'edges' | 'all' | 'none'; // détourage choisi
   logoStatus: LogoStatus;
   logoLowRes?: boolean; // logo de faible définition, accepté en connaissance de cause
   mockupId?: string; // maquette validée par le client (BAT), image stockée côté serveur

@@ -22,7 +22,7 @@ function sanitize(raw: unknown): LineConfig[] | null {
     // Sans graphiste : chaque article doit avoir un logo reçu (ou un texte) et une maquette validée.
     const logoOk = l.logoStatus === 'text' ? !!String(l.text || '').trim() : !!(l.logoId && LOGO_ID.test(l.logoId));
     if (!logoOk || !(l.mockupId && LOGO_ID.test(l.mockupId))) return null;
-    out.push({ slug: p.slug, color: l.color, zones, qty, text: String(l.text || '').slice(0, 24), logoName: l.logoName, logoId: l.logoId && LOGO_ID.test(l.logoId) ? l.logoId : undefined, logoStatus: l.logoStatus === 'text' ? 'text' : 'uploaded', logoLowRes: !!l.logoLowRes, mockupId: l.mockupId, approvedAt: typeof l.approvedAt === 'string' ? l.approvedAt.slice(0, 40) : undefined, pack: !!l.pack });
+    out.push({ slug: p.slug, color: l.color, zones, qty, text: String(l.text || '').slice(0, 24), logoName: l.logoName, logoId: l.logoId && LOGO_ID.test(l.logoId) ? l.logoId : undefined, logoSourceId: l.logoSourceId && LOGO_ID.test(l.logoSourceId) ? l.logoSourceId : undefined, logoCut: (['edges', 'all', 'none'] as const).find((m) => m === l.logoCut), logoStatus: l.logoStatus === 'text' ? 'text' : 'uploaded', logoLowRes: !!l.logoLowRes, mockupId: l.mockupId, approvedAt: typeof l.approvedAt === 'string' ? l.approvedAt.slice(0, 40) : undefined, pack: !!l.pack });
   }
   return out;
 }

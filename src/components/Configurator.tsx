@@ -7,6 +7,7 @@ import { lineTotal, logoKey, qtyOf, unitAt, type LineConfig } from '@/lib/pricin
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
 import { Price } from './Price';
+import { CutoutChoice, useLogo } from './LogoCutout';
 import { snapshot, uploadMockup } from '@/lib/mockup';
 
 function initial(slug: string): LineConfig {
@@ -20,8 +21,8 @@ function initial(slug: string): LineConfig {
   };
 }
 
-/** Seuil sous lequel un logo risque d'être flou à l'impression (plus grand côté, en pixels). */
-export const LOW_RES = 800;
+export { LOW_RES } from './LogoCutout';
+import { LOW_RES } from './LogoCutout';
 /** Taille d'origine d'une image (pour alerter sur les logos trop petits). */
 export async function imageSize(file: File): Promise<{ w: number; h: number } | null> {
   try {
@@ -96,35 +97,24 @@ export function Configurator({ slug }: { slug: string }) {
     const keys = Object.keys(cfg.qty), k = keys[Math.min(2, keys.length - 1)];
     setQty(k, cfg.qty[k] + nt[0] - pool);
   };
-  const [uploading, setUploading] = useState(false);
-  /** Envoie le fichier d'origine au serveur (pour l'atelier) ; l'aperçu reste calculé dans le navigateur. */
-  const upload = async (f: File) => {
-    setUploading(true);
-    try {
-      const body = new FormData(); body.append('file', f);
-      const r = await fetch('/api/logo', { method: 'POST', body });
-      const d = await r.json();
-      if (!r.ok) { flash(d.error || 'Envoi du logo impossible'); return; }
-      setCfg((c) => ({ ...c, logoId: d.id }));
-    } catch { flash('Envoi du logo impossible. Vérifiez votre connexion.'); }
-    finally { setUploading(false); }
-  };
+  // Logo : détourage automatique, puis envoi du fichier final (celui de la maquette) à l'atelier.
+  const { logo: lg, pick, choose } = useLogo((l) => {
+    setApproved(false);
+    setCfg((c) => ({ ...c, logo: l.preview, logoName: l.name, logoId: l.id, logoSourceId: l.sourceId, logoCut: l.mode, logoStatus: 'uploaded', logoLowRes: l.lowRes }));
+    if (l.error) flash(l.error);
+  });
+  const uploading = !!lg?.busy;
   const onFile = async (f?: File) => {
     if (!f) return;
     setApproved(false);
-    // Sans graphiste, le logo doit s'afficher sur la maquette : on n'accepte que des images.
-    if (!f.type.startsWith('image/')) { flash('Envoyez votre logo en PNG, JPG ou SVG pour le voir sur la maquette.'); return; }
     set({ logoId: undefined, logoLowRes: false });
-    upload(f);
-    const size = await imageSize(f);
-    const low = !!size && Math.max(size.w, size.h) < LOW_RES && !/svg/.test(f.type);
-    try { set({ logo: await preview(f), logoName: f.name, logoStatus: 'uploaded', logoLowRes: low }); } catch { flash('Ce fichier ne s\'ouvre pas. Essayez un PNG ou un JPG.'); }
-    if (low) flash('Logo en petite définition : l\'impression risque d\'être floue. Envoyez une version plus grande si vous l\'avez.');
+    await pick(f);
   };
   const submit = async () => {
     if (!q) { flash('Indiquez au moins une pièce'); return; }
     if (!cfg.zones.length) { flash('Choisissez au moins un emplacement'); return; }
     if (uploading) { flash('Envoi du logo en cours, un instant…'); return; }
+    if (cfg.logoStatus === 'uploaded' && lg?.hasBg && !lg.decided) { flash('Votre logo a un fond : choisissez avec ou sans fond.'); return; }
     if (cfg.logoStatus === 'uploaded' && !cfg.logoId) { flash('Ajoutez votre logo, ou choisissez « Texte seul ».'); return; }
     if (cfg.logoStatus === 'text' && !cfg.text?.trim()) { flash('Écrivez le texte à imprimer.'); return; }
     if (!approved) { flash('Cochez la validation de votre maquette.'); return; }
@@ -180,10 +170,11 @@ export function Configurator({ slug }: { slug: string }) {
           <div className="lbl">Votre logo</div>
           <label className={`drop ${cfg.logoId || cfg.logoStatus === 'text' ? 'has' : ''}`} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); onFile(e.dataTransfer.files[0]); }}>
             <strong>{logoLabel}</strong>
-            <small>{uploading ? 'Envoi du fichier en cours…' : cfg.logoStatus === 'uploaded' ? (cfg.logoId ? 'Fichier reçu · touchez pour le remplacer' : 'Touchez pour le remplacer') : 'PNG, JPG ou SVG · le plus grand possible, fond transparent idéalement'}</small>
+            <small>{uploading ? 'Préparation du logo…' : cfg.logoStatus === 'uploaded' ? (cfg.logoId ? 'Fichier reçu · touchez pour le remplacer' : 'Touchez pour le remplacer') : 'PNG, JPG ou SVG · le plus grand possible, fond transparent idéalement'}</small>
             <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onChange={(e) => onFile(e.target.files?.[0])} />
           </label>
           <div className="opts">
+            <CutoutChoice logo={cfg.logoStatus === 'uploaded' ? lg : null} choose={choose} />
             <button className="link" onClick={() => { setApproved(false); set({ logo: undefined, logoName: undefined, logoId: undefined, logoLowRes: false, logoStatus: 'text' }); }}>Je n&apos;ai pas de logo : imprimer seulement un texte</button>
             {cfg.logoLowRes && <p className="warnline">Logo en petite définition : l&apos;impression risque d&apos;être floue. Mieux vaut une image d&apos;au moins {LOW_RES} pixels.</p>}
           </div>
@@ -191,13 +182,18 @@ export function Configurator({ slug }: { slug: string }) {
         </div>
 
         <div className="blk">
-          <div className="lbl">Emplacements <span>marquage par pièce</span></div>
-          <div className="chips">
-            {zones.map((z) => (
-              <button key={z.id} className="zone" aria-pressed={cfg.zones.includes(z.id)} onClick={() => toggleZone(z.id)}>
-                {z.name}<small>{z.size} · +<Price ht={z.price} suffix={false} />{z.fixed ? ' fixe' : ''}</small>
-              </button>
-            ))}
+          <div className="lbl">Emplacements</div>
+          <div className="zones">
+            {zones.map((z) => {
+              const on = cfg.zones.includes(z.id);
+              return (
+                <button key={z.id} className="ztile" aria-pressed={on} aria-label={`${z.name}, ${z.size}`} title={`${z.name} · ${z.size}`} onClick={() => toggleZone(z.id)}>
+                  {on && <span className="tick">✓</span>}
+                  <Garment slug={slug} color={cfg.color} view={z.view} zones={[z.id]} logo={cfg.logo} text={cfg.logoStatus === 'text' ? cfg.text : undefined} />
+                  <b>{z.name}</b><small>+<Price ht={z.price} suffix={false} /></small>
+                </button>
+              );
+            })}
           </div>
           {hasBack && !cfg.zones.includes('back') && (
             <div className="nudge"><span>Un logo au dos rend votre équipe visible de loin.</span><button className="btn line small" onClick={() => toggleZone('back')}>Ajouter au dos</button></div>

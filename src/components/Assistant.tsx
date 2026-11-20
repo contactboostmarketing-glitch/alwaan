@@ -7,11 +7,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { CATEGORIES, COLOR_NAMES, MAX_DISCOUNT, PRODUCTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor, type Product } from '@/lib/catalog';
 import { lineFull, lineTotal, qtyOf, unitAt, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
-import { preview } from './Configurator';
 import { Garment, isDark } from './Garment';
 import { Price } from './Price';
 import { snapshot, toDataUrl, uploadMockup } from '@/lib/mockup';
-import { LOW_RES, imageSize } from './Configurator';
+import { CutoutChoice, useLogo } from './LogoCutout';
 
 type Place = 'heart' | 'chest' | 'back' | 'heart-back';
 const PLACES: { id: Place; name: string; sub: string; zones: string[]; reco?: boolean }[] = [
@@ -68,8 +67,15 @@ export function Assistant() {
   const router = useRouter();
   const [step, setStep] = useState<Step>('logo');
   const [hist, setHist] = useState<Step[]>([]);
-  const [logo, setLogo] = useState<{ preview?: string; id?: string; name?: string; status: LineConfig['logoStatus'] } | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [logo, setLogo] = useState<{ preview?: string; id?: string; sourceId?: string; cut?: LineConfig['logoCut']; name?: string; status: LineConfig['logoStatus'] } | null>(null);
+  // Logo détouré automatiquement ; le fichier envoyé à l'atelier est celui de la maquette.
+  const { logo: lg, pick, choose } = useLogo((l) => {
+    setLogo({ name: l.name, status: 'uploaded', preview: l.preview, id: l.id, sourceId: l.sourceId, cut: l.mode });
+    setLowRes(l.lowRes);
+    if (l.error) setMsg(l.error);
+    if (l.preview && !l.busy) inkOf(l.preview).then(setInk);
+  });
+  const uploading = !!lg?.busy;
   const [ink, setInk] = useState<string | null>(null);
   const [place, setPlace] = useState<Place | null>(null);
   const [picked, setPicked] = useState<string[]>([]);
@@ -138,7 +144,7 @@ export function Assistant() {
 
   const lines: LineConfig[] = useMemo(() => products.map((p) => ({
     slug: p.slug, color: colorFor(p), zones: zonesOf(p, place), qty: qty[p.slug] || spread(p, 0), text: logo?.status === 'text' ? text : '',
-    logo: logo?.preview, logoId: logo?.id, logoName: logo?.name, logoStatus: logo?.status ?? 'uploaded', logoLowRes: lowRes, pack: packs.includes(p.slug),
+    logo: logo?.preview, logoId: logo?.id, logoSourceId: logo?.sourceId, logoCut: logo?.cut, logoName: logo?.name, logoStatus: logo?.status ?? 'uploaded', logoLowRes: lowRes, pack: packs.includes(p.slug),
     mockupId: mockups[p.slug], approvedAt: mockups[p.slug] ? new Date().toISOString() : undefined,
   })), [picked, color, place, qty, logo, packs, text, lowRes, mockups]); // eslint-disable-line react-hooks/exhaustive-deps
   // Même logo sur tous les vêtements : toutes les pièces comptent pour la remise marquage.
@@ -148,20 +154,12 @@ export function Assistant() {
 
   const onFile = async (f?: File) => {
     if (!f) return;
-    if (!f.type.startsWith('image/')) { setMsg('Envoyez votre logo en PNG, JPG ou SVG pour le voir sur la maquette.'); return; }
-    setLogo({ name: f.name, status: 'uploaded' }); setMockups({});
-    const size = await imageSize(f);
-    setLowRes(!!size && Math.max(size.w, size.h) < LOW_RES && !/svg/.test(f.type));
-    try { const src = await preview(f); setLogo((l) => ({ ...(l ?? { status: 'uploaded' }), preview: src })); setInk(await inkOf(src)); } catch {}
-    setUploading(true);
-    try {
-      const body = new FormData(); body.append('file', f);
-      const r = await fetch('/api/logo', { method: 'POST', body }); const d = await r.json();
-      if (r.ok) setLogo((l) => ({ ...(l ?? { status: 'uploaded' }), id: d.id })); else setMsg(d.error || 'Envoi du logo impossible.');
-    } catch { setMsg('Envoi du logo impossible. Vérifiez votre connexion.'); }
-    setUploading(false);
-    go(place && picked.length && color ? 'mockup' : place && picked.length ? 'color' : place ? 'garments' : 'place');
+    setMockups({}); setMsg('');
+    const l = await pick(f);
+    // Fond détecté : on reste sur cette étape pour montrer le détourage ; sinon on avance.
+    if (l && !l.error && !l.hasBg) advance();
   };
+  const advance = () => go(place && picked.length && color ? 'mockup' : place && picked.length ? 'color' : place ? 'garments' : 'place');
   const fillFrom = async () => {
     if (!phrase.trim()) return;
     setThinking(true); setMsg('');
@@ -250,6 +248,11 @@ export function Assistant() {
           {thought && <p className="bubble">C&apos;est noté ! Il me manque juste votre logo (ou un texte) pour vous montrer la maquette.</p>}
           <label className="asst-drop"><span className="ic">+</span><strong>{logo?.status === 'uploaded' ? 'Logo reçu' : 'Envoyer mon logo'}</strong><span className="muted">PNG, JPG ou SVG, le plus grand possible</span>
             <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onChange={(e) => onFile(e.target.files?.[0])} /></label>
+          {logo?.status === 'uploaded' && lg?.hasBg && (<>
+            <CutoutChoice logo={lg} choose={choose} />
+            {lg.decided && <button className="btn cta" disabled={uploading || !logo.id} onClick={advance}>{uploading ? 'Préparation du logo…' : 'Continuer'}</button>}
+          </>)}
+          {logo?.status === 'uploaded' && lowRes && <p className="warnline">Logo en petite définition : l&apos;impression risque d&apos;être floue. Envoyez une version plus grande si vous l&apos;avez.</p>}
           <div className="opts">
             <button className="link" onClick={() => setLogo({ status: 'text' })}>Je n&apos;ai pas de logo : imprimer seulement un texte</button>
             {logo?.status === 'text' && (

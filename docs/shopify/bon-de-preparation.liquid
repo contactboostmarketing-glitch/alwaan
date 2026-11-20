@@ -2,7 +2,7 @@
   Bon de préparation atelier alwaan, pour l'application Shopify « Order Printer » (gratuite).
   Installation : Order Printer → Modèles → Créer un modèle → coller ce fichier.
   Regroupe chaque article personnalisé (vêtement + tailles + marquages + logo) d'après
-  les propriétés envoyées par le site : Groupe, Emplacements, Logo, Fichier logo, Maquette validée (BAT), Texte, Tailles.
+  les propriétés envoyées par le site : Groupe, Emplacements, Logo, Fichier logo à imprimer, Détourage, Fichier d'origine du client, Maquette validée (BAT), Texte, Tailles.
 {%- endcomment -%}
 <style>
   * { box-sizing: border-box; }
@@ -56,7 +56,7 @@
     {%- assign ig = item.properties["Groupe"] | default: item.title -%}
     {%- if ig == g and item.product.type != "Marquage" -%}
       {%- assign garment = item -%}
-      {%- assign file = item.properties["Fichier logo"] -%}{%- assign bat = item.properties["Maquette validée (BAT)"] -%}{%- assign batdate = item.properties["BAT validé le"] -%}{%- assign zones = item.properties["Emplacements"] -%}
+      {%- assign file = item.properties["Fichier logo à imprimer"] | default: item.properties["Fichier logo"] -%}{%- assign bat = item.properties["Maquette validée (BAT)"] -%}{%- assign batdate = item.properties["BAT validé le"] -%}{%- assign zones = item.properties["Emplacements"] -%}
       {%- assign logo = item.properties["Logo"] -%}{%- assign text = item.properties["Texte"] -%}{%- assign later = item.properties["Tailles"] -%}
     {%- endif -%}
   {%- endfor -%}
