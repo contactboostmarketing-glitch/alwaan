@@ -7,7 +7,7 @@ import { lineTotal, logoKey, qtyOf, unitAt, type LineConfig } from '@/lib/pricin
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
 import { Price } from './Price';
-import { CutoutChoice, useLogo } from './LogoCutout';
+import { CutoutChoice, ReworkOption, useLogo } from './LogoCutout';
 import { snapshot, uploadMockup } from '@/lib/mockup';
 
 function initial(slug: string): LineConfig {
@@ -22,7 +22,6 @@ function initial(slug: string): LineConfig {
 }
 
 export { LOW_RES } from './LogoCutout';
-import { LOW_RES } from './LogoCutout';
 /** Taille d'origine d'une image (pour alerter sur les logos trop petits). */
 export async function imageSize(file: File): Promise<{ w: number; h: number } | null> {
   try {
@@ -71,7 +70,7 @@ export function Configurator({ slug }: { slug: string }) {
     if (!sameLogo || editIndex !== null || !last) return;
     const valid = zones.map((z) => z.id);
     const z = last.zones.filter((x) => valid.includes(x));
-    setCfg((c) => ({ ...c, logo: last.logo, logoName: last.logoName, logoId: last.logoId, logoStatus: last.logoStatus, text: last.text,
+    setCfg((c) => ({ ...c, logo: last.logo, logoName: last.logoName, logoId: last.logoId, logoSourceId: last.logoSourceId, logoCut: last.logoCut, logoRework: last.logoRework, logoStatus: last.logoStatus, text: last.text,
       zones: z.length ? z : c.zones, color: p.colors.includes(last.color) ? last.color : c.color }));
   }, [sameLogo, lines.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -114,7 +113,7 @@ export function Configurator({ slug }: { slug: string }) {
     if (!q) { flash('Indiquez au moins une pièce'); return; }
     if (!cfg.zones.length) { flash('Choisissez au moins un emplacement'); return; }
     if (uploading) { flash('Envoi du logo en cours, un instant…'); return; }
-    if (cfg.logoStatus === 'uploaded' && lg?.hasBg && !lg.decided) { flash('Votre logo a un fond : choisissez avec ou sans fond.'); return; }
+    if (cfg.logoStatus === 'uploaded' && lg?.hasBg && !lg.decided && !cfg.logoRework) { flash('Votre logo a un fond : choisissez avec ou sans fond.'); return; }
     if (cfg.logoStatus === 'uploaded' && !cfg.logoId) { flash('Ajoutez votre logo, ou choisissez « Texte seul ».'); return; }
     if (cfg.logoStatus === 'text' && !cfg.text?.trim()) { flash('Écrivez le texte à imprimer.'); return; }
     if (!approved) { flash('Cochez la validation de votre maquette.'); return; }
@@ -175,8 +174,9 @@ export function Configurator({ slug }: { slug: string }) {
           </label>
           <div className="opts">
             <CutoutChoice logo={cfg.logoStatus === 'uploaded' ? lg : null} choose={choose} />
+            <ReworkOption logo={cfg.logoStatus === 'uploaded' ? lg : null} on={!!cfg.logoRework} set={(v) => set({ logoRework: v })} />
             <button className="link" onClick={() => { setApproved(false); set({ logo: undefined, logoName: undefined, logoId: undefined, logoLowRes: false, logoStatus: 'text' }); }}>Je n&apos;ai pas de logo : imprimer seulement un texte</button>
-            {cfg.logoLowRes && <p className="warnline">Logo en petite définition : l&apos;impression risque d&apos;être floue. Mieux vaut une image d&apos;au moins {LOW_RES} pixels.</p>}
+            {cfg.logoLowRes && <p className="warnline">Logo peu net : envoyez une version plus grande, ou confiez-le au graphiste.</p>}
           </div>
           <input type="text" value={cfg.text} maxLength={24} placeholder={cfg.logoStatus === 'text' ? 'Texte à imprimer (nom, slogan…)' : 'Texte facultatif sous le logo'} aria-label="Texte sous le logo" onChange={(e) => set({ text: e.target.value })} />
         </div>

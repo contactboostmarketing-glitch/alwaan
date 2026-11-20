@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PRODUCTS, ZONES, zonesFor, type Zone } from '@/lib/catalog';
-import { markHandle } from '@/lib/shopify';
+import { PRODUCTS, REWORK_FEE, ZONES, zonesFor, type Zone } from '@/lib/catalog';
+import { REWORK_HANDLE, markHandle } from '@/lib/shopify';
 import { admin, adminEnabled } from '@/lib/shopifyAdmin';
 
 /**
@@ -37,9 +37,13 @@ async function productByHandle(handle: string) {
   return d.productByIdentifier;
 }
 
-async function upsertMarking(handle: string, z: Zone, pubs: string[], dry: boolean) {
-  const price = z.price.toFixed(2);
-  const title = `Marquage ${z.name} (${z.size})${handle.endsWith('-premium') ? ' · textile > 25 €' : ''}`;
+const upsertMarking = (handle: string, z: Zone, pubs: string[], dry: boolean) =>
+  upsertSimple(handle, `Marquage ${z.name} (${z.size})${handle.endsWith('-premium') ? ' · textile > 25 €' : ''}`, z.price,
+    `<p>Impression DTF ${z.name.toLowerCase()}, logo inscrit dans un gabarit de ${z.size}. Facturé par pièce marquée.</p>`, 'Marquage', pubs, dry);
+
+/** Produit simple à un seul prix (marquage, service), créé ou mis à jour par son handle. */
+async function upsertSimple(handle: string, title: string, amount: number, descriptionHtml: string, productType: string, pubs: string[], dry: boolean) {
+  const price = amount.toFixed(2);
   const existing = await productByHandle(handle);
   if (existing) {
     // Nom lisible par l'atelier sur les commandes (« Marquage Grand devant (28 × 30 cm) »).
@@ -63,9 +67,9 @@ async function upsertMarking(handle: string, z: Zone, pubs: string[], dry: boole
       handle,
       title,
       status: 'ACTIVE',
-      productType: 'Marquage',
+      productType,
       vendor: 'alwaan',
-      descriptionHtml: `<p>Impression DTF ${z.name.toLowerCase()}, logo inscrit dans un gabarit de ${z.size}. Facturé par pièce marquée.</p>`,
+      descriptionHtml,
       productOptions: [{ name: 'Title', values: [{ name: 'Default Title' }] }],
       variants: [{ optionValues: [{ optionName: 'Title', name: 'Default Title' }], price, inventoryPolicy: 'CONTINUE', taxable: true }],
     } },
@@ -105,6 +109,8 @@ export async function POST(req: Request) {
     const pubs = dry ? [] : await publications();
     const marquages = [];
     for (const { handle, zone } of markingProducts()) marquages.push(await upsertMarking(handle, zone, pubs, dry));
+    marquages.push(await upsertSimple(REWORK_HANDLE, 'Retouche du logo par notre graphiste', REWORK_FEE,
+      '<p>Le logo est retravaillé (fond, netteté, vectorisation) puis la maquette est renvoyée au client avant impression. Forfait par logo.</p>', 'Service', pubs, dry));
     const vetements = [];
     for (const p of PRODUCTS) vetements.push(await syncGarment(p.slug, p.price, dry));
     return NextResponse.json({ ok: true, dry, marquages, vetements });

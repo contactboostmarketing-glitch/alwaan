@@ -3,6 +3,7 @@
 // Le fichier envoyé (logoId) est exactement celui affiché sur la maquette validée (BAT).
 import { useRef, useState } from 'react';
 import { analyze, cutout, uploadFile, type Analysis, type CutMode } from '@/lib/cutout';
+import { REWORK_FEE } from '@/lib/catalog';
 
 export const LOW_RES = 800;
 
@@ -111,5 +112,17 @@ export function CutoutChoice({ logo, choose }: { logo: LogoState | null; choose:
         </button>
       )}
     </div>
+  );
+}
+
+/** Option payante : notre graphiste retravaille le logo (fond, netteté). Mise en avant si le logo pose problème. */
+export function ReworkOption({ logo, on, set }: { logo: LogoState | null; on: boolean; set: (v: boolean) => void }) {
+  if (!logo || !logo.preview) return null;
+  const hint = logo.lowRes || logo.hasBg;
+  return (
+    <label className={`rework ${on ? 'on' : ''} ${hint ? 'hint' : ''}`}>
+      <input type="checkbox" checked={on} onChange={(e) => set(e.target.checked)} />
+      <span><b>Logo pas net ? Notre graphiste le retravaille</b><small>+{REWORK_FEE.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} € HT · maquette renvoyée avant impression</small></span>
+    </label>
   );
 }

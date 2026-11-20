@@ -5,7 +5,7 @@
 //   SHOPIFY_STORE_DOMAIN       ex. alwaan.myshopify.com
 //   SHOPIFY_STOREFRONT_TOKEN   jeton public Storefront (Back office → Applications → Headless)
 import { COLOR_NAMES, ZONES, getProduct, zonesFor, type Zone } from './catalog';
-import { cartTotals, lineFull, qtyOf, round, type LineConfig } from './pricing';
+import { cartTotals, lineFull, qtyOf, reworkLogos, round, type LineConfig } from './pricing';
 import { adminEnabled, createExactDiscount } from './shopifyAdmin';
 import { SITE_URL } from './site';
 
@@ -67,6 +67,7 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL): Pr
       ...(l.logoCut && l.logoCut !== 'none' ? [{ key: 'Détourage', value: l.logoCut === 'all' ? 'Fond retiré, intérieur compris (validé sur la maquette)' : 'Fond retiré automatiquement (validé sur la maquette)' }] : []),
       ...(l.logoSourceId && l.logoSourceId !== l.logoId ? [{ key: 'Fichier d\'origine du client', value: `${origin}/api/logo/${l.logoSourceId}` }] : []),
       ...(l.text ? [{ key: 'Texte', value: l.text }] : []),
+      ...(l.logoRework ? [{ key: 'Retouche graphiste', value: 'OUI : retravailler le logo et renvoyer la maquette au client avant impression' }] : []),
     ];
     const variants = await vs(p.slug);
     for (const [size, q] of Object.entries(l.qty)) {
@@ -84,8 +85,15 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL): Pr
       out.push({ merchandiseId: mv.id, quantity: pieces, attributes: [{ key: 'Groupe', value: group }] });
     }
   }
+  // Retouche du logo par le graphiste : un forfait par logo, rattaché au premier article qui le porte.
+  for (const i of reworkLogos(lines)) {
+    const [rv] = await vs(REWORK_HANDLE);
+    if (!rv) throw new Error(`Produit introuvable dans Shopify : ${REWORK_HANDLE}`);
+    out.push({ merchandiseId: rv.id, quantity: 1, attributes: [{ key: 'Groupe', value: `Article ${i + 1} · ${getProduct(lines[i].slug)!.name}` }] });
+  }
   return out;
 }
+export const REWORK_HANDLE = 'retouche-logo';
 
 /**
  * Crée le panier Shopify et renvoie l'adresse de paiement.
@@ -96,7 +104,7 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL): Pr
 export async function createShopifyCheckout(lines: LineConfig[], opts: { promo?: string | null; note?: string; origin?: string } = {}) {
   const shopLines = await toShopifyLines(lines, opts.origin);
   const t = cartTotals(lines, opts.promo);
-  const catalogue = round(lines.reduce((a, l) => a + lineFull(l), 0));
+  const catalogue = round(lines.reduce((a, l) => a + lineFull(l), 0) + t.rework);
   const expected = round(t.goods - t.discount); // montant des articles affiché sur le site, HT
   const gap = round(catalogue - expected);
 

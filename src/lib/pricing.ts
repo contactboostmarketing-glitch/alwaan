@@ -1,7 +1,7 @@
 // Calcul des prix. Le même code tourne dans le navigateur (affichage) et sur le serveur (paiement),
 // le serveur ne fait jamais confiance aux montants envoyés par le client.
 import {
-  FREE_SHIPPING_HT, PROMO_CODES, SHIPPING_HT, VAT, getProduct, tierFor, zonesFor,
+  FREE_SHIPPING_HT, PROMO_CODES, REWORK_FEE, SHIPPING_HT, VAT, getProduct, tierFor, zonesFor,
 } from './catalog';
 
 /** uploaded = logo fourni ; text = pas de logo, seulement un texte imprimé. */
@@ -18,6 +18,7 @@ export type LineConfig = {
   logoId?: string; // fichier à imprimer (détouré si demandé), stocké côté serveur (/api/logo/<id>)
   logoSourceId?: string; // fichier d'origine envoyé par le client
   logoCut?: 'edges' | 'all' | 'none'; // détourage choisi
+  logoRework?: boolean; // logo retravaillé par notre graphiste (forfait REWORK_FEE par logo)
   logoStatus: LogoStatus;
   logoLowRes?: boolean; // logo de faible définition, accepté en connaissance de cause
   mockupId?: string; // maquette validée par le client (BAT), image stockée côté serveur
@@ -63,17 +64,25 @@ export const unitPrice = (l: LineConfig, pool = qtyOf(l)) => unitAt(l, pool);
 export const lineTotal = (l: LineConfig, pool = qtyOf(l)) => round(unitAt(l, pool) * qtyOf(l));
 export const lineFull = (l: LineConfig) => round(unitBase(l) * qtyOf(l));
 
+/** Logos à retravailler par le graphiste : un forfait par logo, même s'il est sur plusieurs vêtements. */
+export function reworkLogos(lines: LineConfig[]): number[] {
+  const seen = new Set<string>(), first: number[] = [];
+  lines.forEach((l, i) => { if (l.logoRework && l.logoStatus === 'uploaded' && !seen.has(logoKey(l))) { seen.add(logoKey(l)); first.push(i); } });
+  return first; // index de la première ligne de chaque logo concerné
+}
+
 export function cartTotals(lines: LineConfig[], promo?: string | null) {
   const pool = pools(lines);
-  const goods = round(lines.reduce((a, l, i) => a + lineTotal(l, pool[i]), 0));
+  const rework = round(reworkLogos(lines).length * REWORK_FEE);
+  const goods = round(lines.reduce((a, l, i) => a + lineTotal(l, pool[i]), 0) + rework);
   const rate = promo ? PROMO_CODES[promo.toUpperCase()] ?? 0 : 0;
   const discount = round(goods * rate);
   const net = goods - discount;
   const shipping = !lines.length || net >= FREE_SHIPPING_HT ? 0 : SHIPPING_HT;
   const ht = round(net + shipping);
   const vat = round(ht * VAT);
-  const saved = round(lines.reduce((a, l) => a + lineFull(l), 0) - goods + discount);
-  return { goods, discount, shipping, ht, vat, ttc: round(ht + vat), saved, remainingForFree: Math.max(0, FREE_SHIPPING_HT - net) };
+  const saved = round(lines.reduce((a, l) => a + lineFull(l), 0) + rework - goods + discount);
+  return { rework, goods, discount, shipping, ht, vat, ttc: round(ht + vat), saved, remainingForFree: Math.max(0, FREE_SHIPPING_HT - net) };
 }
 
 export const round = (n: number) => Math.round(n * 100) / 100;

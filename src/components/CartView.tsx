@@ -35,7 +35,7 @@ export function CartView() {
     const sizes = sizesFor(p), q = qtyOf(first);
     let qty: Record<string, number> = sizes.length === 1 ? { [sizes[0]]: q } : Object.fromEntries(sizes.map((s) => [s, first.qty[s] || 0]));
     if (!Object.values(qty).some(Boolean)) qty = { [sizes[0]]: q };
-    add({ slug, color: p.colors.includes(first.color) ? first.color : defaultColor(p), zones: ['heart'], qty, logo: first.logo, logoName: first.logoName, logoId: first.logoId, logoStatus: first.logoStatus, text: first.text, pack: true });
+    add({ slug, color: p.colors.includes(first.color) ? first.color : defaultColor(p), zones: ['heart'], qty, logo: first.logo, logoName: first.logoName, logoId: first.logoId, logoSourceId: first.logoSourceId, logoCut: first.logoCut, logoRework: first.logoRework, logoStatus: first.logoStatus, text: first.text, pack: true });
   };
   const applyCode = () => {
     const c = code.trim().toUpperCase();
@@ -93,7 +93,8 @@ export function CartView() {
             {t.remainingForFree > 0 ? <>Plus que <b><Price ht={t.remainingForFree} /></b> pour la livraison offerte</> : <b className="okc">Livraison offerte</b>}
             <div className="barx"><i style={{ width: `${Math.min(100, ((t.goods - t.discount) / 150) * 100)}%` }} /></div>
           </div>
-          <div className="row"><span>Sous-total</span><span><Price ht={t.goods} /></span></div>
+          <div className="row"><span>Sous-total</span><span><Price ht={t.goods - t.rework} /></span></div>
+          {t.rework > 0 && <div className="row"><span>Retouche logo (graphiste)</span><span><Price ht={t.rework} /></span></div>}
           {t.discount > 0 && <div className="row save"><span>Code {promo}</span><span>-<Price ht={t.discount} /></span></div>}
           <div className="row"><span>Livraison</span><span>{t.shipping ? <Price ht={t.shipping} /> : 'Offerte'}</span></div>
           {pro && <><div className="row"><span>Total HT</span><span>{eur(t.ht)}</span></div><div className="row"><span>TVA 20 %</span><span>{eur(t.vat)}</span></div></>}
@@ -121,7 +122,7 @@ function CartLine({ l, i, pool, onRemove }: { l: LineConfig; i: number; pool: nu
   if (!p) return null;
   const q = qtyOf(l);
   const logo = l.logoStatus === 'text' ? `Texte : « ${l.text} »` : l.logoLowRes ? 'Logo fourni (petite définition)' : 'Logo fourni';
-  const bat = l.mockupId ? 'Maquette validée' : 'Maquette à valider';
+  const bat = l.logoRework ? 'Retouche graphiste' : l.mockupId ? 'Maquette validée' : 'Maquette à valider';
   return (
     <div className="line">
       <div className="img"><Garment slug={l.slug} color={l.color} zones={l.zones} logo={l.logo} /></div>

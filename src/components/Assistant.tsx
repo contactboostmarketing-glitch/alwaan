@@ -4,13 +4,13 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CATEGORIES, COLOR_NAMES, MAX_DISCOUNT, PRODUCTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor, type Product } from '@/lib/catalog';
+import { CATEGORIES, COLOR_NAMES, MAX_DISCOUNT, REWORK_FEE, PRODUCTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor, type Product } from '@/lib/catalog';
 import { lineFull, lineTotal, qtyOf, unitAt, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment, isDark } from './Garment';
 import { Price } from './Price';
 import { snapshot, toDataUrl, uploadMockup } from '@/lib/mockup';
-import { CutoutChoice, useLogo } from './LogoCutout';
+import { CutoutChoice, ReworkOption, useLogo } from './LogoCutout';
 
 type Place = 'heart' | 'chest' | 'back' | 'heart-back';
 const PLACES: { id: Place; name: string; sub: string; zones: string[]; reco?: boolean }[] = [
@@ -76,6 +76,7 @@ export function Assistant() {
     if (l.preview && !l.busy) inkOf(l.preview).then(setInk);
   });
   const uploading = !!lg?.busy;
+  const [rework, setRework] = useState(false);
   const [ink, setInk] = useState<string | null>(null);
   const [place, setPlace] = useState<Place | null>(null);
   const [picked, setPicked] = useState<string[]>([]);
@@ -144,12 +145,13 @@ export function Assistant() {
 
   const lines: LineConfig[] = useMemo(() => products.map((p) => ({
     slug: p.slug, color: colorFor(p), zones: zonesOf(p, place), qty: qty[p.slug] || spread(p, 0), text: logo?.status === 'text' ? text : '',
-    logo: logo?.preview, logoId: logo?.id, logoSourceId: logo?.sourceId, logoCut: logo?.cut, logoName: logo?.name, logoStatus: logo?.status ?? 'uploaded', logoLowRes: lowRes, pack: packs.includes(p.slug),
+    logo: logo?.preview, logoId: logo?.id, logoSourceId: logo?.sourceId, logoCut: logo?.cut, logoRework: rework && logo?.status === 'uploaded', logoName: logo?.name, logoStatus: logo?.status ?? 'uploaded', logoLowRes: lowRes, pack: packs.includes(p.slug),
     mockupId: mockups[p.slug], approvedAt: mockups[p.slug] ? new Date().toISOString() : undefined,
-  })), [picked, color, place, qty, logo, packs, text, lowRes, mockups]); // eslint-disable-line react-hooks/exhaustive-deps
+  })), [picked, color, place, qty, logo, packs, text, lowRes, mockups, rework]); // eslint-disable-line react-hooks/exhaustive-deps
   // Même logo sur tous les vêtements : toutes les pièces comptent pour la remise marquage.
   const pieces = lines.reduce((a, l) => a + qtyOf(l), 0);
-  const total = lines.reduce((a, l) => a + lineTotal(l, pieces), 0);
+  const reworkFee = rework && logo?.status === 'uploaded' ? REWORK_FEE : 0;
+  const total = lines.reduce((a, l) => a + lineTotal(l, pieces), 0) + reworkFee;
   const full = lines.reduce((a, l) => a + lineFull(l), 0);
 
   const onFile = async (f?: File) => {
@@ -157,7 +159,7 @@ export function Assistant() {
     setMockups({}); setMsg('');
     const l = await pick(f);
     // Fond détecté : on reste sur cette étape pour montrer le détourage ; sinon on avance.
-    if (l && !l.error && !l.hasBg) advance();
+    if (l && !l.error && !l.hasBg && !l.lowRes) advance();
   };
   const advance = () => go(place && picked.length && color ? 'mockup' : place && picked.length ? 'color' : place ? 'garments' : 'place');
   const fillFrom = async () => {
@@ -248,11 +250,12 @@ export function Assistant() {
           {thought && <p className="bubble">C&apos;est noté ! Il me manque juste votre logo (ou un texte) pour vous montrer la maquette.</p>}
           <label className="asst-drop"><span className="ic">+</span><strong>{logo?.status === 'uploaded' ? 'Logo reçu' : 'Envoyer mon logo'}</strong><span className="muted">PNG, JPG ou SVG, le plus grand possible</span>
             <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onChange={(e) => onFile(e.target.files?.[0])} /></label>
-          {logo?.status === 'uploaded' && lg?.hasBg && (<>
+          {logo?.status === 'uploaded' && (lg?.hasBg || lg?.lowRes) && (<>
             <CutoutChoice logo={lg} choose={choose} />
-            {lg.decided && <button className="btn cta" disabled={uploading || !logo.id} onClick={advance}>{uploading ? 'Préparation du logo…' : 'Continuer'}</button>}
+            {lg.lowRes && <p className="warnline">Logo peu net : envoyez une version plus grande, ou confiez-le au graphiste.</p>}
+            <ReworkOption logo={lg} on={rework} set={setRework} />
+            {(lg.decided || rework) && <button className="btn cta" disabled={uploading || !logo.id} onClick={advance}>{uploading ? 'Préparation du logo…' : 'Continuer'}</button>}
           </>)}
-          {logo?.status === 'uploaded' && lowRes && <p className="warnline">Logo en petite définition : l&apos;impression risque d&apos;être floue. Envoyez une version plus grande si vous l&apos;avez.</p>}
           <div className="opts">
             <button className="link" onClick={() => setLogo({ status: 'text' })}>Je n&apos;ai pas de logo : imprimer seulement un texte</button>
             {logo?.status === 'text' && (
@@ -271,7 +274,7 @@ export function Assistant() {
 
         {step === 'place' && (<>
           <p className="bubble">{logo?.status === 'uploaded' ? 'Super logo ! ' : ''}On l&apos;imprime où ?</p>
-          {lowRes && <p className="warnline">Votre logo est en petite définition : l&apos;impression risque d&apos;être floue. Si vous avez une version plus grande, renvoyez-la à l&apos;étape précédente.</p>}
+          {logo?.status === 'uploaded' && <ReworkOption logo={lg} on={rework} set={setRework} />}
           <div className="asst-grid">
             {PLACES.map((p) => (
               <button key={p.id} className="asst-opt" aria-pressed={place === p.id} onClick={() => { setPlace(p.id); go('garments'); }}>
@@ -359,7 +362,8 @@ export function Assistant() {
           {pieces > 0 && (
             <div className="recap">
               {lines.filter((l) => qtyOf(l)).map((l) => <div key={l.slug}><span>{qtyOf(l)} × {getProduct(l.slug)!.name}</span><span><Price ht={lineTotal(l, pieces)} /></span></div>)}
-              {full - total > 1 && <div className="save"><span>Vous économisez</span><span><Price ht={full - total} /></span></div>}
+              {reworkFee > 0 && <div><span>Retouche logo (graphiste)</span><span><Price ht={reworkFee} /></span></div>}
+              {full + reworkFee - total > 1 && <div className="save"><span>Vous économisez</span><span><Price ht={full + reworkFee - total} /></span></div>}
               <div className="tot"><span>Total</span><span><Price ht={total} /></span></div>
               {people ? <div className="muted"><span>Soit par personne équipée</span><span><Price ht={total / people} /></span></div> : null}
             </div>

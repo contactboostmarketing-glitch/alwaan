@@ -135,6 +135,8 @@ export const FREE_SHIPPING_HT = 150;
 export const SHIPPING_HT = 9.9;
 export const VAT = 0.2;
 export const PROMO_CODES: Record<string, number> = { BIENVENUE: 0.1 };
+/** Logo retravaillé par notre graphiste (fond, netteté, vectorisation) : forfait HT, une fois par logo. */
+export const REWORK_FEE = 4;
 
 // Textes détaillés des pages catégories (page mère du cocon sémantique).
 const DETAILS: Record<string, string[]> = {
