@@ -7,6 +7,8 @@ import { tagOrder } from '@/lib/reworkOrders';
 import { SITE_URL } from '@/lib/site';
 import { admin } from '@/lib/shopifyAdmin';
 import { REFERRAL_REWARD, issueBon, lookupCode, markBonUsed } from '@/lib/vouchers';
+import { getShop, saveShop } from '@/lib/shops';
+import { SHOP_COMMISSION } from '@/lib/catalog';
 
 /**
  * Webhook Shopify « commande payée » (enregistré par /api/shopify/setup).
@@ -73,10 +75,23 @@ export async function POST(req: Request) {
     }
   } catch (e) { parrainage = `erreur ${(e as Error).message}`; }
 
+  // Boutique club : commission sur les ventes HT, versée en bons d'achat au club dès 20 € cumulés.
+  let boutique = '';
+  try {
+    const shop = attr.boutique ? await getShop(attr.boutique) : null;
+    if (shop) {
+      const c = Math.round(sale.value * SHOP_COMMISSION * 100) / 100;
+      shop.stats.orders += 1; shop.stats.revenueHT = Math.round((shop.stats.revenueHT + sale.value) * 100) / 100;
+      shop.stats.pending = Math.round((shop.stats.pending + c) * 100) / 100;
+      if (shop.stats.pending >= 20) { await issueBon(shop.ownerEmail, shop.stats.pending, `Boutique ${shop.name}`); shop.stats.commission += shop.stats.pending; shop.stats.pending = 0; }
+      await saveShop(shop); boutique = `${shop.slug} +${c} €`;
+    }
+  } catch (e) { boutique = `erreur ${(e as Error).message}`; }
+
   await putJSON('commandes', key, {
     id: key, gid: o.admin_graphql_api_id, name: o.name, createdAt: o.created_at, value: sale.value, email: sale.email,
     panier: attr.panier, source: attr.utm_source, campaign: attr.utm_campaign, gclid: !!attr.gclid, fbclid: !!attr.fbclid,
-    retouches: [...reworkIds], conversions: [ga, meta], parrainage,
+    retouches: [...reworkIds], conversions: [ga, meta], parrainage, boutique,
   });
   return NextResponse.json({ ok: true });
 }

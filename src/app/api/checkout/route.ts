@@ -51,6 +51,7 @@ export async function POST(req: Request) {
       // Échantillon avant série (dès 150 pièces) : l'atelier envoie 1 pièce et attend la validation du client.
       if (body?.sample === true && lines.reduce((a, l) => a + qtyOf(l), 0) >= SAMPLE_MIN) attr._echantillon = 'oui';
       if (reseller) attr._revendeur = 'oui';
+      const shopSlug = lines.find((l) => l.shop)?.shop; if (shopSlug) attr._boutique = shopSlug;
       if (voucherOk) attr[voucherOk.kind === 'parrain' ? '_parrain' : '_bon'] = String(body.voucher).trim().toUpperCase();
       const url = await createShopifyCheckout(lines, { promo, note: (body?.pro ? 'Client professionnel' : 'Client particulier') + (lang === 'en' ? ' · anglophone' : ''), origin, attributes: attr, lang, express, reseller, voucher });
       return NextResponse.json({ url });

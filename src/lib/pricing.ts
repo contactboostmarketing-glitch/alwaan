@@ -22,6 +22,7 @@ export type LineConfig = {
   reworkId?: string; // dossier de retouche créé au paiement (côté serveur)
   teamId?: string; // liste d'équipe (noms, prénoms, tailles) d'où vient cette ligne
   printNames?: boolean; // prénom imprimé sur chaque pièce (au-delà de NAMES_MIN pièces)
+  shop?: string; // boutique club / entreprise d'où vient l'article
   logoStatus: LogoStatus;
   logoLowRes?: boolean; // logo de faible définition, accepté en connaissance de cause
   mockupId?: string; // maquette validée par le client (BAT), image stockée côté serveur

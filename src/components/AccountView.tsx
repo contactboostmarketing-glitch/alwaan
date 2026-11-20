@@ -14,6 +14,7 @@ type Me = {
   logos?: { id: string; bat?: string; order: string }[];
   reseller?: { status: 'en_attente' | 'valide' | 'refuse'; company: string } | null;
   referral?: string | null; bons?: { code: string; amount: number; used: boolean }[];
+  shops?: { slug: string; name: string; items: number; stats: { orders: number; revenueHT: number; commission: number; pending: number } }[];
 };
 
 export function AccountView() {
@@ -76,6 +77,17 @@ export function AccountView() {
           </div>
         ))}</div>
       )}
+
+      <h2>{t('Boutique club ou entreprise')}</h2>
+      <p className="muted small">{t('Vos membres commandent et paient eux-mêmes. Vous recevez 10 % des ventes en bons d\'achat.')}</p>
+      {me.shops?.map((s) => (
+        <article key={s.slug} className="acct-card">
+          <header><b>{s.name}</b><small className="muted">{t('{n} articles', { n: s.items })}</small></header>
+          <p className="small">{t('{o} commandes · {r} HT de ventes · {c} de commission versée · {p} en attente', { o: s.stats.orders, r: eur(s.stats.revenueHT, lang), c: eur(s.stats.commission, lang), p: eur(s.stats.pending, lang) })}</p>
+          <div className="atl-files"><Link className="btn line small" href={l(`/boutique/${s.slug}`)}>{t('Voir la boutique')}</Link></div>
+        </article>
+      ))}
+      <Link className="btn line" href={lang === 'en' ? '/en/account/shop' : '/compte/boutique'}>{t('Créer une boutique')}</Link>
 
       {me.referral && (<>
         <h2>{t('Parrainage')}</h2>

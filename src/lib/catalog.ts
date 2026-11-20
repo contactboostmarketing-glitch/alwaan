@@ -146,6 +146,8 @@ export const RESELLER_RATE = 0.1;
 export const NAME_FEE = 2, NAMES_MIN = 20;
 /** Échantillon avant série : 1 pièce imprimée envoyée pour validation, offerte dès SAMPLE_MIN pièces. */
 export const SAMPLE_MIN = 150, SAMPLE_EXTRA_DAYS = 5;
+/** Boutique club / entreprise : commission reversée au club sur les ventes HT de sa boutique (en bons d'achat). */
+export const SHOP_COMMISSION = 0.1;
 /** Production express : forfait HT selon le nombre total de pièces de la commande. */
 export const EXPRESS_FEES: [number, number][] = [[10, 15], [20, 20], [30, 30], [Infinity, 60]];
 export const expressFee = (pieces: number) => EXPRESS_FEES.find(([max]) => pieces <= max)![1];

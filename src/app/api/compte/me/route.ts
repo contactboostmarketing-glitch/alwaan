@@ -5,6 +5,7 @@ import { getReseller, quotesOfEmail } from '@/lib/reseller';
 import { getCart } from '@/lib/savedCart';
 import { getPhotos } from '@/lib/qcPhotos';
 import { bonsOf, ensureReferralCode } from '@/lib/vouchers';
+import { shopsOf } from '@/lib/shops';
 import { publicOrigin } from '@/lib/site';
 
 type Attr = { key: string; value: string | null };
@@ -51,9 +52,10 @@ export async function GET(req: Request) {
   }));
   const r = email ? await getReseller(email) : null;
   const referral = email ? await ensureReferralCode(email) : null;
+  const shops = email ? (await shopsOf(email)).map((x) => ({ slug: x.slug, name: x.name, items: x.items.length, stats: x.stats })) : [];
   const bons = email ? (await bonsOf(email)).map((b) => ({ code: b.code, amount: b.amount, used: !!b.usedBy })) : [];
   const res = NextResponse.json({ enabled: true, connected: true, firstName: d.customer.firstName, email, orders, quotes, logos: [...logos.values()],
-    reseller: r ? { status: r.status, company: r.company } : null, referral, bons });
+    reseller: r ? { status: r.status, company: r.company } : null, referral, bons, shops });
   if (setCookieHeader) res.headers.append('Set-Cookie', setCookieHeader);
   return res;
 }
