@@ -123,8 +123,8 @@ export const ZONES: Zone[] = [
   { id: 'back', name: 'Dos', view: 'back', x: 50, y: 44, w: 46, size: '26 × 26 cm', price: 6 },
   { id: 'neck', name: 'Nuque', view: 'back', x: 50, y: 22, w: 14, size: '8 × 4 cm', price: 2.5 },
 ];
-/** Au-delà de ce prix d'achat HT, le marquage cœur et le marquage dos passent à un prix unique. */
-export const PREMIUM_COST = 25, PREMIUM_MARK = 5, PREMIUM_ZONES = ['heart', 'back'];
+/** Au-delà de ce prix de vente HT du textile, le marquage cœur et le marquage dos passent à un prix unique. */
+export const PREMIUM_PRICE = 25, PREMIUM_MARK = 5, PREMIUM_ZONES = ['heart', 'back'];
 /** Zones qui se recouvrent : en choisir une retire les autres. */
 export const CLASH: Record<string, string[]> = { chest: ['heart', 'antiheart'], heart: ['chest'], antiheart: ['chest'] };
 
@@ -179,7 +179,7 @@ export const defaultColor = (prod: Product) => (prod.colors.includes('#1d2a5c') 
 
 /** Zones proposées pour un vêtement, au prix de ce vêtement. */
 export function zonesFor(prod: Product): Zone[] {
-  const priced = (z: Zone): Zone => prod.cost > PREMIUM_COST && PREMIUM_ZONES.includes(z.id) ? { ...z, price: PREMIUM_MARK } : z;
+  const priced = (z: Zone): Zone => prod.price > PREMIUM_PRICE && PREMIUM_ZONES.includes(z.id) ? { ...z, price: PREMIUM_MARK } : z;
   const shoulders = ['shoulder-right', 'shoulder-left'];
   let list: Zone[];
   if (prod.shape === 'cap') list = [{ ...ZONES[0], name: 'Face', x: 50, y: 45, w: 30 }];
