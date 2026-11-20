@@ -66,7 +66,6 @@ export async function createExactDiscount(amount: number, label: string): Promis
         context: { all: 'ALL' },
         customerGets: { value: { discountAmount: { amount: amount.toFixed(2), appliesOnEachItem: false } }, items: { all: true } },
         combinesWith: { orderDiscounts: false, productDiscounts: false, shippingDiscounts: true },
-        tags: ['site-alwaan', 'remise-exacte'],
       },
     },
   );
