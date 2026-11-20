@@ -45,7 +45,8 @@ export async function POST(req: Request) {
         : m.includes('pas été acceptée') ? 'REMISE_NON_APPLIQUEE'
         : m.includes('Écart de prix') ? 'ECART_PRIX'
         : 'PANIER';
-      const detail = code === 'ADMIN_REFUSE' ? (m.match(/\((\d{3}[^)]*)\)/)?.[1] ?? '') : undefined;
+      const detail = code === 'ADMIN_REFUSE' ? (m.match(/\((\d{3}[^)]*)\)/)?.[1] ?? '')
+        : ['ADMIN_API', 'REMISE_REFUSEE', 'REMISE_NON_APPLIQUEE'].includes(code) ? m.replace(/gid:\/\/\S+/g, '').slice(0, 300) : undefined;
       return NextResponse.json({ error: 'Le paiement est momentanément indisponible. Réessayez dans un instant.', code, ...(detail ? { detail } : {}) }, { status: 502 });
     }
   }
