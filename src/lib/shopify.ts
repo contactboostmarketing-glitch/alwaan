@@ -5,7 +5,8 @@
 //   SHOPIFY_STORE_DOMAIN       ex. alwaan.myshopify.com
 //   SHOPIFY_STOREFRONT_TOKEN   jeton public Storefront (Back office → Applications → Headless)
 import { COLOR_NAMES, ZONES, getProduct } from './catalog';
-import { qtyOf, type LineConfig } from './pricing';
+import { cartTotals, lineFull, qtyOf, round, type LineConfig } from './pricing';
+import { adminEnabled, createExactDiscount } from './shopifyAdmin';
 
 const API_VERSION = '2025-01';
 
@@ -76,13 +77,36 @@ export async function toShopifyLines(lines: LineConfig[]): Promise<CartLineInput
   return out;
 }
 
-/** Crée le panier Shopify et renvoie l'adresse de paiement. */
+/**
+ * Crée le panier Shopify et renvoie l'adresse de paiement.
+ * Le prix payé doit être exactement celui affiché sur le site : Shopify facture les prix catalogue,
+ * on applique donc un code unique du montant de l'écart (paliers de quantité, pack, code promo),
+ * puis on vérifie le sous-total obtenu avant d'envoyer le client au paiement.
+ */
 export async function createShopifyCheckout(lines: LineConfig[], opts: { promo?: string | null; note?: string } = {}) {
   const shopLines = await toShopifyLines(lines);
-  const d = await storefront<{ cartCreate: { cart: { checkoutUrl: string } | null; userErrors: { message: string }[] } }>(
-    `mutation($input: CartInput!) { cartCreate(input: $input) { cart { checkoutUrl } userErrors { message } } }`,
-    { input: { lines: shopLines, discountCodes: opts.promo ? [opts.promo] : [], note: opts.note, buyerIdentity: { countryCode: 'FR' } } },
+  const t = cartTotals(lines, opts.promo);
+  const catalogue = round(lines.reduce((a, l) => a + lineFull(l), 0));
+  const expected = round(t.goods - t.discount); // montant des articles affiché sur le site, HT
+  const gap = round(catalogue - expected);
+
+  let codes: string[] = [];
+  if (gap > 0.009) {
+    if (!adminEnabled()) throw new Error('Remise exacte indisponible : identifiants Admin Shopify manquants');
+    codes = [await createExactDiscount(gap, `Remise quantité site · ${expected.toFixed(2)} € HT`)];
+  }
+
+  const d = await storefront<{ cartCreate: { cart: { checkoutUrl: string; discountCodes: { code: string; applicable: boolean }[]; cost: { subtotalAmount: { amount: string } }; discountAllocations: { discountedAmount: { amount: string } }[] } | null; userErrors: { message: string }[] } }>(
+    `mutation($input: CartInput!) { cartCreate(input: $input) { cart { checkoutUrl discountCodes { code applicable } cost { subtotalAmount { amount } } discountAllocations { discountedAmount { amount } } } userErrors { message } } }`,
+    { input: { lines: shopLines, discountCodes: codes, note: opts.note, buyerIdentity: { countryCode: 'FR' } } },
   );
-  if (!d.cartCreate.cart) throw new Error(d.cartCreate.userErrors.map((e) => e.message).join(', '));
-  return d.cartCreate.cart.checkoutUrl;
+  const cart = d.cartCreate.cart;
+  if (!cart) throw new Error(d.cartCreate.userErrors.map((e) => e.message).join(', '));
+  if (codes.length && !cart.discountCodes.every((c) => c.applicable)) throw new Error('La remise exacte n\'a pas été acceptée par Shopify');
+
+  // Contrôle final : sous-total Shopify − remise = montant affiché (tolérance 2 centimes d'arrondi).
+  const discounted = cart.discountAllocations.reduce((a, x) => a + Number(x.discountedAmount.amount), 0);
+  const charged = round(Number(cart.cost.subtotalAmount.amount) - (codes.length && discounted === 0 ? gap : discounted));
+  if (Math.abs(charged - expected) > 0.02) throw new Error(`Écart de prix : Shopify ${charged} € / site ${expected} €`);
+  return cart.checkoutUrl;
 }
