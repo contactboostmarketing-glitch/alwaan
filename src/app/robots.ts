@@ -5,5 +5,5 @@ import { INDEXABLE, SITE_URL } from '@/lib/site';
 // les robots des moteurs IA (GPTBot, PerplexityBot, Google-Extended…) sont autorisés, utile pour le GEO.
 export default function robots(): MetadataRoute.Robots {
   if (!INDEXABLE) return { rules: [{ userAgent: '*', disallow: '/' }] };
-  return { rules: [{ userAgent: '*', allow: '/', disallow: ['/panier', '/merci', '/api/'] }], sitemap: `${SITE_URL}/sitemap.xml` };
+  return { rules: [{ userAgent: '*', allow: '/', disallow: ['/panier', '/merci', '/api/', '/atelier', '/bat/'] }], sitemap: `${SITE_URL}/sitemap.xml` };
 }

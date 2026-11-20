@@ -1,0 +1,160 @@
+'use client';
+// Espace atelier : dossiers de retouche du logo. Protégé par la clé atelier (gardée dans ce navigateur).
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
+import { COLOR_NAMES, getProduct, zonesFor } from '@/lib/catalog';
+import { uploadFile } from '@/lib/cutout';
+import { snapshot, toDataUrl, uploadMockup } from '@/lib/mockup';
+import { STATUS_LABEL, type Rework } from '@/lib/reworkTypes';
+import { Garment } from './Garment';
+
+const KEY = 'alwaan-staff-key';
+const readKey = () => { try { return localStorage.getItem(KEY) || ''; } catch { return ''; } };
+
+function useStaffKey() {
+  const [key, setKey] = useState('');
+  useEffect(() => setKey(readKey()), []);
+  const save = (k: string) => { try { localStorage.setItem(KEY, k); } catch {} setKey(k); };
+  return { key, save };
+}
+
+function KeyGate({ onKey, error }: { onKey: (k: string) => void; error?: string }) {
+  const [v, setV] = useState('');
+  return (
+    <section className="wrap atelier"><h1>Espace atelier</h1>
+      <div className="asst-say"><input type="password" value={v} onChange={(e) => setV(e.target.value)} placeholder="Clé atelier" aria-label="Clé atelier" /><button onClick={() => onKey(v.trim())}>Entrer</button></div>
+      {error && <p className="warnline">{error}</p>}
+    </section>
+  );
+}
+
+const zonesText = (slug: string, zones: string[]) => { const p = getProduct(slug); return p ? zonesFor(p).filter((z) => zones.includes(z.id)).map((z) => z.name).join(' + ') : ''; };
+const when = (s?: string) => (s ? new Date(s).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '');
+
+export function AtelierList() {
+  const { key, save } = useStaffKey();
+  const [items, setItems] = useState<Rework[] | null>(null);
+  const [err, setErr] = useState('');
+  useEffect(() => {
+    if (!key) return;
+    fetch('/api/retouche', { headers: { 'x-staff-key': key } }).then(async (r) => {
+      const d = await r.json(); if (!r.ok) { setErr(d.error); save(''); return; } setItems(d.items);
+    }).catch(() => setErr('Connexion impossible.'));
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!key) return <KeyGate onKey={save} error={err} />;
+  return (
+    <section className="wrap atelier"><h1>Retouches de logo</h1>
+      {!items ? <p className="muted">Chargement…</p> : !items.length ? <p className="muted">Aucun dossier.</p> : (
+        <div className="atl-list">{items.map((r) => (
+          <Link key={r.id} href={`/atelier/retouche/${r.id}`} className="atl-row">
+            <span className={`st st-${r.status}`}>{STATUS_LABEL[r.status]}</span>
+            <span>{r.items.map((i) => `${i.pieces} × ${getProduct(i.slug)?.name}`).join(', ')}</span>
+            <small className="muted">{when(r.createdAt)}</small>
+          </Link>
+        ))}</div>
+      )}
+    </section>
+  );
+}
+
+export function AtelierRework({ id }: { id: string }) {
+  const { key, save } = useStaffKey();
+  const [r, setR] = useState<Rework | null>(null);
+  const [err, setErr] = useState('');
+  const [orig, setOrig] = useState<string>();
+  const [logo, setLogo] = useState<{ id?: string; preview?: string; busy?: boolean }>({});
+  const [sending, setSending] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const shots = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!key) return;
+    fetch(`/api/retouche/${id}`, { headers: { 'x-staff-key': key } }).then(async (res) => {
+      const d = await res.json(); if (!res.ok) { setErr(d.error); if (res.status === 401) save(''); return; } setR(d);
+      const lid = d.items[0]?.logoId; if (lid) setOrig(await toDataUrl(`/api/logo/${lid}?apercu`));
+    }).catch(() => setErr('Connexion impossible.'));
+  }, [key, id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!key) return <KeyGate onKey={save} error={err} />;
+  if (!r) return <section className="wrap atelier"><p className="muted">{err || 'Chargement…'}</p></section>;
+
+  const link = typeof window !== 'undefined' ? `${window.location.origin}/bat/${r.id}` : `/bat/${r.id}`;
+  const onFile = async (f?: File) => {
+    if (!f || !f.type.startsWith('image/')) return;
+    setLogo({ busy: true });
+    const preview = await new Promise<string>((ok) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result)); fr.readAsDataURL(f); });
+    const up = await uploadFile(f, f.name);
+    setLogo({ id: up.id, preview, busy: false });
+    if (up.error) setErr(up.error);
+  };
+  const send = async () => {
+    if (!logo.id || !shots.current) return;
+    setSending(true); setErr('');
+    try {
+      const mockups = [];
+      for (const it of r.items) {
+        const svgs = Array.from(shots.current.querySelectorAll(`[data-slug="${it.slug}"] svg`)) as SVGSVGElement[];
+        const p = getProduct(it.slug)!;
+        const png = await snapshot(svgs, `${p.name} · ${COLOR_NAMES[it.color]} · ${zonesText(it.slug, it.zones)} · logo retouché`);
+        const mid = await uploadMockup(png);
+        if (!mid) throw new Error('Envoi de la maquette impossible.');
+        mockups.push({ slug: it.slug, mockupId: mid });
+      }
+      const res = await fetch(`/api/retouche/${r.id}`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-staff-key': key }, body: JSON.stringify({ action: 'proof', logoId: logo.id, mockups }) });
+      const d = await res.json(); if (!res.ok) throw new Error(d.error); setR(d);
+    } catch (e) { setErr((e as Error).message || 'Erreur'); }
+    setSending(false);
+  };
+  const mail = `mailto:?subject=${encodeURIComponent('Votre maquette alwaan à valider')}&body=${encodeURIComponent(`Bonjour,\n\nNotre graphiste a retravaillé votre logo. Validez votre maquette en un clic :\n${link}\n\nL'impression démarre dès votre validation.\n\nL'équipe alwaan`)}`;
+  const wa = `https://wa.me/?text=${encodeURIComponent(`Votre maquette alwaan est prête, validez-la ici : ${link}`)}`;
+
+  return (
+    <section className="wrap atelier">
+      <p><Link className="link small" href="/atelier">← Tous les dossiers</Link></p>
+      <h1>Retouche du logo <span className={`st st-${r.status}`}>{STATUS_LABEL[r.status]}</span></h1>
+      {r.decision && !r.decision.ok && <p className="warnline"><b>Demande du client :</b> {r.decision.comment}</p>}
+      {r.status === 'valide' && <p className="okline">✓ Validé par le client le {when(r.decision?.at)} : à imprimer.</p>}
+
+      <h2>1. Logo du client</h2>
+      <div className="atl-files">
+        {r.items[0]?.logoSourceId && <a className="btn line small" href={`/api/logo/${r.items[0].logoSourceId}`}>Fichier d&apos;origine</a>}
+        {r.items[0]?.logoId && <a className="btn line small" href={`/api/logo/${r.items[0].logoId}`}>Fichier détouré</a>}
+      </div>
+      <div className="atl-items">{r.items.map((it) => (
+        <figure key={it.slug}><Garment slug={it.slug} color={it.color} zones={it.zones} logo={orig} text={it.text} />
+          <figcaption><b>{it.pieces} × {getProduct(it.slug)?.name}</b><small>{COLOR_NAMES[it.color]} · {zonesText(it.slug, it.zones)}</small></figcaption></figure>
+      ))}</div>
+
+      {r.status !== 'valide' && (<>
+        <h2>2. Logo retravaillé</h2>
+        <label className="asst-drop"><span className="ic">+</span><strong>{logo.busy ? 'Envoi…' : logo.id ? 'Logo retravaillé reçu · remplacer' : 'Déposer le logo retravaillé (PNG transparent ou SVG)'}</strong>
+          <input type="file" accept="image/png,image/svg+xml,image/webp,image/jpeg" hidden onChange={(e) => onFile(e.target.files?.[0])} /></label>
+        {logo.preview && (<>
+          <div ref={shots} className="atl-items">{r.items.map((it) => {
+            const back = zonesFor(getProduct(it.slug)!).some((z) => z.view === 'back' && it.zones.includes(z.id));
+            const front = zonesFor(getProduct(it.slug)!).some((z) => z.view === 'front' && it.zones.includes(z.id));
+            return (
+              <figure key={it.slug} data-slug={it.slug} className={front && back ? 'two' : ''}>
+                {front && <Garment slug={it.slug} color={it.color} view="front" zones={it.zones} logo={logo.preview} text={it.text} />}
+                {back && <Garment slug={it.slug} color={it.color} view="back" zones={it.zones} logo={logo.preview} text={it.text} />}
+                <figcaption><b>{getProduct(it.slug)?.name}</b></figcaption>
+              </figure>
+            );
+          })}</div>
+          <button className="btn cta" disabled={sending || !logo.id} onClick={send}>{sending ? 'Création des maquettes…' : 'Créer la maquette pour le client'}</button>
+        </>)}
+      </>)}
+
+      {r.proof && (<>
+        <h2>3. Envoyer au client</h2>
+        <div className="asst-say"><input readOnly value={link} aria-label="Lien de validation" onFocus={(e) => e.target.select()} />
+          <button onClick={() => { navigator.clipboard?.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1500); }}>{copied ? 'Copié ✓' : 'Copier'}</button></div>
+        <div className="atl-files"><a className="btn line small" href={mail}>Email</a><a className="btn line small" href={wa} target="_blank" rel="noopener">WhatsApp</a><a className="btn line small" href={link} target="_blank">Voir la page client</a></div>
+      </>)}
+
+      {err && <p className="warnline">{err}</p>}
+      <h2>Historique</h2>
+      <ul className="atl-hist">{r.history.map((h, i) => <li key={i}><small className="muted">{when(h.at)}</small> {h.event}{h.detail ? ` : « ${h.detail} »` : ''}</li>)}</ul>
+    </section>
+  );
+}

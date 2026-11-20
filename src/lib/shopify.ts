@@ -67,7 +67,8 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL): Pr
       ...(l.logoCut && l.logoCut !== 'none' ? [{ key: 'Détourage', value: l.logoCut === 'all' ? 'Fond retiré, intérieur compris (validé sur la maquette)' : 'Fond retiré automatiquement (validé sur la maquette)' }] : []),
       ...(l.logoSourceId && l.logoSourceId !== l.logoId ? [{ key: 'Fichier d\'origine du client', value: `${origin}/api/logo/${l.logoSourceId}` }] : []),
       ...(l.text ? [{ key: 'Texte', value: l.text }] : []),
-      ...(l.logoRework ? [{ key: 'Retouche graphiste', value: 'OUI : retravailler le logo et renvoyer la maquette au client avant impression' }] : []),
+      ...(l.logoRework ? [{ key: 'Retouche graphiste', value: 'OUI : NE PAS IMPRIMER avant validation du client' }] : []),
+      ...(l.reworkId ? [{ key: 'Dossier retouche (atelier)', value: `${origin}/atelier/retouche/${l.reworkId}` }] : []),
     ];
     const variants = await vs(p.slug);
     for (const [size, q] of Object.entries(l.qty)) {

@@ -19,6 +19,7 @@ export type LineConfig = {
   logoSourceId?: string; // fichier d'origine envoyé par le client
   logoCut?: 'edges' | 'all' | 'none'; // détourage choisi
   logoRework?: boolean; // logo retravaillé par notre graphiste (forfait REWORK_FEE par logo)
+  reworkId?: string; // dossier de retouche créé au paiement (côté serveur)
   logoStatus: LogoStatus;
   logoLowRes?: boolean; // logo de faible définition, accepté en connaissance de cause
   mockupId?: string; // maquette validée par le client (BAT), image stockée côté serveur

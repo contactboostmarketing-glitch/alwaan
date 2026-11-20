@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { COLOR_NAMES, PROMO_CODES, getProduct, sizesFor, zonesFor } from '@/lib/catalog';
-import { cartTotals, pools, qtyOf, unitPrice, type LineConfig } from '@/lib/pricing';
+import { cartTotals, logoKey, pools, qtyOf, unitPrice, type LineConfig } from '@/lib/pricing';
+import { createRework } from '@/lib/rework';
 import { SITE_URL, publicOrigin } from '@/lib/site';
 import { LOGO_ID } from '@/lib/logoStore';
 import { createShopifyCheckout, shopifyEnabled } from '@/lib/shopify';
@@ -31,6 +32,13 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const lines = sanitize(body?.lines);
   if (!lines) return NextResponse.json({ error: 'Un article n\'a pas de maquette validée. Ouvrez-le avec « Modifier », vérifiez le logo et validez la maquette.' }, { status: 400 });
+  // Retouche du logo : un dossier par logo, joint à la commande pour l'atelier.
+  const byLogo = new Map<string, LineConfig[]>();
+  for (const l of lines) if (l.logoRework) byLogo.set(logoKey(l), [...(byLogo.get(logoKey(l)) || []), l]);
+  for (const group of byLogo.values()) {
+    const id = await createRework(group.map((l) => ({ slug: l.slug, color: l.color, zones: l.zones, text: l.text, logoId: l.logoId, logoSourceId: l.logoSourceId, mockupId: l.mockupId, pieces: qtyOf(l) })));
+    for (const l of group) l.reworkId = id;
+  }
   const promo = body?.promo && PROMO_CODES[String(body.promo).toUpperCase()] ? String(body.promo).toUpperCase() : null;
 
   // Shopify en priorité : panier, paiement et commandes gérés dans le back office.

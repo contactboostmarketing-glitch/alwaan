@@ -351,3 +351,24 @@ footer.site{background:var(--soft);margin-top:40px;padding-block:32px;font-size:
 .rework input{margin-top:3px;width:18px;height:18px;flex:none}
 .rework b{display:block;font-size:14px}
 .rework small{color:var(--muted);font-size:12.5px}
+/* Atelier et validation client */
+.atelier,.bat-page{padding-top:24px;padding-bottom:48px;max-width:900px}
+.atelier h2{font-size:18px;margin:24px 0 10px}
+.atl-list{display:grid;gap:8px}
+.atl-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:inherit;background:#fff}
+.st{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--soft);vertical-align:middle}
+.st-a_retoucher{background:var(--warnbg)}.st-envoye{background:#eef3ff}.st-valide{background:var(--okbg);color:var(--ok)}.st-modif{background:#fde8f1;color:var(--cta)}
+.atl-files{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.atl-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin:10px 0}
+.atl-items figure{margin:0;padding:8px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.atl-items figure.two{grid-column:span 2;display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.atl-items figure.two figcaption{grid-column:span 2}
+.atl-items figcaption small{display:block;color:var(--muted)}
+.atl-hist{padding-left:18px;font-size:14px}
+.okline{background:var(--okbg);color:var(--ok);padding:10px 12px;border-radius:10px;font-weight:600}
+.bat-shots{display:grid;gap:12px;margin:16px 0}
+.bat-shots figure{margin:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+.bat-shots img{display:block;width:100%;height:auto;max-height:380px;object-fit:contain}
+.bat-shots figcaption{padding:8px 12px;font-weight:600;font-size:14px}
+.bat-actions{display:grid;gap:10px;position:sticky;bottom:0;background:var(--bg,#fff);padding:12px 0}
+.bat-actions textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px;font:inherit}

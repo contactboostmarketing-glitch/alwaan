@@ -22,3 +22,13 @@ export async function getJSON<T>(store: string, key: string): Promise<T | null> 
   }
   try { return JSON.parse(await fs.readFile(path.join(process.cwd(), '.data', store, `${key}.json`), 'utf8')); } catch { return null; }
 }
+
+/** Clés d'un stockage (pour les listes de suivi de l'atelier). */
+export async function listKeys(store: string): Promise<string[]> {
+  if (onNetlify()) {
+    const { getStore } = await import('@netlify/blobs');
+    const r = await getStore({ name: store, consistency: 'strong' }).list();
+    return r.blobs.map((b) => b.key);
+  }
+  try { return (await fs.readdir(path.join(process.cwd(), '.data', store))).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)); } catch { return []; }
+}
