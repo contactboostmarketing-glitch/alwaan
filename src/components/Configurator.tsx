@@ -14,10 +14,10 @@ import { snapshot, uploadMockup } from '@/lib/mockup';
 function initial(slug: string): LineConfig {
   const p = getProduct(slug)!;
   const sizes = sizesFor(p);
-  const demo = [1, 3, 4, 2];
   return {
     slug, color: defaultColor(p), zones: ['heart'],
-    qty: Object.fromEntries(sizes.map((s, i) => [s, sizes.length === 1 ? 10 : demo[i] || 0])),
+    // Quantités à zéro : le client choisit lui-même (un total pré-rempli ferait croire à un prix unitaire).
+    qty: Object.fromEntries(sizes.map((s) => [s, 0])),
     logoStatus: 'uploaded', text: '',
   };
 }
@@ -215,7 +215,7 @@ export function Configurator({ slug }: { slug: string }) {
             ))}
           </div>
           {others > 0 && <p className="muted small">+ {others} pièce{others > 1 ? 's' : ''} avec ce logo déjà dans le panier, comptée{others > 1 ? 's' : ''} pour la remise.</p>}
-          {zones.some((z) => cfg.zones.includes(z.id) && !z.fixed) && (nt ? (
+          {q > 0 && zones.some((z) => cfg.zones.includes(z.id) && !z.fixed) && (nt ? (
             <div className="nudge"><span>+{nt[0] - pool} pièce{nt[0] - pool > 1 ? 's' : ''} = marquage <b>-{Math.round(nt[1] * 100)} %</b></span><button className="btn line small" onClick={reachTier}>Passer à {nt[0] - others}</button></div>
           ) : cur[1] === MAX_DISCOUNT ? <div className="nudge ok">✓ Marquage -{Math.round(MAX_DISCOUNT * 100)} %</div> : null)}
           <div className="tiers">
@@ -225,8 +225,13 @@ export function Configurator({ slug }: { slug: string }) {
 
         <div className="addrow">
           <div>
-            <small className="muted">{q} pièce{q > 1 ? 's' : ''} · {q ? <Price ht={at(pool)} /> : '—'} / pièce</small>
-            <div className="tot"><Price ht={lineTotal(cfg, pool)} /></div>
+            {q ? (<>
+              <small className="muted">{q} pièce{q > 1 ? 's' : ''} · <Price ht={at(pool)} /> / pièce</small>
+              <div className="tot"><Price ht={lineTotal(cfg, pool)} /></div>
+            </>) : (<>
+              <div className="tot"><Price ht={at(pool)} /> <small className="muted">/ pièce</small></div>
+              <small className="muted">Choisissez vos tailles</small>
+            </>)}
           </div>
           <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /><span>Je valide ma maquette <b>(bon à tirer)</b></span></label>
           <button className="btn cta" onClick={submit} disabled={saving}>{saving ? 'Enregistrement de la maquette…' : editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier'}</button>

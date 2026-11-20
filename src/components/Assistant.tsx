@@ -196,7 +196,6 @@ export function Assistant() {
       ids[p.slug] = id;
     }
     setMockups(ids); setApproving(false);
-    if (!people) choosePeople(10);
     next();
   };
   const choosePeople = (n: number) => { setPeople(n); setQty(Object.fromEntries(products.map((p) => [p.slug, spread(p, n)]))); };
