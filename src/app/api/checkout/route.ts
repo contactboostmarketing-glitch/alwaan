@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { COLOR_NAMES, PROMO_CODES, ZONES, getProduct, sizesFor, zonesFor } from '@/lib/catalog';
 import { cartTotals, qtyOf, unitPrice, type LineConfig } from '@/lib/pricing';
 import { SITE_URL } from '@/lib/site';
+import { LOGO_ID } from '@/lib/logoStore';
 import { createShopifyCheckout, shopifyEnabled } from '@/lib/shopify';
 
 type InLine = Omit<LineConfig, 'logo'> & { hasLogoPreview?: boolean };
@@ -18,7 +19,7 @@ function sanitize(raw: unknown): LineConfig[] | null {
     const sizes = sizesFor(p);
     const qty = Object.fromEntries(Object.entries(l.qty || {}).filter(([s]) => sizes.includes(s) || s === 'Total').map(([s, v]) => [s, Math.max(0, Math.min(5000, Math.floor(Number(v)) || 0))]));
     if (!zones.length || !qtyOf({ qty })) return null;
-    out.push({ slug: p.slug, color: l.color, zones, qty, text: String(l.text || '').slice(0, 24), logoStatus: l.logoStatus, logoName: l.logoName, pack: !!l.pack });
+    out.push({ slug: p.slug, color: l.color, zones, qty, text: String(l.text || '').slice(0, 24), logoStatus: l.logoStatus, logoName: l.logoName, logoId: l.logoId && LOGO_ID.test(l.logoId) ? l.logoId : undefined, pack: !!l.pack });
   }
   return out;
 }
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
   // Shopify en priorité : panier, paiement et commandes gérés dans le back office.
   if (shopifyEnabled()) {
     try {
-      const url = await createShopifyCheckout(lines, { promo, note: body?.pro ? 'Client professionnel' : 'Client particulier' });
+      const url = await createShopifyCheckout(lines, { promo, note: body?.pro ? 'Client professionnel' : 'Client particulier', origin: new URL(req.url).origin });
       return NextResponse.json({ url });
     } catch (e) {
       console.error('[checkout shopify]', e);

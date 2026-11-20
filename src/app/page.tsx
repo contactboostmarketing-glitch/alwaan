@@ -13,7 +13,7 @@ export default function Home() {
           <span className="muted strong">Restaurants, hôtels, artisans, associations</span>
           <h1>Vos tenues à <span>votre logo</span>, livrées en 7 jours</h1>
           <p className="lead">Choisissez un vêtement, déposez votre logo, recevez votre visuel avant production. Sans minimum de commande.</p>
-          <div className="ctas"><Link className="btn cta" href="/vetements/polos-personnalises">Voir les vêtements</Link><Link className="btn line" href="/devis">Demander un devis</Link></div>
+          <div className="ctas"><Link className="btn cta" href="/assistant">Créer ma tenue en 1 minute</Link><Link className="btn line" href="/vetements/polos-personnalises">Voir les vêtements</Link></div>
           <Checks items={['Visuel gratuit avant production', 'Dès 1 pièce', 'Prix dégressifs jusqu\'à -38 %']} />
         </div>
         <div className="hero-vis">

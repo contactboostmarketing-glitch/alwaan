@@ -29,6 +29,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <Breadcrumbs items={[[c.name, `/vetements/${c.slug}`], [p.name]]} />
       <section className="wrap">
         <Suspense><Configurator slug={p.slug} /></Suspense>
+        <div className="asst-cta"><span><b>Pas le temps ?</b> Envoyez votre logo, notre assistant prépare toute la commande.</span><Link className="btn line small" href="/assistant">Commander avec l&apos;assistant</Link></div>
         <div className="seo">
           <div className="txt">
             <h2>Caractéristiques</h2>

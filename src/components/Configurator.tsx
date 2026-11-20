@@ -20,7 +20,7 @@ function initial(slug: string): LineConfig {
 }
 
 /** Réduit l'image du logo pour l'aperçu et le panier (le fichier d'origine sera envoyé au serveur à la commande). */
-async function preview(file: File): Promise<string> {
+export async function preview(file: File): Promise<string> {
   const url = URL.createObjectURL(file);
   const img = new Image();
   await new Promise((ok, ko) => { img.onload = ok; img.onerror = ko; img.src = url; });
@@ -53,7 +53,7 @@ export function Configurator({ slug }: { slug: string }) {
     if (!sameLogo || editIndex !== null || !last) return;
     const valid = zones.map((z) => z.id);
     const z = last.zones.filter((x) => valid.includes(x));
-    setCfg((c) => ({ ...c, logo: last.logo, logoName: last.logoName, logoStatus: last.logoStatus, text: last.text,
+    setCfg((c) => ({ ...c, logo: last.logo, logoName: last.logoName, logoId: last.logoId, logoStatus: last.logoStatus, text: last.text,
       zones: z.length ? z : c.zones, color: p.colors.includes(last.color) ? last.color : c.color }));
   }, [sameLogo, lines.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -74,14 +74,30 @@ export function Configurator({ slug }: { slug: string }) {
     const keys = Object.keys(cfg.qty), k = keys[Math.min(2, keys.length - 1)];
     setQty(k, cfg.qty[k] + nt[0] - q);
   };
+  const [uploading, setUploading] = useState(false);
+  /** Envoie le fichier d'origine au serveur (pour l'atelier) ; l'aperçu reste calculé dans le navigateur. */
+  const upload = async (f: File) => {
+    setUploading(true);
+    try {
+      const body = new FormData(); body.append('file', f);
+      const r = await fetch('/api/logo', { method: 'POST', body });
+      const d = await r.json();
+      if (!r.ok) { flash(d.error || 'Envoi du logo impossible'); return; }
+      setCfg((c) => ({ ...c, logoId: d.id }));
+    } catch { flash('Envoi du logo impossible. Vérifiez votre connexion.'); }
+    finally { setUploading(false); }
+  };
   const onFile = async (f?: File) => {
     if (!f) return;
+    set({ logoId: undefined });
+    upload(f);
     if (!f.type.startsWith('image/')) { set({ logo: undefined, logoName: f.name, logoStatus: 'uploaded' }); flash('Fichier reçu : notre graphiste l\'intègre au visuel'); return; }
     try { set({ logo: await preview(f), logoName: f.name, logoStatus: 'uploaded' }); } catch { flash('Ce fichier ne s\'ouvre pas. Essayez un PNG ou un JPG.'); }
   };
   const submit = () => {
     if (!q) { flash('Indiquez au moins une pièce'); return; }
     if (!cfg.zones.length) { flash('Choisissez au moins un emplacement'); return; }
+    if (uploading) { flash('Envoi du logo en cours, un instant…'); return; }
     if (editIndex !== null) { update(editIndex, cfg); router.push('/panier'); return; }
     add(cfg);
     setAdded(true);
@@ -121,12 +137,12 @@ export function Configurator({ slug }: { slug: string }) {
           <div className="lbl">Votre logo</div>
           <label className={`drop ${cfg.logoStatus !== 'later' ? 'has' : ''}`} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); onFile(e.dataTransfer.files[0]); }}>
             <strong>{logoLabel}</strong>
-            <small>{cfg.logoStatus === 'uploaded' ? 'Touchez pour le remplacer' : 'Photo, PNG, JPG, SVG ou PDF · un graphiste le prépare gratuitement'}</small>
+            <small>{uploading ? 'Envoi du fichier en cours…' : cfg.logoStatus === 'uploaded' ? (cfg.logoId ? 'Fichier reçu · touchez pour le remplacer' : 'Touchez pour le remplacer') : 'Photo, PNG, JPG, SVG ou PDF · un graphiste le prépare gratuitement'}</small>
             <input type="file" accept="image/*,.pdf,.ai,.eps" hidden onChange={(e) => onFile(e.target.files?.[0])} />
           </label>
           <div className="opts">
-            <button className="link" onClick={() => set({ logo: undefined, logoName: undefined, logoStatus: 'create' })}>Je n&apos;ai pas de logo : créez-le pour moi (offert)</button>
-            <button className="link" onClick={() => set({ logo: undefined, logoName: undefined, logoStatus: 'later' })}>Je l&apos;enverrai après la commande</button>
+            <button className="link" onClick={() => set({ logo: undefined, logoName: undefined, logoId: undefined, logoStatus: 'create' })}>Je n&apos;ai pas de logo : créez-le pour moi (offert)</button>
+            <button className="link" onClick={() => set({ logo: undefined, logoName: undefined, logoId: undefined, logoStatus: 'later' })}>Je l&apos;enverrai après la commande</button>
           </div>
           <input type="text" value={cfg.text} maxLength={24} placeholder="Texte facultatif (nom, slogan…)" aria-label="Texte sous le logo" onChange={(e) => set({ text: e.target.value })} />
         </div>

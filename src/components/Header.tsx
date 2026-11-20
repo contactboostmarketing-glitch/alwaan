@@ -35,6 +35,7 @@ export function Header() {
             <Link key={c.slug} href={`/vetements/${c.slug}`} aria-current={path === `/vetements/${c.slug}` ? 'page' : undefined}>{c.name}</Link>
           ))}
           <Link href="/devis" aria-current={path === '/devis' ? 'page' : undefined}>Devis</Link>
+          <Link className="menu-cta" href="/assistant" aria-current={path === '/assistant' ? 'page' : undefined}>Créer ma tenue en 1 min</Link>
         </nav>
       </header>
     </>

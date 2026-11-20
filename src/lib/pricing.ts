@@ -14,6 +14,7 @@ export type LineConfig = {
   text?: string;
   logo?: string; // aperçu (data URL) côté navigateur ; le fichier d'origine sera stocké côté serveur
   logoName?: string;
+  logoId?: string; // fichier d'origine stocké côté serveur (/api/logo/<id>)
   logoStatus: LogoStatus;
   pack?: boolean;
 };

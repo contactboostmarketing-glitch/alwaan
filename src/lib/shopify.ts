@@ -7,6 +7,7 @@
 import { COLOR_NAMES, ZONES, getProduct } from './catalog';
 import { cartTotals, lineFull, qtyOf, round, type LineConfig } from './pricing';
 import { adminEnabled, createExactDiscount } from './shopifyAdmin';
+import { SITE_URL } from './site';
 
 const API_VERSION = '2025-01';
 
@@ -44,7 +45,7 @@ const MARK_HANDLE: Record<string, string> = Object.fromEntries(ZONES.map((z) => 
 export type CartLineInput = { merchandiseId: string; quantity: number; attributes: { key: string; value: string }[] };
 
 /** Transforme les lignes du configurateur en lignes de panier Shopify. */
-export async function toShopifyLines(lines: LineConfig[]): Promise<CartLineInput[]> {
+export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL): Promise<CartLineInput[]> {
   const out: CartLineInput[] = [];
   const cache = new Map<string, Variant[]>();
   const vs = async (h: string) => { if (!cache.has(h)) cache.set(h, await variantsOf(h)); return cache.get(h)!; };
@@ -57,6 +58,7 @@ export async function toShopifyLines(lines: LineConfig[]): Promise<CartLineInput
       { key: 'Groupe', value: group },
       { key: 'Emplacements', value: l.zones.map((z) => ZONES.find((x) => x.id === z)?.name).join(' + ') },
       { key: 'Logo', value: l.logoStatus === 'uploaded' ? `Fourni${l.logoName ? ` (${l.logoName})` : ''}` : l.logoStatus === 'create' ? 'À créer (offert)' : 'Envoyé après commande' },
+      ...(l.logoId ? [{ key: 'Fichier logo', value: `${origin}/api/logo/${l.logoId}` }] : []),
       ...(l.text ? [{ key: 'Texte', value: l.text }] : []),
     ];
     const variants = await vs(p.slug);
@@ -83,8 +85,8 @@ export async function toShopifyLines(lines: LineConfig[]): Promise<CartLineInput
  * on applique donc un code unique du montant de l'écart (paliers de quantité, pack, code promo),
  * puis on vérifie le sous-total obtenu avant d'envoyer le client au paiement.
  */
-export async function createShopifyCheckout(lines: LineConfig[], opts: { promo?: string | null; note?: string } = {}) {
-  const shopLines = await toShopifyLines(lines);
+export async function createShopifyCheckout(lines: LineConfig[], opts: { promo?: string | null; note?: string; origin?: string } = {}) {
+  const shopLines = await toShopifyLines(lines, opts.origin);
   const t = cartTotals(lines, opts.promo);
   const catalogue = round(lines.reduce((a, l) => a + lineFull(l), 0));
   const expected = round(t.goods - t.discount); // montant des articles affiché sur le site, HT

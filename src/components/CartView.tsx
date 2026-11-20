@@ -33,7 +33,7 @@ export function CartView() {
     const sizes = sizesFor(p), q = qtyOf(first);
     let qty: Record<string, number> = sizes.length === 1 ? { [sizes[0]]: q } : Object.fromEntries(sizes.map((s) => [s, first.qty[s] || 0]));
     if (!Object.values(qty).some(Boolean)) qty = { [sizes[0]]: q };
-    add({ slug, color: p.colors.includes(first.color) ? first.color : defaultColor(p), zones: [p.shape === 'cap' ? 'chest' : 'heart'], qty, logo: first.logo, logoName: first.logoName, logoStatus: first.logoStatus, text: first.text, pack: true });
+    add({ slug, color: p.colors.includes(first.color) ? first.color : defaultColor(p), zones: [p.shape === 'cap' ? 'chest' : 'heart'], qty, logo: first.logo, logoName: first.logoName, logoId: first.logoId, logoStatus: first.logoStatus, text: first.text, pack: true });
   };
   const applyCode = () => {
     const c = code.trim().toUpperCase();
