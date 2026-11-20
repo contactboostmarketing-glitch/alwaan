@@ -4,7 +4,8 @@ import {
   FREE_SHIPPING_HT, PACK_DISCOUNT, PROMO_CODES, SHIPPING_HT, VAT, getProduct, tierFor, zonesFor,
 } from './catalog';
 
-export type LogoStatus = 'uploaded' | 'create' | 'later';
+/** uploaded = logo fourni ; text = pas de logo, seulement un texte imprimé. */
+export type LogoStatus = 'uploaded' | 'text';
 
 export type LineConfig = {
   slug: string;
@@ -12,10 +13,13 @@ export type LineConfig = {
   zones: string[];
   qty: Record<string, number>;
   text?: string;
-  logo?: string; // aperçu (data URL) côté navigateur ; le fichier d'origine sera stocké côté serveur
+  logo?: string; // aperçu (data URL) côté navigateur ; le fichier d'origine est stocké côté serveur (logoId)
   logoName?: string;
   logoId?: string; // fichier d'origine stocké côté serveur (/api/logo/<id>)
   logoStatus: LogoStatus;
+  logoLowRes?: boolean; // logo de faible définition, accepté en connaissance de cause
+  mockupId?: string; // maquette validée par le client (BAT), image stockée côté serveur
+  approvedAt?: string;
   pack?: boolean;
 };
 

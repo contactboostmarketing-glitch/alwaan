@@ -22,7 +22,7 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
       <section className="wrap">
         <div className="cat-head">
           <div><h1>{s.h1}</h1><p className="mt8">{s.intro} Les mêmes modèles pour toute l&apos;équipe, du S au 5XL.</p></div>
-          <Checks items={['Dès 1 pièce', 'Visuel avant production']} />
+          <Checks items={['Dès 1 pièce', 'Maquette en direct']} />
         </div>
         {s.categories.map((ck) => {
           const c = getCategory(ck)!;

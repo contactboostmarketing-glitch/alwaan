@@ -14,7 +14,7 @@ const oswald = Oswald({ subsets: ['latin'], weight: ['500', '600'], variable: '-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: `${SITE_NAME} · ${TAGLINE}`, template: `%s · ${SITE_NAME}` },
-  description: 'Polos, t-shirts, tabliers, casquettes et haute visibilité à votre logo. Dès 1 pièce, visuel gratuit avant production, livraison en 7 jours.',
+  description: 'Polos, t-shirts, tabliers, casquettes et haute visibilité à votre logo. Dès 1 pièce, maquette en direct avec votre logo, livraison en 7 jours.',
   openGraph: { siteName: SITE_NAME, locale: 'fr_FR', type: 'website' },
   alternates: { canonical: '/' },
 };

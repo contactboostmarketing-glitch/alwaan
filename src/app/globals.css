@@ -306,3 +306,7 @@ footer.site{background:var(--soft);margin-top:40px;padding-block:32px;font-size:
 .menu a.menu-cta{color:var(--cta)}
 .asst-save{display:grid;gap:8px;border:1.5px solid var(--line);border-radius:16px;padding:14px;background:#fff}
 .asst-save .note{font-size:12px;color:var(--muted)}
+.offscreen{position:absolute;left:-10000px;top:0;width:600px}
+.offscreen svg{width:600px;height:577px}
+.warnline{background:var(--warnbg);border-radius:10px;padding:8px 10px;font-size:13px;margin:0}
+.consent.bat{font-size:14px;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:10px;width:100%}

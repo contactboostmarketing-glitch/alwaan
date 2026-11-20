@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const p = getProduct((await params).slug)!;
   return {
     title: `${p.name} personnalisé à votre logo`,
-    description: `${p.name} : ${p.type.toLowerCase()}, ${p.colors.length} coloris, ${p.sizes === 'TU' ? 'taille unique' : p.sizes}. Marquage de votre logo dès 1 pièce, visuel gratuit, livraison en 7 jours.`,
+    description: `${p.name} : ${p.type.toLowerCase()}, ${p.colors.length} coloris, ${p.sizes === 'TU' ? 'taille unique' : p.sizes}. Marquage de votre logo dès 1 pièce, maquette en direct, livraison en 7 jours.`,
     alternates: { canonical: `/produits/${p.slug}` },
   };
 }

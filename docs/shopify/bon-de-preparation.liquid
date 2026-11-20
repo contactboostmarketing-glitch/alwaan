@@ -2,7 +2,7 @@
   Bon de préparation atelier alwaan, pour l'application Shopify « Order Printer » (gratuite).
   Installation : Order Printer → Modèles → Créer un modèle → coller ce fichier.
   Regroupe chaque article personnalisé (vêtement + tailles + marquages + logo) d'après
-  les propriétés envoyées par le site : Groupe, Emplacements, Logo, Fichier logo, Texte, Tailles.
+  les propriétés envoyées par le site : Groupe, Emplacements, Logo, Fichier logo, Maquette validée (BAT), Texte, Tailles.
 {%- endcomment -%}
 <style>
   * { box-sizing: border-box; }
@@ -14,6 +14,7 @@
   .box { border: 1.5px solid #111; border-radius: 6px; padding: 8px; margin-bottom: 10px; page-break-inside: avoid; }
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .art { display: grid; grid-template-columns: 110px 1fr; gap: 10px; }
+  .bat img { width: 100%; max-height: 260px; object-fit: contain; border: 1px solid #ccc; margin-top: 6px; }
   .logo { width: 110px; height: 110px; border: 1px dashed #999; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 10px; }
   .logo img { max-width: 100%; max-height: 100%; }
   table { width: 100%; border-collapse: collapse; margin-top: 6px; }
@@ -50,12 +51,12 @@
 {%- for g in group_list -%}
 {%- if g == "" -%}{%- continue -%}{%- endif -%}
 <div class="box">
-  {%- assign garment = nil -%}{%- assign file = nil -%}{%- assign zones = nil -%}{%- assign logo = nil -%}{%- assign text = nil -%}{%- assign later = nil -%}
+  {%- assign garment = nil -%}{%- assign bat = nil -%}{%- assign batdate = nil -%}{%- assign file = nil -%}{%- assign zones = nil -%}{%- assign logo = nil -%}{%- assign text = nil -%}{%- assign later = nil -%}
   {%- for item in order.line_items -%}
     {%- assign ig = item.properties["Groupe"] | default: item.title -%}
     {%- if ig == g and item.product.type != "Marquage" -%}
       {%- assign garment = item -%}
-      {%- assign file = item.properties["Fichier logo"] -%}{%- assign zones = item.properties["Emplacements"] -%}
+      {%- assign file = item.properties["Fichier logo"] -%}{%- assign bat = item.properties["Maquette validée (BAT)"] -%}{%- assign batdate = item.properties["BAT validé le"] -%}{%- assign zones = item.properties["Emplacements"] -%}
       {%- assign logo = item.properties["Logo"] -%}{%- assign text = item.properties["Texte"] -%}{%- assign later = item.properties["Tailles"] -%}
     {%- endif -%}
   {%- endfor -%}
@@ -73,8 +74,11 @@
       {%- if text -%}<div><strong>Texte :</strong> « {{ text }} »</div>{%- endif -%}
       {%- if file -%}<div style="word-break:break-all"><strong>Fichier :</strong> {{ file }}</div>{%- endif -%}
       {%- if later -%}<div class="warn"><strong>⚠ Tailles :</strong> {{ later }}</div>{%- endif -%}
+      {%- if logo contains "PETITE" -%}<div class="warn"><strong>⚠ Logo en petite définition</strong> (accepté par le client)</div>{%- endif -%}
+      {%- if batdate -%}<div><strong>BAT validé par le client le</strong> {{ batdate }}</div>{%- endif -%}
     </div>
   </div>
+  {%- if bat -%}<div class="bat"><strong>Maquette validée (à reproduire à l'identique)</strong><img src="{{ bat }}?apercu" alt="maquette validée"></div>{%- endif -%}
   <table>
     <tr><th>Taille</th><th>Quantité</th><th>Référence</th><th class="check">Prélevé</th><th class="check">Imprimé</th><th class="check">Contrôlé</th></tr>
     {%- assign total = 0 -%}
@@ -105,8 +109,7 @@
   <div class="box">
     <strong>Suivi de production</strong>
     <table class="steps">
-      <tr><td>Visuel (BAT) envoyé</td><td style="width:40%"></td></tr>
-      <tr><td>BAT validé par le client</td><td></td></tr>
+      <tr><td>Articles prélevés</td><td style="width:40%"></td></tr>
       <tr><td>Impression DTF</td><td></td></tr>
       <tr><td>Pressage / contrôle qualité</td><td></td></tr>
       <tr><td>Colis prêt / étiquette</td><td></td></tr>

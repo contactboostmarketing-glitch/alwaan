@@ -23,7 +23,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
       <section className="wrap">
         <div className="cat-head">
           <div><h1>{c.name} personnalisés</h1><p className="mt8">{c.intro}</p></div>
-          <Checks items={['Dès 1 pièce', 'Visuel avant production', 'Livré en 7 jours']} />
+          <Checks items={['Dès 1 pièce', 'Maquette en direct', 'Livré en 7 jours']} />
         </div>
         <p className="muted small mb">{list.length} modèles · prix dès 250 pièces, logo compris</p>
         <div className="grid">{list.map((p) => <ProductCard key={p.slug} p={p} />)}</div>

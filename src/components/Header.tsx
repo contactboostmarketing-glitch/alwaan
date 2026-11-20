@@ -20,7 +20,7 @@ export function Header() {
   const count = lines.reduce((a, l) => a + qtyOf(l), 0);
   return (
     <>
-      <div className="promo">Livraison offerte dès 150 € · Visuel gratuit avant production · Dès 1 pièce</div>
+      <div className="promo">Livraison offerte dès 150 € · Maquette en direct avec votre logo · Dès 1 pièce</div>
       <header className="site">
         <div className="wrap hd">
           <Link className="logo" href="/" aria-label="alwaan, accueil"><Logo /><b>alwaan</b></Link>

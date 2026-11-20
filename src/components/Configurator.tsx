@@ -1,12 +1,13 @@
 'use client';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CATEGORIES, COLOR_NAMES, PRODUCTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor } from '@/lib/catalog';
 import { lineTotal, qtyOf, unitBase, unitPrice, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
 import { Price } from './Price';
+import { snapshot, uploadMockup } from '@/lib/mockup';
 
 function initial(slug: string): LineConfig {
   const p = getProduct(slug)!;
@@ -15,11 +16,22 @@ function initial(slug: string): LineConfig {
   return {
     slug, color: defaultColor(p), zones: [p.shape === 'cap' ? 'chest' : 'heart'],
     qty: Object.fromEntries(sizes.map((s, i) => [s, sizes.length === 1 ? 10 : demo[i] || 0])),
-    logoStatus: 'later', text: '',
+    logoStatus: 'uploaded', text: '',
   };
 }
 
-/** Réduit l'image du logo pour l'aperçu et le panier (le fichier d'origine sera envoyé au serveur à la commande). */
+/** Seuil sous lequel un logo risque d'être flou à l'impression (plus grand côté, en pixels). */
+export const LOW_RES = 800;
+/** Taille d'origine d'une image (pour alerter sur les logos trop petits). */
+export async function imageSize(file: File): Promise<{ w: number; h: number } | null> {
+  try {
+    const url = URL.createObjectURL(file); const img = new Image();
+    await new Promise((ok, ko) => { img.onload = ok; img.onerror = ko; img.src = url; });
+    URL.revokeObjectURL(url); return { w: img.naturalWidth, h: img.naturalHeight };
+  } catch { return null; }
+}
+
+/** Réduit l'image du logo pour l'aperçu et le panier (le fichier d'origine est envoyé au serveur). */
 export async function preview(file: File): Promise<string> {
   const url = URL.createObjectURL(file);
   const img = new Image();
@@ -46,6 +58,11 @@ export function Configurator({ slug }: { slug: string }) {
   const [cfg, setCfg] = useState<LineConfig>(() => initial(slug));
   const [view, setView] = useState<'front' | 'back'>('front');
   const [toast, setToast] = useState('');
+  const [approved, setApproved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const shots = useRef<HTMLDivElement>(null);
+  // Toute modification annule la validation : le client valide toujours la dernière version.
+  useEffect(() => { setApproved(false); }, [cfg.color, cfg.zones.join(), cfg.text, cfg.logoId, cfg.logoStatus]);
   useEffect(() => { if (editIndex !== null) setCfg(structuredClone(lines[editIndex])); }, [editIndex]); // eslint-disable-line react-hooks/exhaustive-deps
   // « Même logo » : on reprend le logo, le texte, les emplacements et si possible la couleur du dernier article.
   useEffect(() => {
@@ -89,22 +106,39 @@ export function Configurator({ slug }: { slug: string }) {
   };
   const onFile = async (f?: File) => {
     if (!f) return;
-    set({ logoId: undefined });
+    setApproved(false);
+    // Sans graphiste, le logo doit s'afficher sur la maquette : on n'accepte que des images.
+    if (!f.type.startsWith('image/')) { flash('Envoyez votre logo en PNG, JPG ou SVG pour le voir sur la maquette.'); return; }
+    set({ logoId: undefined, logoLowRes: false });
     upload(f);
-    if (!f.type.startsWith('image/')) { set({ logo: undefined, logoName: f.name, logoStatus: 'uploaded' }); flash('Fichier reçu : notre graphiste l\'intègre au visuel'); return; }
-    try { set({ logo: await preview(f), logoName: f.name, logoStatus: 'uploaded' }); } catch { flash('Ce fichier ne s\'ouvre pas. Essayez un PNG ou un JPG.'); }
+    const size = await imageSize(f);
+    const low = !!size && Math.max(size.w, size.h) < LOW_RES && !/svg/.test(f.type);
+    try { set({ logo: await preview(f), logoName: f.name, logoStatus: 'uploaded', logoLowRes: low }); } catch { flash('Ce fichier ne s\'ouvre pas. Essayez un PNG ou un JPG.'); }
+    if (low) flash('Logo en petite définition : l\'impression risque d\'être floue. Envoyez une version plus grande si vous l\'avez.');
   };
-  const submit = () => {
+  const submit = async () => {
     if (!q) { flash('Indiquez au moins une pièce'); return; }
     if (!cfg.zones.length) { flash('Choisissez au moins un emplacement'); return; }
     if (uploading) { flash('Envoi du logo en cours, un instant…'); return; }
-    if (editIndex !== null) { update(editIndex, cfg); router.push('/panier'); return; }
-    add(cfg);
+    if (cfg.logoStatus === 'uploaded' && !cfg.logoId) { flash('Ajoutez votre logo, ou choisissez « Texte seul ».'); return; }
+    if (cfg.logoStatus === 'text' && !cfg.text?.trim()) { flash('Écrivez le texte à imprimer.'); return; }
+    if (!approved) { flash('Cochez la validation de votre maquette.'); return; }
+    // La maquette validée est figée en image et jointe à la commande (BAT).
+    setSaving(true);
+    const svgs = Array.from(shots.current?.querySelectorAll('svg') ?? []) as SVGSVGElement[];
+    const png = await snapshot(svgs, `${p.name} · ${COLOR_NAMES[cfg.color]} · ${cfg.zones.map((z) => zones.find((x) => x.id === z)?.name).join(' + ')}`).catch(() => null);
+    const mockupId = png ? await uploadMockup(png) : null;
+    setSaving(false);
+    if (!mockupId) { flash('Enregistrement de la maquette impossible. Réessayez.'); return; }
+    const item = { ...cfg, mockupId, approvedAt: new Date().toISOString() };
+    if (editIndex !== null) { update(editIndex, item); router.push('/panier'); return; }
+    add(item);
+    setApproved(false);
     setAdded(true);
     flash(`${q} × ${p.name} ajoutés au panier`);
   };
   const hasBack = zones.some((z) => z.view === 'back');
-  const logoLabel = cfg.logoStatus === 'uploaded' ? (cfg.logo ? 'Logo ajouté' : cfg.logoName) : cfg.logoStatus === 'create' ? 'Création de logo offerte' : 'Déposez votre logo';
+  const logoLabel = cfg.logoStatus === 'text' ? 'Texte seul (sans logo)' : cfg.logo ? 'Logo ajouté' : 'Déposez votre logo';
 
   return (
     <div className="pdp">
@@ -116,7 +150,11 @@ export function Configurator({ slug }: { slug: string }) {
             <button aria-pressed={view === 'back'} onClick={() => setView('back')}>Dos</button>
           </div>
         )}
-        <p className="muted small">Aperçu indicatif. Un visuel à l&apos;échelle vous est envoyé avant production.</p>
+        <p className="muted small">Cette maquette sert de bon à tirer : l&apos;impression reprend exactement ce que vous voyez (emplacement, couleurs, texte).</p>
+        <div ref={shots} className="offscreen" aria-hidden="true">
+          <Garment slug={slug} color={cfg.color} view="front" zones={cfg.zones} logo={cfg.logo} text={cfg.text} />
+          {cfg.zones.includes('back') || cfg.zones.includes('neck') ? <Garment slug={slug} color={cfg.color} view="back" zones={cfg.zones} logo={cfg.logo} text={cfg.text} /> : null}
+        </div>
       </div>
 
       <div className="buy">
@@ -135,16 +173,16 @@ export function Configurator({ slug }: { slug: string }) {
 
         <div className="blk">
           <div className="lbl">Votre logo</div>
-          <label className={`drop ${cfg.logoStatus !== 'later' ? 'has' : ''}`} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); onFile(e.dataTransfer.files[0]); }}>
+          <label className={`drop ${cfg.logoId || cfg.logoStatus === 'text' ? 'has' : ''}`} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); onFile(e.dataTransfer.files[0]); }}>
             <strong>{logoLabel}</strong>
-            <small>{uploading ? 'Envoi du fichier en cours…' : cfg.logoStatus === 'uploaded' ? (cfg.logoId ? 'Fichier reçu · touchez pour le remplacer' : 'Touchez pour le remplacer') : 'Photo, PNG, JPG, SVG ou PDF · un graphiste le prépare gratuitement'}</small>
-            <input type="file" accept="image/*,.pdf,.ai,.eps" hidden onChange={(e) => onFile(e.target.files?.[0])} />
+            <small>{uploading ? 'Envoi du fichier en cours…' : cfg.logoStatus === 'uploaded' ? (cfg.logoId ? 'Fichier reçu · touchez pour le remplacer' : 'Touchez pour le remplacer') : 'PNG, JPG ou SVG · le plus grand possible, fond transparent idéalement'}</small>
+            <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onChange={(e) => onFile(e.target.files?.[0])} />
           </label>
           <div className="opts">
-            <button className="link" onClick={() => set({ logo: undefined, logoName: undefined, logoId: undefined, logoStatus: 'create' })}>Je n&apos;ai pas de logo : créez-le pour moi (offert)</button>
-            <button className="link" onClick={() => set({ logo: undefined, logoName: undefined, logoId: undefined, logoStatus: 'later' })}>Je l&apos;enverrai après la commande</button>
+            <button className="link" onClick={() => { setApproved(false); set({ logo: undefined, logoName: undefined, logoId: undefined, logoLowRes: false, logoStatus: 'text' }); }}>Je n&apos;ai pas de logo : imprimer seulement un texte</button>
+            {cfg.logoLowRes && <p className="warnline">Logo en petite définition : l&apos;impression risque d&apos;être floue. Mieux vaut une image d&apos;au moins {LOW_RES} pixels.</p>}
           </div>
-          <input type="text" value={cfg.text} maxLength={24} placeholder="Texte facultatif (nom, slogan…)" aria-label="Texte sous le logo" onChange={(e) => set({ text: e.target.value })} />
+          <input type="text" value={cfg.text} maxLength={24} placeholder={cfg.logoStatus === 'text' ? 'Texte à imprimer (nom, slogan…)' : 'Texte facultatif sous le logo'} aria-label="Texte sous le logo" onChange={(e) => set({ text: e.target.value })} />
         </div>
 
         <div className="blk">
@@ -188,9 +226,10 @@ export function Configurator({ slug }: { slug: string }) {
             <small className="muted">{q} pièce{q > 1 ? 's' : ''} · {q ? <Price ht={unitPrice(cfg)} /> : '—'} / pièce</small>
             <div className="tot"><Price ht={lineTotal(cfg)} /></div>
           </div>
-          <button className="btn cta" onClick={submit}>{editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier'}</button>
+          <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /><span>Je valide cette maquette comme <b>bon à tirer</b> : emplacement, couleurs et texte sont corrects.</span></label>
+          <button className="btn cta" onClick={submit} disabled={saving}>{saving ? 'Enregistrement de la maquette…' : editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier'}</button>
         </div>
-        <div className="trust"><span>Visuel envoyé sous 24 h</span><span>Paiement sécurisé</span><span>Défaut d&apos;impression refait</span><span>Livraison 7 jours ouvrés</span></div>
+        <div className="trust"><span>Maquette validée = impression identique</span><span>Paiement sécurisé</span><span>Défaut d&apos;impression refait</span><span>Livraison 7 jours ouvrés</span></div>
       </div>
       {added && <SameLogo current={p.category} logo={cfg.logo} />}
       {toast && <div className="toast" role="status">{toast} {toast.includes('ajoutés') && <Link href="/panier">Voir le panier</Link>}</div>}

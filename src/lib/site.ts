@@ -26,9 +26,9 @@ export const LEGAL_PAGES: Record<string, { title: string; body: string[] }> = {
   mediation: { title: 'Médiation de la consommation', body: [
     'Nom et coordonnées du médiateur auquel le client particulier peut recourir gratuitement en cas de litige non résolu.'] },
   livraison: { title: 'Livraison et délais', body: [
-    'Production en 7 jours ouvrés après validation du visuel, 4 jours en express.',
+    'Production en 7 jours ouvrés après la commande, 4 jours en express.',
     'Livraison offerte dès 150 € HT d\'articles, sinon 9,90 € HT. Suivi par email.'] },
   retours: { title: 'Retours et rétractation', body: [
     'Articles marqués à votre logo : fabriqués sur mesure, ils ne bénéficient pas du droit de rétractation. Un défaut ou une erreur de notre part est refait ou remboursé.',
-    'Si le visuel (BAT) ne vous convient pas, vous êtes remboursé intégralement avant toute production.'] },
+    'La maquette validée sur le site vaut bon à tirer : l\'impression la reproduit fidèlement (emplacement, couleurs, texte). Une impression non conforme à la maquette validée est refaite à nos frais.'] },
 };

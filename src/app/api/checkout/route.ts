@@ -19,7 +19,10 @@ function sanitize(raw: unknown): LineConfig[] | null {
     const sizes = sizesFor(p);
     const qty = Object.fromEntries(Object.entries(l.qty || {}).filter(([s]) => sizes.includes(s) || s === 'Total').map(([s, v]) => [s, Math.max(0, Math.min(5000, Math.floor(Number(v)) || 0))]));
     if (!zones.length || !qtyOf({ qty })) return null;
-    out.push({ slug: p.slug, color: l.color, zones, qty, text: String(l.text || '').slice(0, 24), logoStatus: l.logoStatus, logoName: l.logoName, logoId: l.logoId && LOGO_ID.test(l.logoId) ? l.logoId : undefined, pack: !!l.pack });
+    // Sans graphiste : chaque article doit avoir un logo reçu (ou un texte) et une maquette validée.
+    const logoOk = l.logoStatus === 'text' ? !!String(l.text || '').trim() : !!(l.logoId && LOGO_ID.test(l.logoId));
+    if (!logoOk || !(l.mockupId && LOGO_ID.test(l.mockupId))) return null;
+    out.push({ slug: p.slug, color: l.color, zones, qty, text: String(l.text || '').slice(0, 24), logoName: l.logoName, logoId: l.logoId && LOGO_ID.test(l.logoId) ? l.logoId : undefined, logoStatus: l.logoStatus === 'text' ? 'text' : 'uploaded', logoLowRes: !!l.logoLowRes, mockupId: l.mockupId, approvedAt: typeof l.approvedAt === 'string' ? l.approvedAt.slice(0, 40) : undefined, pack: !!l.pack });
   }
   return out;
 }
@@ -27,7 +30,7 @@ function sanitize(raw: unknown): LineConfig[] | null {
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const lines = sanitize(body?.lines);
-  if (!lines) return NextResponse.json({ error: 'Panier invalide. Rechargez la page.' }, { status: 400 });
+  if (!lines) return NextResponse.json({ error: 'Un article n\'a pas de maquette validée. Ouvrez-le avec « Modifier », vérifiez le logo et validez la maquette.' }, { status: 400 });
   const promo = body?.promo && PROMO_CODES[String(body.promo).toUpperCase()] ? String(body.promo).toUpperCase() : null;
 
   // Shopify en priorité : panier, paiement et commandes gérés dans le back office.

@@ -44,8 +44,8 @@ const ALL = ['#ffffff', '#f2d33b', '#e8892b', '#c8302f', '#8b1e2d', '#d43f8d', '
 
 export const GENERAL_FAQ: [string, string][] = [
   ['Y a-t-il un minimum de commande ?', 'Non, vous pouvez commander dès 1 pièce. Le prix unitaire baisse automatiquement à partir de 10, 25, 50, 100 et 250 pièces.'],
-  ['Quand vais-je recevoir ma commande ?', '7 jours ouvrés après validation de votre visuel, 4 jours en express. La date estimée s\'affiche dans le panier.'],
-  ['Je n\'ai pas de logo en haute définition.', 'Envoyez ce que vous avez : photo, PDF, capture. Notre graphiste le redessine gratuitement et vous le montre avant impression.'],
+  ['Quand vais-je recevoir ma commande ?', '7 jours ouvrés après votre commande, 4 jours en express. La date estimée s\'affiche dans le panier.'],
+  ['Quel fichier de logo envoyer ?', 'Un PNG à fond transparent ou un SVG, le plus grand possible (au moins 800 pixels de large). Le site vous prévient si votre logo est en petite définition. Pas de logo ? Vous pouvez imprimer un simple texte.'],
   ['Puis-je retourner un vêtement personnalisé ?', 'Les articles marqués à votre logo sont fabriqués sur mesure et ne bénéficient pas du droit de rétractation (article L221-28 3° du Code de la consommation). Un défaut d\'impression ou une erreur de notre part est refait à nos frais.'],
 ];
 

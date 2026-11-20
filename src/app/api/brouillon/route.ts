@@ -10,7 +10,7 @@ export type Draft = {
   email: string; marketing: boolean; createdAt: string;
   place: string | null; color: string | null; people: number | null;
   products: string[]; qty: Record<string, Record<string, number>>; packs: string[];
-  logoId?: string; logoName?: string; logoStatus: 'uploaded' | 'create' | 'later';
+  logoId?: string; logoName?: string; logoStatus: 'uploaded' | 'text'; text?: string;
 };
 
 const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,190}\.[a-z]{2,24}$/i;
@@ -31,7 +31,8 @@ export async function POST(req: Request) {
     packs: (Array.isArray(b?.packs) ? b.packs : []).filter((s: string) => products.includes(s)),
     logoId: LOGO_ID.test(b?.logoId || '') ? b.logoId : undefined,
     logoName: typeof b?.logoName === 'string' ? b.logoName.slice(0, 120) : undefined,
-    logoStatus: ['uploaded', 'create', 'later'].includes(b?.logoStatus) ? b.logoStatus : 'later',
+    logoStatus: b?.logoStatus === 'text' ? 'text' : 'uploaded',
+    text: typeof b?.text === 'string' ? b.text.slice(0, 24) : undefined,
   };
   const id = randomBytes(12).toString('hex');
   await putJSON('brouillons', id, draft);

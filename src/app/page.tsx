@@ -12,9 +12,9 @@ export default function Home() {
         <div>
           <span className="muted strong">Restaurants, hôtels, artisans, associations</span>
           <h1>Vos tenues à <span>votre logo</span>, livrées en 7 jours</h1>
-          <p className="lead">Choisissez un vêtement, déposez votre logo, recevez votre visuel avant production. Sans minimum de commande.</p>
+          <p className="lead">Déposez votre logo, voyez tout de suite votre tenue, validez et c'est parti. Sans minimum de commande.</p>
           <div className="ctas"><Link className="btn cta" href="/assistant">Créer ma tenue en 1 minute</Link><Link className="btn line" href="/vetements/polos-personnalises">Voir les vêtements</Link></div>
-          <Checks items={['Visuel gratuit avant production', 'Dès 1 pièce', 'Prix dégressifs jusqu\'à -38 %']} />
+          <Checks items={['Maquette en direct avec votre logo', 'Dès 1 pièce', 'Prix dégressifs jusqu\'à -38 %']} />
         </div>
         <div className="hero-vis">
           {hero.map((s) => { const p = PRODUCTS.find((x) => x.slug === s)!; return <div key={s}><Garment slug={s} color={defaultColor(p)} zones={[p.shape === 'cap' ? 'chest' : 'heart']} /></div>; })}
@@ -51,8 +51,8 @@ export default function Home() {
         <div className="sec-head"><h2>Comment ça marche</h2></div>
         <div className="steps4">
           <div><b>Vous choisissez</b><p>Le vêtement, la couleur et les emplacements du logo.</p></div>
-          <div><b>Vous déposez votre logo</b><p>Tout format accepté. Pas de logo ? On le crée.</p></div>
-          <div><b>Vous validez le visuel</b><p>Envoyé sous 24 h par un graphiste, avant toute production.</p></div>
+          <div><b>Vous déposez votre logo</b><p>PNG, JPG ou SVG. Pas de logo ? Un simple texte suffit.</p></div>
+          <div><b>Vous validez la maquette</b><p>Elle s'affiche en direct : ce que vous voyez est ce qui sera imprimé.</p></div>
           <div><b>On produit et on livre</b><p>Impression DTF haute définition, livraison en 7 jours ouvrés.</p></div>
         </div>
       </div></section>

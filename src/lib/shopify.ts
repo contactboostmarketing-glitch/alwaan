@@ -57,7 +57,8 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL): Pr
     const attrs = [
       { key: 'Groupe', value: group },
       { key: 'Emplacements', value: l.zones.map((z) => ZONES.find((x) => x.id === z)?.name).join(' + ') },
-      { key: 'Logo', value: l.logoStatus === 'uploaded' ? `Fourni${l.logoName ? ` (${l.logoName})` : ''}` : l.logoStatus === 'create' ? 'À créer (offert)' : 'Envoyé après commande' },
+      { key: 'Logo', value: l.logoStatus === 'text' ? 'Aucun : texte seul' : `Fourni${l.logoName ? ` (${l.logoName})` : ''}${l.logoLowRes ? ' · PETITE DÉFINITION acceptée par le client' : ''}` },
+      ...(l.mockupId ? [{ key: 'Maquette validée (BAT)', value: `${origin}/api/logo/${l.mockupId}` }, { key: 'BAT validé le', value: new Date(l.approvedAt || Date.now()).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) }] : []),
       ...(l.logoId ? [{ key: 'Fichier logo', value: `${origin}/api/logo/${l.logoId}` }] : []),
       ...(l.text ? [{ key: 'Texte', value: l.text }] : []),
     ];

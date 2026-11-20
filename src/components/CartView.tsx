@@ -98,7 +98,7 @@ export function CartView() {
           <div className="row tot"><span>Total TTC</span><span>{eur(t.ttc)}</span></div>
           {!pro && <p className="muted small">dont TVA {eur(t.vat)}</p>}
           {t.saved > 1 && <div className="row save"><span>Vous économisez</span><span><Price ht={t.saved} /></span></div>}
-          <p className="small">Livraison estimée : <b>{deliveryDate(8)}</b>, après validation de votre visuel.</p>
+          <p className="small">Livraison estimée : <b>{deliveryDate(8)}</b>. Votre maquette validée part directement en production.</p>
           {!promo && (
             <div className="promo-in"><input type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder="Code promo" aria-label="Code promo" /><button className="btn line small" onClick={applyCode}>Appliquer</button></div>
           )}
@@ -106,7 +106,7 @@ export function CartView() {
           <button className="btn cta block" onClick={checkout} disabled={busy}>{busy ? 'Redirection…' : 'Commander avec obligation de paiement'}</button>
           {msg && <p className="err" role="alert">{msg}</p>}
           <div className="paylogos"><span>CB</span><span>Visa</span><span>Mastercard</span><span>Apple Pay</span><span>Google Pay</span></div>
-          <p className="muted small">Votre carte est débitée à la commande. Si le visuel ne vous convient pas, vous êtes remboursé intégralement avant production.</p>
+          <p className="muted small">Votre carte est débitée à la commande. La production démarre aussitôt à partir de la maquette que vous avez validée.</p>
           <Link className="link" href="/devis">Besoin d&apos;un devis PDF pour votre entreprise ?</Link>
         </aside>
       </div>
@@ -118,7 +118,8 @@ function CartLine({ l, i, onRemove }: { l: LineConfig; i: number; onRemove: () =
   const p = getProduct(l.slug);
   if (!p) return null;
   const q = qtyOf(l);
-  const logo = l.logoStatus === 'uploaded' ? 'Logo fourni' : l.logoStatus === 'create' ? 'Création de logo offerte' : 'Logo à envoyer';
+  const logo = l.logoStatus === 'text' ? `Texte : « ${l.text} »` : l.logoLowRes ? 'Logo fourni (petite définition)' : 'Logo fourni';
+  const bat = l.mockupId ? 'Maquette validée' : 'Maquette à valider';
   return (
     <div className="line">
       <div className="img"><Garment slug={l.slug} color={l.color} zones={l.zones} logo={l.logo} /></div>
@@ -126,7 +127,7 @@ function CartLine({ l, i, onRemove }: { l: LineConfig; i: number; onRemove: () =
         <Link href={`/produits/${p.slug}`}><strong>{p.name}</strong></Link>
         <small>{COLOR_NAMES[l.color]} · {l.zones.map((z) => ZONES.find((x) => x.id === z)?.name).join(' + ')}{l.pack ? ' · pack -10 %' : ''}</small>
         <small>{Object.entries(l.qty).filter(([, v]) => v).map(([s, v]) => `${s} ×${v}`).join(', ')}</small>
-        <small>{logo}</small>
+        <small>{logo} · {bat}</small>
         <div className="acts"><Link className="link" href={`/produits/${p.slug}?modifier=${i}`}>Modifier</Link><button className="link mutedl" onClick={onRemove}>Supprimer</button></div>
       </div>
       <div className="pr"><Price ht={lineTotal(l)} /><small>{q} pcs · <Price ht={unitPrice(l)} suffix={false} />/pc</small></div>
