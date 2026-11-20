@@ -40,6 +40,7 @@ export async function POST(req: Request) {
   const origin = publicOrigin(req);
   const resume = `${origin}/assistant?reprise=${id}`;
   let crm = 'non-configure';
+  let crmDetail: string | undefined;
   if (adminEnabled()) {
     try {
       await upsertProspect({
@@ -50,8 +51,10 @@ export async function POST(req: Request) {
       crm = 'ok';
     } catch (e) {
       console.error('[brouillon shopify]', e);
-      crm = /access|scope|denied|autoris/i.test(String((e as Error)?.message)) ? 'droits-manquants' : 'erreur';
+      const m = String((e as Error)?.message);
+      crm = /access|scope|denied|autoris/i.test(m) ? 'droits-manquants' : 'erreur';
+      crmDetail = m.replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, '…').slice(0, 200);
     }
   }
-  return NextResponse.json({ id, resume, crm });
+  return NextResponse.json({ id, resume, crm, ...(crmDetail ? { crmDetail } : {}) });
 }

@@ -34,15 +34,18 @@ async function adminToken(): Promise<string> {
   return cached.token;
 }
 
-export async function admin<T>(query: string, variables: Record<string, unknown>): Promise<T> {
+export async function admin<T>(query: string, variables: Record<string, unknown>, retried = false): Promise<T> {
   const r = await fetch(`https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/api/${ADMIN_VERSION}/graphql.json`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': await adminToken() },
     body: JSON.stringify({ query, variables }),
     cache: 'no-store',
   });
-  const j = await r.json();
-  if (!r.ok || j.errors) throw new Error(`Shopify Admin : ${JSON.stringify(j.errors || r.status)}`);
+  const j = await r.json().catch(() => ({}));
+  const denied = r.status === 401 || r.status === 403 || JSON.stringify(j.errors || '').includes('ACCESS_DENIED');
+  // Droits ajoutés à l'application depuis : on redemande un jeton neuf une fois.
+  if (denied && !retried && !process.env.SHOPIFY_ADMIN_TOKEN) { cached = null; return admin<T>(query, variables, true); }
+  if (!r.ok || j.errors) throw new Error(`Shopify Admin : ${JSON.stringify(j.errors || r.status).slice(0, 300)}`);
   return j.data as T;
 }
 
