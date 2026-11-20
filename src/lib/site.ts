@@ -1,4 +1,4 @@
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.alwaan.fr').replace(/\/$/, '');
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://alwaan.fr').replace(/\/$/, '');
 /** Adresse publique pour les liens envoyés (emails, commandes) : réglage, sinon adresse principale Netlify, sinon celle de la requête. */
 export const publicOrigin = (req: Request) =>
   (process.env.NEXT_PUBLIC_SITE_URL || process.env.URL || new URL(req.url).origin).replace(/\/$/, '');

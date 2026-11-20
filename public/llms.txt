@@ -8,27 +8,27 @@
 - La maquette validée par le client sur le site sert de bon à tirer.
 
 ## Vêtements
-- [Polos personnalisés](https://www.alwaan.fr/vetements/polos-personnalises)
-- [T-shirts personnalisés](https://www.alwaan.fr/vetements/t-shirts-personnalises)
-- [Chemises personnalisées](https://www.alwaan.fr/vetements/chemises-personnalisees)
-- [Tabliers personnalisés](https://www.alwaan.fr/vetements/tabliers-personnalises)
-- [Casquettes personnalisées](https://www.alwaan.fr/vetements/casquettes-personnalisees)
-- [Vêtements haute visibilité personnalisés](https://www.alwaan.fr/vetements/haute-visibilite-personnalisee)
+- [Polos personnalisés](https://alwaan.fr/vetements/polos-personnalises)
+- [T-shirts personnalisés](https://alwaan.fr/vetements/t-shirts-personnalises)
+- [Chemises personnalisées](https://alwaan.fr/vetements/chemises-personnalisees)
+- [Tabliers personnalisés](https://alwaan.fr/vetements/tabliers-personnalises)
+- [Casquettes personnalisées](https://alwaan.fr/vetements/casquettes-personnalisees)
+- [Vêtements haute visibilité personnalisés](https://alwaan.fr/vetements/haute-visibilite-personnalisee)
 
 ## Métiers
-- [Restauration](https://www.alwaan.fr/metiers/restauration)
-- [Hôtellerie](https://www.alwaan.fr/metiers/hotellerie)
-- [BTP et logistique](https://www.alwaan.fr/metiers/btp-logistique)
-- [Événementiel et associations](https://www.alwaan.fr/metiers/evenementiel-associations)
+- [Restauration](https://alwaan.fr/metiers/restauration)
+- [Hôtellerie](https://alwaan.fr/metiers/hotellerie)
+- [BTP et logistique](https://alwaan.fr/metiers/btp-logistique)
+- [Événementiel et associations](https://alwaan.fr/metiers/evenementiel-associations)
 
 ## Guides
-- [Impression DTF : comment ça marche](https://www.alwaan.fr/guides/impression-dtf-avantages)
-- [DTF ou broderie](https://www.alwaan.fr/guides/dtf-ou-broderie)
-- [Norme EN ISO 20471](https://www.alwaan.fr/guides/norme-en-iso-20471-haute-visibilite)
-- [Prix d'un vêtement personnalisé](https://www.alwaan.fr/guides/prix-vetement-personnalise-quantite)
-- [Tous les guides](https://www.alwaan.fr/guides)
+- [Impression DTF : comment ça marche](https://alwaan.fr/guides/impression-dtf-avantages)
+- [DTF ou broderie](https://alwaan.fr/guides/dtf-ou-broderie)
+- [Norme EN ISO 20471](https://alwaan.fr/guides/norme-en-iso-20471-haute-visibilite)
+- [Prix d'un vêtement personnalisé](https://alwaan.fr/guides/prix-vetement-personnalise-quantite)
+- [Tous les guides](https://alwaan.fr/guides)
 
 ## Commander
-- [Créer sa tenue avec l'assistant](https://www.alwaan.fr/assistant)
-- [Demander un devis](https://www.alwaan.fr/devis)
-- [Questions fréquentes](https://www.alwaan.fr/faq)
+- [Créer sa tenue avec l'assistant](https://alwaan.fr/assistant)
+- [Demander un devis](https://alwaan.fr/devis)
+- [Questions fréquentes](https://alwaan.fr/faq)
