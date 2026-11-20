@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { COLOR_NAMES, PROMO_CODES, ZONES, getProduct, sizesFor, zonesFor } from '@/lib/catalog';
 import { cartTotals, qtyOf, unitPrice, type LineConfig } from '@/lib/pricing';
-import { SITE_URL } from '@/lib/site';
+import { SITE_URL, publicOrigin } from '@/lib/site';
 import { LOGO_ID } from '@/lib/logoStore';
 import { createShopifyCheckout, shopifyEnabled } from '@/lib/shopify';
 
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   // Shopify en priorité : panier, paiement et commandes gérés dans le back office.
   if (shopifyEnabled()) {
     try {
-      const url = await createShopifyCheckout(lines, { promo, note: body?.pro ? 'Client professionnel' : 'Client particulier', origin: new URL(req.url).origin });
+      const url = await createShopifyCheckout(lines, { promo, note: body?.pro ? 'Client professionnel' : 'Client particulier', origin: publicOrigin(req) });
       return NextResponse.json({ url });
     } catch (e) {
       console.error('[checkout shopify]', e);

@@ -4,6 +4,7 @@ import { getProduct } from '@/lib/catalog';
 import { putJSON } from '@/lib/blobStore';
 import { LOGO_ID } from '@/lib/logoStore';
 import { adminEnabled, upsertProspect } from '@/lib/shopifyAdmin';
+import { publicOrigin } from '@/lib/site';
 
 export type Draft = {
   email: string; marketing: boolean; createdAt: string;
@@ -35,7 +36,7 @@ export async function POST(req: Request) {
   const id = randomBytes(12).toString('hex');
   await putJSON('brouillons', id, draft);
 
-  const origin = new URL(req.url).origin;
+  const origin = publicOrigin(req);
   const resume = `${origin}/assistant?reprise=${id}`;
   let crm = 'non-configure';
   if (adminEnabled()) {
@@ -46,7 +47,10 @@ export async function POST(req: Request) {
         note: `Demande assistant ${new Date().toLocaleDateString('fr-FR')} : ${products.map((s: string) => getProduct(s)!.name).join(', ')}${draft.people ? `, ${draft.people} personnes` : ''}.\nReprendre : ${resume}${draft.logoId ? `\nLogo : ${origin}/api/logo/${draft.logoId}` : ''}`,
       });
       crm = 'ok';
-    } catch (e) { console.error('[brouillon shopify]', e); crm = 'erreur'; }
+    } catch (e) {
+      console.error('[brouillon shopify]', e);
+      crm = /access|scope|denied|autoris/i.test(String((e as Error)?.message)) ? 'droits-manquants' : 'erreur';
+    }
   }
   return NextResponse.json({ id, resume, crm });
 }
