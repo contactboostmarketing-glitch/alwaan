@@ -8,6 +8,7 @@ import { useCart } from './CartProvider';
 import { Garment } from './Garment';
 import { Price } from './Price';
 import { CutoutChoice, ReworkOption, useLogo } from './LogoCutout';
+import { Perks } from './ui';
 import { snapshot, uploadMockup } from '@/lib/mockup';
 
 function initial(slug: string): LineConfig {
@@ -144,7 +145,6 @@ export function Configurator({ slug }: { slug: string }) {
             <button aria-pressed={view === 'back'} onClick={() => setView('back')}>Dos</button>
           </div>
         )}
-        <p className="muted small">Cette maquette sert de bon à tirer : l&apos;impression reprend exactement ce que vous voyez (emplacement, couleurs, texte).</p>
         <div ref={shots} className="offscreen" aria-hidden="true">
           <Garment slug={slug} color={cfg.color} view="front" zones={cfg.zones} logo={cfg.logo} text={cfg.text} />
           {zones.some((z) => z.view === 'back' && cfg.zones.includes(z.id)) ? <Garment slug={slug} color={cfg.color} view="back" zones={cfg.zones} logo={cfg.logo} text={cfg.text} /> : null}
@@ -169,7 +169,7 @@ export function Configurator({ slug }: { slug: string }) {
           <div className="lbl">Votre logo</div>
           <label className={`drop ${cfg.logoId || cfg.logoStatus === 'text' ? 'has' : ''}`} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); onFile(e.dataTransfer.files[0]); }}>
             <strong>{logoLabel}</strong>
-            <small>{uploading ? 'Préparation du logo…' : cfg.logoStatus === 'uploaded' ? (cfg.logoId ? 'Fichier reçu · touchez pour le remplacer' : 'Touchez pour le remplacer') : 'PNG, JPG ou SVG · le plus grand possible, fond transparent idéalement'}</small>
+            <small>{uploading ? 'Préparation du logo…' : cfg.logoStatus === 'uploaded' ? 'Touchez pour remplacer' : 'PNG, JPG ou SVG'}</small>
             <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onChange={(e) => onFile(e.target.files?.[0])} />
           </label>
           <div className="opts">
@@ -196,7 +196,7 @@ export function Configurator({ slug }: { slug: string }) {
             })}
           </div>
           {hasBack && !cfg.zones.includes('back') && (
-            <div className="nudge"><span>Un logo au dos rend votre équipe visible de loin.</span><button className="btn line small" onClick={() => toggleZone('back')}>Ajouter au dos</button></div>
+            <div className="nudge"><span>Visible de loin ?</span><button className="btn line small" onClick={() => toggleZone('back')}>+ Logo au dos</button></div>
           )}
         </div>
 
@@ -216,8 +216,8 @@ export function Configurator({ slug }: { slug: string }) {
           </div>
           {others > 0 && <p className="muted small">+ {others} pièce{others > 1 ? 's' : ''} avec ce logo déjà dans le panier, comptée{others > 1 ? 's' : ''} pour la remise.</p>}
           {zones.some((z) => cfg.zones.includes(z.id) && !z.fixed) && (nt ? (
-            <div className="nudge"><span>Plus que <b>{nt[0] - pool}</b> pour <b>-{Math.round(nt[1] * 100)} %</b> sur le marquage</span><button className="btn line small" onClick={reachTier}>Passer à {nt[0] - others}</button></div>
-          ) : cur[1] === MAX_DISCOUNT ? <div className="nudge ok">Meilleur prix de marquage atteint (-{Math.round(MAX_DISCOUNT * 100)} %)</div> : null)}
+            <div className="nudge"><span>+{nt[0] - pool} pièce{nt[0] - pool > 1 ? 's' : ''} = marquage <b>-{Math.round(nt[1] * 100)} %</b></span><button className="btn line small" onClick={reachTier}>Passer à {nt[0] - others}</button></div>
+          ) : cur[1] === MAX_DISCOUNT ? <div className="nudge ok">✓ Marquage -{Math.round(MAX_DISCOUNT * 100)} %</div> : null)}
           <div className="tiers">
             {TIERS.map(([m, d]) => <div key={m} className={m === cur[0] ? 'on' : ''}><b><Price ht={at(m)} suffix={false} /></b>{m}+ pcs{d ? <small>marquage -{Math.round(d * 100)} %</small> : null}</div>)}
           </div>
@@ -228,10 +228,10 @@ export function Configurator({ slug }: { slug: string }) {
             <small className="muted">{q} pièce{q > 1 ? 's' : ''} · {q ? <Price ht={at(pool)} /> : '—'} / pièce</small>
             <div className="tot"><Price ht={lineTotal(cfg, pool)} /></div>
           </div>
-          <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /><span>Je valide cette maquette comme <b>bon à tirer</b> : emplacement, couleurs et texte sont corrects.</span></label>
+          <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /><span>Je valide ma maquette <b>(bon à tirer)</b></span></label>
           <button className="btn cta" onClick={submit} disabled={saving}>{saving ? 'Enregistrement de la maquette…' : editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier'}</button>
         </div>
-        <div className="trust"><span>Maquette validée = impression identique</span><span>Paiement sécurisé</span><span>Défaut d&apos;impression refait</span><span>Livraison 7 jours ouvrés</span></div>
+        <Perks items={[['eye', 'Imprimé comme la maquette'], ['lock', 'Paiement sécurisé'], ['redo', 'Défaut refait'], ['truck', '7 jours']]} />
       </div>
       {added && <SameLogo current={p.category} logo={cfg.logo} />}
       {toast && <div className="toast" role="status">{toast} {toast.includes('ajoutés') && <Link href="/panier">Voir le panier</Link>}</div>}

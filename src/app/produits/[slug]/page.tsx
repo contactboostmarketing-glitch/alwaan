@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { CATEGORIES, COLOR_NAMES, GENERAL_FAQ, PRODUCTS, SECTORS, fromPrice, getCategory, getProduct, topPrice } from '@/lib/catalog';
 import { Configurator } from '@/components/Configurator';
-import { Breadcrumbs, Faq, JsonLd, ProductCard } from '@/components/ui';
+import { Breadcrumbs, Faq, Icon, JsonLd, LinkChips, MoreInfo, ProductCard } from '@/components/ui';
 import { SITE_URL } from '@/lib/site';
 
 export const dynamicParams = false;
@@ -29,10 +29,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <Breadcrumbs items={[[c.name, `/vetements/${c.slug}`], [p.name]]} />
       <section className="wrap">
         <Suspense><Configurator slug={p.slug} /></Suspense>
-        <div className="asst-cta"><span><b>Pas le temps ?</b> Envoyez votre logo, notre assistant prépare toute la commande.</span><Link className="btn line small" href="/assistant">Commander avec l&apos;assistant</Link></div>
-        <div className="seo">
-          <div className="txt">
-            <h2>Caractéristiques</h2>
+        <div className="asst-cta"><span><b>Pas le temps ?</b> L&apos;assistant fait tout.</span><Link className="btn line small" href="/assistant">Essayer</Link></div>
+        <div className="seo1">
+          <div className="spec-ic">
+            <span><Icon name="shirt" /><b>{p.composition.split('·')[0].trim()}</b></span>
+            {p.composition.includes('·') && <span><Icon name="tag" /><b>{p.composition.split('·')[1].trim()}</b></span>}
+            <span><Icon name="one" /><b>{p.sizes === 'TU' ? 'Taille unique' : p.sizes}</b></span>
+            <span><Icon name="redo" /><b>40 °C</b></span>
+          </div>
+          <MoreInfo title="Caractéristiques">
             <dl className="spec">
               <dt>Composition</dt><dd>{p.composition}</dd>
               <dt>Tailles</dt><dd>{p.sizes === 'TU' ? 'Taille unique réglable' : p.sizes}</dd>
@@ -40,15 +45,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <dt>Marquage</dt><dd>Impression DTF haute définition : couleurs vives, dégradés, tous textiles</dd>
               <dt>Entretien</dt><dd>Lavage 40 °C sur l&apos;envers, pas de sèche-linge</dd>
             </dl>
-            <h2 className="mt">Questions sur ce produit</h2>
-            <Faq items={[...c.faq, GENERAL_FAQ[3]]} />
-          </div>
-          <div className="related">
-            <b>Voir aussi</b>
-            <Link href={`/vetements/${c.slug}`}>Tous les {c.name.toLowerCase()} personnalisés</Link>
-            {SECTORS.filter((s) => s.categories.includes(c.slug)).map((s) => <Link key={s.slug} href={`/metiers/${s.slug}`}>Tenues {s.name.toLowerCase()}</Link>)}
-            {CATEGORIES.filter((o) => o.slug !== c.slug).slice(0, 3).map((o) => <Link key={o.slug} href={`/vetements/${o.slug}`}>{o.name} personnalisés</Link>)}
-          </div>
+          </MoreInfo>
+          <h2 className="mt">Questions</h2>
+          <Faq items={[...c.faq, GENERAL_FAQ[3]]} />
+          <LinkChips title="Voir aussi" links={[[`Tous les ${c.name.toLowerCase()}`, `/vetements/${c.slug}`], ...SECTORS.filter((s) => s.categories.includes(c.slug)).map((s): [string, string] => [`Tenues ${s.name.toLowerCase()}`, `/metiers/${s.slug}`]), ...CATEGORIES.filter((o) => o.slug !== c.slug).slice(0, 3).map((o): [string, string] => [`${o.name} personnalisés`, `/vetements/${o.slug}`])]} />
         </div>
         <div className="sec-head mt"><h2>Souvent commandés ensemble</h2></div>
         <div className="grid">{related.map((x) => <ProductCard key={x.slug} p={x} />)}</div>

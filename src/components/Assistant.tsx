@@ -123,16 +123,16 @@ export function Assistant() {
     } catch { setMsg('Enregistrement impossible. Vérifiez votre connexion.'); setSaved('idle'); }
   };
   const saveBox = saved === 'ok' ? (
-    <p className="nudge ok">C'est noté : votre maquette est sauvegardée. Nous pourrons vous la renvoyer pour reprendre votre commande quand vous voulez.</p>
+    <p className="nudge ok">✓ Maquette sauvegardée.</p>
   ) : (
     <form className="asst-save" onSubmit={(e) => { e.preventDefault(); saveDraft(); }}>
       <strong>Gardez votre maquette</strong>
-      <span className="muted small">Laissez votre email : on garde votre maquette et vos choix pour que vous puissiez reprendre votre commande plus tard.</span>
+      <span className="muted small">Reprenez votre commande plus tard.</span>
       <div className="asst-say">
         <input type="email" required autoComplete="email" inputMode="email" placeholder="vous@entreprise.fr" value={email} onChange={(e) => setEmail(e.target.value)} aria-label="Votre email" />
         <button type="submit" disabled={saved === 'saving'}>{saved === 'saving' ? '…' : 'Recevoir'}</button>
       </div>
-      <label className="consent"><input type="checkbox" checked={optin} onChange={(e) => setOptin(e.target.checked)} /><span>J&apos;accepte aussi de recevoir les offres alwaan (désinscription en 1 clic).</span></label>
+      <label className="consent"><input type="checkbox" checked={optin} onChange={(e) => setOptin(e.target.checked)} /><span>Recevoir aussi les offres alwaan</span></label>
       <span className="note">Votre email sert uniquement à vous renvoyer cette maquette et à vous rappeler cette demande. <Link href="/confidentialite">Confidentialité</Link></span>
     </form>
   );
@@ -246,8 +246,8 @@ export function Assistant() {
 
       <div className="asst-body">
         {step === 'logo' && (<>
-          <p className="bubble">Bonjour ! Envoyez votre logo, je m&apos;occupe du reste. <b>4 choix rapides</b> et vous voyez votre tenue.</p>
-          {thought && <p className="bubble">C&apos;est noté ! Il me manque juste votre logo (ou un texte) pour vous montrer la maquette.</p>}
+          <p className="bubble">Envoyez votre logo, <b>je m&apos;occupe du reste</b>.</p>
+          {thought && <p className="bubble">Noté ! Il me manque votre logo.</p>}
           <label className="asst-drop"><span className="ic">+</span><strong>{logo?.status === 'uploaded' ? 'Logo reçu' : 'Envoyer mon logo'}</strong><span className="muted">PNG, JPG ou SVG, le plus grand possible</span>
             <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onChange={(e) => onFile(e.target.files?.[0])} /></label>
           {logo?.status === 'uploaded' && (lg?.hasBg || lg?.lowRes) && (<>
@@ -287,7 +287,7 @@ export function Assistant() {
         </>)}
 
         {step === 'garments' && (<>
-          <p className="bubble">Sur quels vêtements ? <b>Choisissez-en autant que vous voulez</b>, votre logo est le même partout.</p>
+          <p className="bubble">Sur quels vêtements ? <b>Plusieurs possibles.</b></p>
           <div className="asst-grid">
             {CHOICES.map((p) => {
               const on = picked.includes(p.slug);
@@ -304,7 +304,7 @@ export function Assistant() {
         </>)}
 
         {step === 'color' && (<>
-          <p className="bubble">Quelle couleur ?{recos.length ? <> Les couleurs <b>✓</b> font bien ressortir votre logo.</> : null}{products.some((p) => p.colors.length <= 2) && products.some((p) => p.colors.length > 2) ? ' Les vêtements haute visibilité et les chemises gardent leurs couleurs propres.' : ''}</p>
+          <p className="bubble">Quelle couleur ?{recos.length ? <> <b>✓</b> = logo bien visible.</> : null}{products.some((p) => p.colors.length <= 2) && products.some((p) => p.colors.length > 2) ? ' Haute visibilité et chemises : couleurs d\'origine.' : ''}</p>
           <div className="asst-sw">
             {palette.map((c) => (
               <button key={c} className="sw-big" aria-pressed={color === c} onClick={() => { setColor(c); go('mockup'); }}>
@@ -330,7 +330,7 @@ export function Assistant() {
         </>)}
 
         {step === 'qty' && (<>
-          <p className="bubble">Combien de personnes à équiper ? Je répartis les tailles pour vous, vous ajustez si besoin.</p>
+          <p className="bubble">Combien de personnes ? Je répartis les tailles.</p>
           <div className="asst-people">{[5, 10, 20, 30].map((n) => <button key={n} aria-pressed={people === n} onClick={() => choosePeople(n)}>{n}</button>)}</div>
           {lines.map((l) => {
             const p = getProduct(l.slug)!, q = qtyOf(l), nt = nextTier(pieces), cur = tierFor(pieces), last = l === lines[lines.length - 1];
@@ -349,7 +349,7 @@ export function Assistant() {
             );
           })}
           {ups.length > 0 && people && (<>
-            <p className="bubble">Votre logo est déjà prêt : ajoutez des articles assortis en un tap. <b>Les pièces se cumulent</b> et le marquage baisse sur toute la commande.</p>
+            <p className="bubble">Même logo, en un tap. <b>Plus de pièces = marquage moins cher.</b></p>
             {ups.map((p) => (
               <div className="up" key={p.slug}>
                 <div className="img"><Garment slug={p.slug} color={colorFor(p)} zones={zonesOf(p, place)} logo={logo?.preview} text={logo?.status === 'text' ? text : undefined} /></div>

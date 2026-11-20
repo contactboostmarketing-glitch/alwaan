@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { CATEGORIES, GENERAL_FAQ, SECTORS, getCategory, productsIn } from '@/lib/catalog';
-import { Breadcrumbs, Checks, Faq, ProductCard } from '@/components/ui';
+import { Breadcrumbs, Faq, LinkChips, MoreInfo, Perks, ProductCard } from '@/components/ui';
 import { guidesFor } from '@/lib/guides';
 
 export const dynamicParams = false;
@@ -24,20 +24,15 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
       <section className="wrap">
         <div className="cat-head">
           <div><h1>{c.name} personnalisés</h1><p className="mt8">{c.intro}</p></div>
-          <Checks items={['Dès 1 pièce', 'Maquette en direct', 'Livré en 7 jours']} />
+          <Perks items={[['one', 'Dès 1 pièce'], ['eye', 'Maquette en direct'], ['truck', '7 jours']]} />
         </div>
-        <p className="muted small mb">{list.length} modèles · prix dès 30 pièces, logo cœur compris</p>
         <div className="grid">{list.map((p) => <ProductCard key={p.slug} p={p} />)}</div>
-        <div className="seo">
-          <div className="txt"><h2>Bien choisir son {c.singular} personnalisé</h2>{c.details?.map((d) => <p key={d.slice(0, 30)}>{d}</p>)}<h2 className="mt">Questions fréquentes</h2><Faq items={[...c.faq, ...GENERAL_FAQ.slice(0, 2)]} /></div>
-          <div className="related">
-            {guidesFor(c.slug).length > 0 && <b>Nos guides</b>}
-            {guidesFor(c.slug).map((g) => <Link key={g.slug} href={`/guides/${g.slug}`}>{g.title}</Link>)}
-            <b className="mt">Par métier</b>
-            {sectors.map((s) => <Link key={s.slug} href={`/metiers/${s.slug}`}>{c.name} pour la {s.name.toLowerCase()}</Link>)}
-            <b className="mt">Autres vêtements</b>
-            {CATEGORIES.filter((o) => o.slug !== c.slug).map((o) => <Link key={o.slug} href={`/vetements/${o.slug}`}>{o.name} personnalisés</Link>)}
-          </div>
+        <div className="seo1">
+          <LinkChips title="Par métier" links={sectors.map((s) => [`${c.name} ${s.name.toLowerCase()}`, `/metiers/${s.slug}`])} />
+          <LinkChips title="Autres vêtements" links={CATEGORIES.filter((o) => o.slug !== c.slug).map((o) => [`${o.name} personnalisés`, `/vetements/${o.slug}`])} />
+          <MoreInfo title={`Bien choisir son ${c.singular} personnalisé`}>{c.details?.map((d) => <p key={d.slice(0, 30)}>{d}</p>)}</MoreInfo>
+          <h2 className="mt">Questions fréquentes</h2><Faq items={[...c.faq, ...GENERAL_FAQ.slice(0, 2)]} />
+          <LinkChips title="Nos guides" links={guidesFor(c.slug).map((g) => [g.title, `/guides/${g.slug}`])} />
         </div>
       </section>
     </>

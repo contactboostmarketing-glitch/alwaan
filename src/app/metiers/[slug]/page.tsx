@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { SECTORS, getCategory, getSector, productsIn } from '@/lib/catalog';
-import { Breadcrumbs, Checks, ProductCard } from '@/components/ui';
+import { Breadcrumbs, LinkChips, Perks, ProductCard } from '@/components/ui';
 import { guidesForSector } from '@/lib/guides';
 
 export const dynamicParams = false;
@@ -22,8 +22,8 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
       <Breadcrumbs items={[['Métiers'], [s.name]]} />
       <section className="wrap">
         <div className="cat-head">
-          <div><h1>{s.h1}</h1><p className="mt8">{s.intro} Les mêmes modèles pour toute l&apos;équipe, du S au 5XL.</p></div>
-          <Checks items={['Dès 1 pièce', 'Maquette en direct']} />
+          <div><h1>{s.h1}</h1><p className="mt8">{s.intro}</p></div>
+          <Perks items={[['one', 'Dès 1 pièce'], ['eye', 'Maquette en direct'], ['truck', '7 jours']]} />
         </div>
         {s.categories.map((ck) => {
           const c = getCategory(ck)!;
@@ -35,7 +35,7 @@ export default async function SectorPage({ params }: { params: Promise<{ slug: s
           );
         })}
         {guidesForSector(s.slug).length > 0 && (
-          <div className="guide-links"><b>Nos conseils</b>{guidesForSector(s.slug).map((g) => <Link key={g.slug} href={`/guides/${g.slug}`}>{g.title}</Link>)}</div>
+          <LinkChips title="Nos conseils" links={guidesForSector(s.slug).map((g) => [g.title, `/guides/${g.slug}`])} />
         )}
       </section>
     </>
