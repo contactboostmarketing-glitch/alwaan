@@ -14,6 +14,7 @@ export const LEGAL_PAGES: Record<string, { title: string; body: string[] }> = {
   confidentialite: { title: 'Politique de confidentialité', body: [
     'Données collectées, finalités, base légale, durées de conservation.',
     'Destinataires : transporteur, prestataire de paiement (Stripe), régies publicitaires si consentement (Google, Meta). Transferts hors UE et garanties.',
+    'Email laissé dans l\'assistant : conservé pour renvoyer la maquette et rappeler la demande (intérêt légitime), lien de désinscription dans chaque email ; offres commerciales seulement avec accord explicite.',
     'Droits d\'accès, de rectification, d\'effacement, d\'opposition et de portabilité, contact et recours auprès de la CNIL.'] },
   cookies: { title: 'Cookies', body: [
     'Liste des cookies : nécessaires, mesure d\'audience, publicité (Google Ads, Meta Pixel).',

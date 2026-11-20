@@ -34,7 +34,7 @@ async function adminToken(): Promise<string> {
   return cached.token;
 }
 
-async function admin<T>(query: string, variables: Record<string, unknown>): Promise<T> {
+export async function admin<T>(query: string, variables: Record<string, unknown>): Promise<T> {
   const r = await fetch(`https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/api/${ADMIN_VERSION}/graphql.json`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': await adminToken() },
@@ -72,4 +72,28 @@ export async function createExactDiscount(amount: number, label: string): Promis
   const errs = d.discountCodeBasicCreate.userErrors;
   if (errs.length) throw new Error(`Création de la remise impossible : ${errs.map((e) => e.message).join(', ')}`);
   return code;
+}
+
+/**
+ * Enregistre un prospect (demande non finalisée) comme client Shopify : étiquettes pour les relances,
+ * note avec le lien de reprise, consentement marketing seulement s'il a été donné.
+ * Nécessite l'étendue write_customers sur l'application.
+ */
+export async function upsertProspect(p: { email: string; tags: string[]; note: string; marketing: boolean }) {
+  const found = await admin<{ customers: { nodes: { id: string; note: string | null }[] } }>(
+    `query($q: String!) { customers(first: 1, query: $q) { nodes { id note } } }`, { q: `email:${JSON.stringify(p.email)}` });
+  const existing = found.customers.nodes[0];
+  if (!existing) {
+    const d = await admin<{ customerCreate: { userErrors: { message: string }[] } }>(
+      `mutation($i: CustomerInput!) { customerCreate(input: $i) { userErrors { message } } }`,
+      { i: { email: p.email, tags: p.tags, note: p.note, ...(p.marketing ? { emailMarketingConsent: { marketingState: 'SUBSCRIBED', marketingOptInLevel: 'SINGLE_OPT_IN' } } : {}) } });
+    if (d.customerCreate.userErrors.length) throw new Error(d.customerCreate.userErrors.map((e) => e.message).join(', '));
+    return;
+  }
+  await admin(`mutation($id: ID!, $tags: [String!]!) { tagsAdd(id: $id, tags: $tags) { userErrors { message } } }`, { id: existing.id, tags: p.tags });
+  await admin(`mutation($i: CustomerInput!) { customerUpdate(input: $i) { userErrors { message } } }`,
+    { i: { id: existing.id, note: `${p.note}\n\n${existing.note ?? ''}`.slice(0, 4000) } });
+  if (p.marketing) await admin(
+    `mutation($i: CustomerEmailMarketingConsentUpdateInput!) { customerEmailMarketingConsentUpdate(input: $i) { userErrors { message } } }`,
+    { i: { customerId: existing.id, emailMarketingConsent: { marketingState: 'SUBSCRIBED', marketingOptInLevel: 'SINGLE_OPT_IN' } } });
 }

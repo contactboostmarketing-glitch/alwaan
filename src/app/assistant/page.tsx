@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { Assistant } from '@/components/Assistant';
 
 export const metadata: Metadata = {
@@ -7,5 +8,5 @@ export const metadata: Metadata = {
   alternates: { canonical: '/assistant' },
 };
 export default function AssistantPage() {
-  return <section className="wrap"><Assistant /></section>;
+  return <section className="wrap"><Suspense><Assistant /></Suspense></section>;
 }

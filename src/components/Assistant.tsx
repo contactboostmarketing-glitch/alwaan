@@ -2,8 +2,8 @@
 // Assistant de commande : logo → emplacement → vêtements (plusieurs possibles) → couleur → maquette → quantités.
 // Un choix par écran, l'aperçu se construit en haut, une phrase libre peut tout remplir d'un coup (IA).
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 import { CATEGORIES, COLOR_NAMES, PACK_DISCOUNT, PRODUCTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor, type Product } from '@/lib/catalog';
 import { lineFull, lineTotal, qtyOf, unitBase, unitPrice, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
@@ -78,6 +78,46 @@ export function Assistant() {
   const [phrase, setPhrase] = useState('');
   const [thinking, setThinking] = useState(false);
   const [msg, setMsg] = useState('');
+  const [email, setEmail] = useState('');
+  const [optin, setOptin] = useState(false);
+  const [saved, setSaved] = useState<'idle' | 'saving' | 'ok'>('idle');
+  const reprise = useSearchParams().get('reprise');
+
+  // Reprise d'une demande sauvegardée (lien reçu par email).
+  useEffect(() => {
+    if (!reprise) return;
+    fetch(`/api/brouillon/${encodeURIComponent(reprise)}`).then((r) => r.ok ? r.json() : null).then((d) => {
+      if (!d) { setMsg('Cette demande n\'existe plus, recommençons ensemble.'); return; }
+      setLogo({ status: d.logoStatus, id: d.logoId, name: d.logoName, preview: d.logoId && /\.(png|jpg|webp|gif)$/.test(d.logoId) ? `/api/logo/${d.logoId}?apercu` : undefined });
+      setPlace(d.place); setPicked(d.products); setColor(d.color); setPeople(d.people); setQty(d.qty || {}); setPacks(d.packs || []); setSaved('ok');
+      setStep(d.products?.length ? 'mockup' : 'place');
+    }).catch(() => {});
+  }, [reprise]);
+
+  const saveDraft = async () => {
+    setSaved('saving'); setMsg('');
+    try {
+      const r = await fetch('/api/brouillon', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+        email, marketing: optin, place, color, people, products: picked, qty, packs, logoId: logo?.id, logoName: logo?.name, logoStatus: logo?.status ?? 'later' }) });
+      const d = await r.json();
+      if (!r.ok) { setMsg(d.error || 'Enregistrement impossible.'); setSaved('idle'); return; }
+      setSaved('ok');
+    } catch { setMsg('Enregistrement impossible. Vérifiez votre connexion.'); setSaved('idle'); }
+  };
+  const saveBox = saved === 'ok' ? (
+    <p className="nudge ok">C'est noté : votre maquette est sauvegardée. Nous pourrons vous la renvoyer pour reprendre votre commande quand vous voulez.</p>
+  ) : (
+    <form className="asst-save" onSubmit={(e) => { e.preventDefault(); saveDraft(); }}>
+      <strong>Gardez votre maquette</strong>
+      <span className="muted small">Laissez votre email : on garde votre maquette et vos choix pour que vous puissiez reprendre votre commande plus tard.</span>
+      <div className="asst-say">
+        <input type="email" required autoComplete="email" inputMode="email" placeholder="vous@entreprise.fr" value={email} onChange={(e) => setEmail(e.target.value)} aria-label="Votre email" />
+        <button type="submit" disabled={saved === 'saving'}>{saved === 'saving' ? '…' : 'Recevoir'}</button>
+      </div>
+      <label className="consent"><input type="checkbox" checked={optin} onChange={(e) => setOptin(e.target.checked)} /><span>J&apos;accepte aussi de recevoir les offres alwaan (désinscription en 1 clic).</span></label>
+      <span className="note">Votre email sert uniquement à vous renvoyer cette maquette et à vous rappeler cette demande. <Link href="/confidentialite">Confidentialité</Link></span>
+    </form>
+  );
 
   const products = picked.map((s) => getProduct(s)!);
   const colorFor = (p: Product) => (color && p.colors.includes(color) ? color : defaultColor(p));
@@ -234,6 +274,7 @@ export function Assistant() {
             {zonesOf(g0, place).includes('back') && <figure><Garment slug={g0.slug} color={colorFor(g0)} view="back" zones={zonesOf(g0, place)} logo={logo?.preview} /><figcaption>{g0.name} · dos</figcaption></figure>}
           </div>
           <p className="muted small">{logo?.status === 'create' ? 'Votre logo sera créé par notre graphiste.' : 'Un graphiste vérifie et vous envoie le visuel final avant production.'}</p>
+          {saveBox}
           <div className="asst-quick">
             <button onClick={() => go('color')}>Changer la couleur</button>
             <button onClick={() => go('place')}>Changer l&apos;emplacement</button>
@@ -270,6 +311,7 @@ export function Assistant() {
               </div>
             ))}
           </>)}
+          {pieces > 0 && saved !== 'ok' && {saveBox}}
           {pieces > 0 && (
             <div className="recap">
               {lines.filter((l) => qtyOf(l)).map((l) => <div key={l.slug}><span>{qtyOf(l)} × {getProduct(l.slug)!.name}</span><span><Price ht={lineTotal(l)} /></span></div>)}

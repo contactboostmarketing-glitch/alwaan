@@ -304,3 +304,5 @@ footer.site{background:var(--soft);margin-top:40px;padding-block:32px;font-size:
 .asst-dock .note{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
 .asst-cta{display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(120deg,#e9f7fb,#fdeef5);border-radius:16px;padding:16px;margin-top:20px;flex-wrap:wrap}
 .menu a.menu-cta{color:var(--cta)}
+.asst-save{display:grid;gap:8px;border:1.5px solid var(--line);border-radius:16px;padding:14px;background:#fff}
+.asst-save .note{font-size:12px;color:var(--muted)}
