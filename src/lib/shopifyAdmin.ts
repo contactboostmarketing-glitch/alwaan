@@ -18,12 +18,18 @@ async function adminToken(): Promise<string> {
   if (cached && cached.expires > Date.now() + 60_000) return cached.token;
   const r = await fetch(`https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/oauth/access_token`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ client_id: process.env.SHOPIFY_CLIENT_ID, client_secret: process.env.SHOPIFY_CLIENT_SECRET, grant_type: 'client_credentials' }),
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+    body: new URLSearchParams({ grant_type: 'client_credentials', client_id: process.env.SHOPIFY_CLIENT_ID!.trim(), client_secret: process.env.SHOPIFY_CLIENT_SECRET!.trim() }),
     cache: 'no-store',
   });
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok || !j.access_token) throw new Error(`Jeton Admin Shopify refusé (${r.status} ${String(j.error || '').slice(0, 60)})`);
+  const text = await r.text();
+  let j: { access_token?: string; expires_in?: number; error?: string; error_description?: string } = {};
+  try { j = JSON.parse(text); } catch {}
+  if (!r.ok || !j.access_token) {
+    // Motif renvoyé par Shopify (ne contient jamais les identifiants envoyés).
+    const why = (j.error_description || j.error || text.replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim().slice(0, 80);
+    throw new Error(`Jeton Admin Shopify refusé (${r.status} ${why})`);
+  }
   cached = { token: j.access_token, expires: Date.now() + (Number(j.expires_in) || 3600) * 1000 };
   return cached.token;
 }
