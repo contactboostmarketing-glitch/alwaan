@@ -29,8 +29,8 @@ async function publications(): Promise<string[]> {
 }
 
 async function productByHandle(handle: string) {
-  const d = await admin<{ productByIdentifier: { id: string; variants: { nodes: { id: string; price: string; selectedOptions: { name: string; value: string }[] }[] } } | null }>(
-    `query($h: String!) { productByIdentifier(identifier: { handle: $h }) { id variants(first: 250) { nodes { id price selectedOptions { name value } } } } }`,
+  const d = await admin<{ productByIdentifier: { id: string; title: string; variants: { nodes: { id: string; price: string; selectedOptions: { name: string; value: string }[] }[] } } | null }>(
+    `query($h: String!) { productByIdentifier(identifier: { handle: $h }) { id title variants(first: 250) { nodes { id price selectedOptions { name value } } } } }`,
     { h: handle },
   );
   return d.productByIdentifier;
@@ -38,10 +38,15 @@ async function productByHandle(handle: string) {
 
 async function upsertMarking(handle: string, z: Zone, pubs: string[], dry: boolean) {
   const price = z.price.toFixed(2);
+  const title = `Marquage ${z.name} (${z.size})${handle.endsWith('-premium') ? ' · textile > 25 €' : ''}`;
   const existing = await productByHandle(handle);
   if (existing) {
+    // Nom lisible par l'atelier sur les commandes (« Marquage Grand devant (28 × 30 cm) »).
+    if (existing.title !== title && !dry) {
+      await admin(`mutation($p: ProductUpdateInput!) { productUpdate(product: $p) { userErrors { field message } } }`, { p: { id: existing.id, title } });
+    }
     const v = existing.variants.nodes[0];
-    if (v && v.price === price) return { handle, action: 'déjà au bon prix', price };
+    if (v && v.price === price) return { handle, action: existing.title !== title ? `renommé « ${title} »` : 'déjà au bon prix', price };
     if (dry) return { handle, action: `prix ${v?.price} → ${price}` };
     const r = await admin<{ productVariantsBulkUpdate: { userErrors: UserError[] } }>(
       `mutation($p: ID!, $v: [ProductVariantsBulkInput!]!) { productVariantsBulkUpdate(productId: $p, variants: $v) { userErrors { field message } } }`,
@@ -55,7 +60,7 @@ async function upsertMarking(handle: string, z: Zone, pubs: string[], dry: boole
     `mutation($i: ProductSetInput!) { productSet(synchronous: true, input: $i) { product { id } userErrors { field message } } }`,
     { i: {
       handle,
-      title: `Marquage ${z.name} (${z.size})${handle.endsWith('-premium') ? ' · textile > 25 €' : ''}`,
+      title,
       status: 'ACTIVE',
       productType: 'Marquage',
       vendor: 'alwaan',
