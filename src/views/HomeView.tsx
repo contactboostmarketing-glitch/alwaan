@@ -5,7 +5,7 @@ import { Price } from '@/components/Price';
 import { Faq, Icon, MoreInfo, Perks, ProductCard } from '@/components/ui';
 import { categoryL, generalFaq, href, sectorL, tr, type Lang } from '@/i18n';
 import { HOME_EN_ABOUT } from '@/i18n/catalog-en';
-import { currentSeason, orderBy } from '@/lib/seasons';
+import { currentSeason, orderBy, seasonFeatured, seasonalSort } from '@/lib/seasons';
 import { PACKS } from '@/lib/packs';
 import { GiftsBand } from '@/components/GiftsBand';
 import { I } from '@/components/Icons';
@@ -19,7 +19,7 @@ const ABOUT_FR = [
 export function HomeView({ lang }: { lang: Lang }) {
   const t = (s: string) => tr(lang, s);
   const season = currentSeason(), sc = season[lang], until = orderBy(season);
-  const hero = season.featured;
+  const hero = seasonFeatured(season);
   const seasonVars = { '--season': season.accent, '--season-soft': season.soft } as React.CSSProperties;
   return (
     <>
@@ -32,7 +32,7 @@ export function HomeView({ lang }: { lang: Lang }) {
           <Perks items={[['eye', t('Maquette en direct')], ['one', t('Dès 1 pièce')], ['tag', t('-40 % dès 30 pièces')]]} />
         </div>
         <div className="hero-vis">
-          {hero.map((s) => { const p = PRODUCTS.find((x) => x.slug === s)!; return <div key={s}><Garment slug={s} color={defaultColor(p)} zones={[defaultZone(p)]} /></div>; })}
+          {hero.map((p) => <div key={p.slug}><Garment slug={p.slug} color={defaultColor(p)} zones={[defaultZone(p)]} /></div>)}
         </div>
       </div></section>
 
@@ -66,13 +66,13 @@ export function HomeView({ lang }: { lang: Lang }) {
             <Link className="btn cta" href={href(lang, '/assistant')}>{sc.cta}</Link>
           </div>
         </div>
-        <div className="grid g4 mt">{season.featured.map((slug) => PRODUCTS.find((x) => x.slug === slug)).filter(Boolean).map((p) => <ProductCard key={p!.slug} p={p!} lang={lang} />)}</div>
+        <div className="grid g4 mt">{seasonFeatured(season).map((p) => <ProductCard key={p.slug} p={p} lang={lang} />)}</div>
       </div></section>
 
       <section className="section"><div className="wrap">
         <div className="sec-head"><h2>{t('Nos vêtements personnalisables')}</h2></div>
         <div className="cats">
-          {CATEGORIES.map((c0) => {
+          {seasonalSort(CATEGORIES, (c) => c.slug, season).map((c0) => {
             const c = categoryL(lang, c0), list = productsIn(c.slug), first = list[0];
             return (
               <Link className="catcard" key={c.slug} href={href(lang, `/vetements/${c.slug}`)}>
@@ -98,7 +98,7 @@ export function HomeView({ lang }: { lang: Lang }) {
 
       <section className="section soft"><div className="wrap">
         <div className="sec-head"><h2>{t('Les plus commandés')}</h2></div>
-        <div className="grid g6">{PRODUCTS.filter((p) => p.bestseller).map((p) => <ProductCard key={p.slug} p={p} lang={lang} />)}</div>
+        <div className="grid g6">{seasonalSort(PRODUCTS.filter((p) => p.bestseller), (p) => p.category, season).map((p) => <ProductCard key={p.slug} p={p} lang={lang} />)}</div>
       </div></section>
 
       <section className="section"><div className="wrap">
