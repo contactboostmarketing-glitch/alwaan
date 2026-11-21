@@ -17,7 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...CATEGORIES.flatMap((c) => both(`/vetements/${c.slug}`, 0.9)),
     ...SECTORS.flatMap((s) => both(`/metiers/${s.slug}`, 0.8)),
     ...PRODUCTS.flatMap((p) => both(`/produits/${p.slug}`, 0.7)),
-    ...both('/idees-cadeaux', 0.8), ...OCCASIONS.flatMap((o) => both(`/idees-cadeaux/${o.id}`, 0.7)), ...DESIGNS.flatMap((d) => both(`/idees-cadeaux/creer/${d.id}`, 0.5)), ...both('/lien-equipe', 0.8),
+    ...both('/idees-cadeaux', 0.8), ...OCCASIONS.flatMap((o) => both(`/idees-cadeaux/${o.id}`, 0.7)), ...DESIGNS.flatMap((d) => both(`/idees-cadeaux/creer/${d.id}`, 0.5)), ...both('/lien-equipe', 0.8), ...both('/textile-vierge', 0.7),
     ...both('/assistant', 0.8), u('/guides', 0.7), u('/a-propos', 0.4),
     ...GUIDES.map((g) => u(`/guides/${g.slug}`, 0.7)), ...both('/faq', 0.6), ...both('/devis', 0.5),
     ...Object.keys(LEGAL_PAGES).map((k) => u(`/${k}`, 0.2)),

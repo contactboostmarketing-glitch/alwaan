@@ -23,9 +23,13 @@ export function captureAttribution() {
     const ref = u.searchParams.get('parrain');
     if (ref && /^REF-[A-Z0-9]{4,8}$/i.test(ref)) localStorage.setItem('alwaan-voucher', ref.toUpperCase());
     // Cookie _fbc attendu par Meta quand on arrive d'une publicité Facebook / Instagram.
-    if (found.fbclid) document.cookie = `_fbc=fb.1.${Date.now()}.${found.fbclid}; path=/; max-age=${90 * 86400}; SameSite=Lax`;
+    if (found.fbclid && adsConsent()) document.cookie = `_fbc=fb.1.${Date.now()}.${found.fbclid}; path=/; max-age=${90 * 86400}; SameSite=Lax`;
   } catch {}
 }
+
+/** Accord donné pour les cookies publicitaires (bandeau cookies). */
+export const adsConsent = () => { try { return !!JSON.parse(localStorage.getItem('alwaan-consent-v1') || 'null')?.ads; } catch { return false; } };
+const AD_IDS = new Set(['gclid', 'gbraid', 'wbraid', 'fbclid']);
 
 const cookie = (n: string) => document.cookie.split('; ').find((c) => c.startsWith(n + '='))?.split('=').slice(1).join('=');
 
@@ -34,10 +38,11 @@ export function attributionForCheckout(): Record<string, string> {
   const out: Record<string, string> = {};
   try {
     const a: Attribution = JSON.parse(localStorage.getItem(ATTR) || '{}');
-    for (const [k, v] of Object.entries(a)) if (v) out[k] = String(v);
+    // Identifiants de clic publicitaire : transmis seulement avec l'accord publicité.
+    const ads = adsConsent();
+    for (const [k, v] of Object.entries(a)) if (v && (ads || !AD_IDS.has(k))) out[k] = String(v);
     const ga = cookie('_ga'); if (ga) out.ga_cid = ga.split('.').slice(-2).join('.');
-    const fbp = cookie('_fbp'); if (fbp) out.fbp = fbp;
-    const fbc = cookie('_fbc'); if (fbc) out.fbc = fbc;
+    if (ads) { const fbp = cookie('_fbp'); if (fbp) out.fbp = fbp; const fbc = cookie('_fbc'); if (fbc) out.fbc = fbc; }
   } catch {}
   return out;
 }

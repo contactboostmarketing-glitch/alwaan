@@ -3,9 +3,9 @@ import { notFound } from 'next/navigation';
 import { Breadcrumbs } from '@/components/ui';
 import { ConsentLink } from '@/components/CookieBanner';
 import { LEGAL_PAGES } from '@/lib/site';
-import { CGV, PRIVACY } from '@/lib/legalTexts';
+import { CGV, COOKIES, LIVRAISON, PRIVACY } from '@/lib/legalTexts';
 
-const TEXTS: Record<string, string[]> = { cgv: CGV, confidentialite: PRIVACY };
+const TEXTS: Record<string, string[]> = { cgv: CGV, confidentialite: PRIVACY, cookies: COOKIES, livraison: LIVRAISON };
 
 export const dynamicParams = false;
 export const generateStaticParams = () => Object.keys(LEGAL_PAGES).map((legal) => ({ legal }));

@@ -37,12 +37,12 @@ export const LEGAL_PAGES: Record<string, { title: string; body: string[]; final?
     `Directeur de la publication : le président de ${COMPANY.name}.${COMPANY.email ? ` Contact : ${COMPANY.email}.` : ''}${COMPANY.phone ? ` Téléphone : ${COMPANY.phone}.` : ''}`,
     'Hébergement : Netlify, Inc., 512 2nd Street, Suite 200, San Francisco, CA 94107, États-Unis. Boutique et paiement : Shopify International Ltd., Victoria Buildings, 1-2 Haddington Road, Dublin 4, Irlande.'] },
   confidentialite: { title: 'Politique de confidentialité', body: [], final: true },
-  cookies: { title: 'Cookies', body: [
+  cookies: { title: 'Cookies', final: true, body: [
     'Liste des cookies : nécessaires, mesure d\'audience, publicité (Google Ads, Meta Pixel).',
     'Aucun cookie publicitaire n\'est déposé sans votre accord. Refuser est aussi simple qu\'accepter. Votre choix est conservé 6 mois.'] },
   mediation: { title: 'Médiation de la consommation', body: [
     'Nom et coordonnées du médiateur auquel le client particulier peut recourir gratuitement en cas de litige non résolu.'] },
-  livraison: { title: 'Livraison et délais', body: [
+  livraison: { title: 'Livraison et délais', final: true, body: [
     'Délais indicatifs : production en 7 jours ouvrés après la commande, ou 4 jours ouvrés en production express (option payante : 15 € jusqu\'à 10 pièces, 20 € jusqu\'à 20, 30 € jusqu\'à 30, 60 € au-delà). Livraison en France et en Belgique.',
     'Livraison offerte dès 150 € HT d\'articles, sinon 9,90 € HT. Suivi par email.'] },
   retours: { title: 'Retours, SAV et garanties', final: true, body: [

@@ -43,15 +43,15 @@ export function Faq({ items, withSchema = true, schemaOnly = false }: { items: [
   );
 }
 
-export function ProductCard({ p: base, lang = 'fr' }: { p: Product; lang?: Lang }) {
+export function ProductCard({ p: base, lang = 'fr', blank = false }: { p: Product; lang?: Lang; blank?: boolean }) {
   const p = productL(lang, base);
   return (
-    <Link className="pcard" href={href(lang, `/produits/${p.slug}`)}>
+    <Link className="pcard" href={`${href(lang, `/produits/${p.slug}`)}${blank ? '?vierge=1' : ''}`}>
       {p.bestseller && <span className="flag">Best-seller</span>}
       <div className="img"><Garment slug={p.slug} color={defaultColor(p)} /></div>
       <strong>{p.name}</strong>
       <small>{p.type}</small>
-      <span className="price">{tr(lang, 'dès')} <Price ht={fromPrice(p)} /></span>
+      <span className="price">{tr(lang, 'dès')} <Price ht={blank ? base.price : fromPrice(p)} /></span>
       <span className="dots" aria-label={tr(lang, '{n} coloris', { n: p.colors.length })}>
         {p.colors.slice(0, 6).map((c) => <i key={c} style={{ background: c }} title={colorName(lang, c)} />)}
         {p.colors.length > 6 && <small>+{p.colors.length - 6}</small>}

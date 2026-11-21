@@ -70,7 +70,9 @@ export function Configurator({ slug }: { slug: string }) {
   const [cfg, setCfg] = useState<LineConfig>(() => {
     // Couleur imposée par le lien (Google Shopping : ?couleur=1d2a5c).
     const c = initial(slug), h = params.get('couleur');
-    return h && p.colors.includes(`#${h}`) ? { ...c, color: `#${h}` } : c;
+    const c2 = h && p.colors.includes(`#${h}`) ? { ...c, color: `#${h}` } : c;
+    // Lien depuis la page Textile vierge : mode sans marquage déjà choisi.
+    return params.get('vierge') !== null ? { ...c2, zones: [], logoStatus: 'blank' as const } : c2;
   });
   useEffect(() => { track('view_item', { items: [{ item_id: slug, item_name: p.name }] }); }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
   const [view, setView] = useState<'front' | 'back'>('front');
