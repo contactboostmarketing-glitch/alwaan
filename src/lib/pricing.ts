@@ -5,7 +5,7 @@ import {
 } from './catalog';
 
 /** uploaded = logo fourni ; text = pas de logo, seulement un texte imprimé. */
-export type LogoStatus = 'uploaded' | 'text';
+export type LogoStatus = 'uploaded' | 'text' | 'blank'; // blank : textile vierge, sans marquage
 
 export type LineConfig = {
   slug: string;
@@ -62,7 +62,7 @@ export function unitAt(l: Pick<LineConfig, 'slug' | 'zones'> & { printNames?: bo
 
 /** Clé du logo : les pièces au même logo (ou au même texte) cumulent leurs quantités pour la remise marquage. */
 export const logoKey = (l: Pick<LineConfig, 'logoId' | 'logoName' | 'text' | 'logoStatus' | 'slug'>) =>
-  l.logoId || (l.logoStatus === 'text' ? `t:${(l.text || '').trim().toLowerCase()}` : l.logoName ? `n:${l.logoName}` : `s:${l.slug}`);
+  l.logoStatus === 'blank' ? `b:${l.slug}` : l.logoId || (l.logoStatus === 'text' ? `t:${(l.text || '').trim().toLowerCase()}` : l.logoName ? `n:${l.logoName}` : `s:${l.slug}`);
 
 /** Nombre de pièces au même logo dans tout le panier, pour chaque ligne. */
 export function pools(lines: LineConfig[]): number[] {

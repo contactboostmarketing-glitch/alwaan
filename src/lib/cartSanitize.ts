@@ -16,7 +16,13 @@ export function sanitize(raw: unknown): LineConfig[] | null {
     const zones = (l.zones || []).filter((z) => zonesFor(p).some((x) => x.id === z));
     const sizes = sizesFor(p);
     const qty = Object.fromEntries(Object.entries(l.qty || {}).filter(([s]) => sizes.includes(s) || s === 'Total').map(([s, v]) => [s, Math.max(0, Math.min(5000, Math.floor(Number(v)) || 0))]));
-    if (!zones.length || !qtyOf({ qty })) return null;
+    if (!qtyOf({ qty })) return null;
+    // Textile vierge : ni marquage, ni logo, ni maquette.
+    if (l.logoStatus === 'blank') {
+      out.push({ slug: p.slug, color: l.color, zones: [], qty, logoStatus: 'blank', teamId: /^[a-f0-9]{24}$/.test(l.teamId || '') ? l.teamId : undefined });
+      continue;
+    }
+    if (!zones.length) return null;
     // Sans graphiste : chaque article doit avoir un logo reçu (ou un texte) et une maquette validée.
     const logoOk = l.logoStatus === 'text' ? !!String(l.text || '').trim() : !!(l.logoId && LOGO_ID.test(l.logoId));
     if (!logoOk || !(l.mockupId && LOGO_ID.test(l.mockupId))) return null;

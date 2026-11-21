@@ -14,6 +14,8 @@ import { categoryL, colorName, productL, zonesL } from '@/i18n';
 import { snapshot, uploadMockup } from '@/lib/mockup';
 import { track } from '@/lib/track';
 import { deliveryDate, fmtDay } from '@/lib/delivery';
+import { ON_ORDER_DAYS, available, colorStocked, shortSizes } from '@/lib/stockTypes';
+import { useStock } from '@/lib/useStock';
 import { I } from './Icons';
 
 function initial(slug: string): LineConfig {
@@ -53,6 +55,7 @@ export async function preview(file: File): Promise<string> {
 export function Configurator({ slug }: { slug: string }) {
   const p = getProduct(slug)!;
   const { t, l, lang } = useT();
+  const stock = useStock();
   const pL = productL(lang, p);
   const zones = zonesL(lang, p);
   const pcs = (n: number) => t(n > 1 ? '{n} pièces' : '{n} pièce', { n });
@@ -73,6 +76,7 @@ export function Configurator({ slug }: { slug: string }) {
   const [view, setView] = useState<'front' | 'back'>('front');
   const [toast, setToast] = useState('');
   const [approved, setApproved] = useState(false);
+  const prevZones = useRef<string[]>([]);
   const [saving, setSaving] = useState(false);
   const shots = useRef<HTMLDivElement>(null);
   // Toute modification annule la validation : le client valide toujours la dernière version.
@@ -89,6 +93,14 @@ export function Configurator({ slug }: { slug: string }) {
   }, [sameLogo, lines.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const q = qtyOf(cfg);
+  const blank = cfg.logoStatus === 'blank';
+  const short = shortSizes(stock, { slug, color: cfg.color, qty: cfg.qty });
+  const stockHint = (size: string) => {
+    const n = available(stock, slug, cfg.color, size);
+    if (n === null) return null;
+    if (n <= 0 || (cfg.qty[size] || 0) > n) return <small className="sz-stock out">{t('sur commande')}</small>;
+    return n <= 5 ? <small className="sz-stock low">{t('plus que {n}', { n })}</small> : null;
+  };
   // Pièces du panier qui portent déjà ce logo : elles comptent pour la remise marquage.
   const others = cfg.logoId || cfg.logoStatus === 'text'
     ? lines.reduce((a, l, i) => a + (i !== editIndex && logoKey(l) === logoKey(cfg) ? qtyOf(l) : 0), 0) : 0;
@@ -126,6 +138,25 @@ export function Configurator({ slug }: { slug: string }) {
   // forTeam : la liste d'équipe fixe les quantités ensuite, elles ne sont pas exigées ici.
   const submit = async (forTeam = false) => {
     if (!q && !forTeam) { flash(t('Indiquez au moins une pièce')); return; }
+    if (blank) {
+      // Textile vierge : pas de maquette ni de validation, on ajoute directement.
+      const item: LineConfig = { slug, color: cfg.color, zones: [], qty: cfg.qty, logoStatus: 'blank' };
+      if (forTeam) {
+        setSaving(true);
+        const r = await fetch('/api/equipe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ line: item }) }).catch(() => null);
+        const d = r && r.ok ? await r.json() : null;
+        setSaving(false);
+        if (!d?.id) { flash(t('Création du lien impossible. Réessayez.')); return; }
+        router.push(`${l(`/equipe/${d.id}`)}?cle=${d.adminKey}`);
+        return;
+      }
+      if (editIndex !== null) { update(editIndex, item); router.push(l('/panier')); return; }
+      add(item);
+      track('add_to_cart', { value: lineTotal(item, pool), items: [{ item_id: p.slug, item_name: p.name, quantity: q }] });
+      setAdded(true);
+      flash(t('{q} × {name} ajoutés au panier', { q, name: pL.name }));
+      return;
+    }
     if (!cfg.zones.length) { flash(t('Choisissez au moins un emplacement')); return; }
     if (uploading) { flash(t('Envoi du logo en cours, un instant…')); return; }
     if (cfg.logoStatus === 'uploaded' && lg?.hasBg && !lg.decided && !cfg.logoRework) { flash(t('Votre logo a un fond : choisissez avec ou sans fond.')); return; }
@@ -181,17 +212,23 @@ export function Configurator({ slug }: { slug: string }) {
         <div>
           <h1 className="pdp-title">{pL.name}</h1>
           <p className="muted">{pL.type} · {pL.composition}</p>
-          <p className="from">{t('dès')} <b><Price ht={at(TIERS[TIERS.length - 1][0])} /></b> {t('la pièce, logo compris')}</p>
+          <p className="from">{t('dès')} <b><Price ht={at(TIERS[TIERS.length - 1][0])} /></b> {t(blank ? 'la pièce, sans marquage' : 'la pièce, logo compris')}</p>
         </div>
 
         <div className="blk">
           <div className="lbl">{t('Couleur')} <span>{colorName(lang, cfg.color)}</span></div>
           <div className="swatches">
-            {p.colors.map((c) => <button key={c} className="sw" style={{ background: c }} aria-label={colorName(lang, c)} aria-pressed={c === cfg.color} onClick={() => set({ color: c })} />)}
+            {p.colors.map((c) => <button key={c} className={`sw ${colorStocked(stock, slug, c) ? '' : 'on-order'}`} style={{ background: c }} aria-label={`${colorName(lang, c)}${colorStocked(stock, slug, c) ? '' : ` · ${t('sur commande')}`}`} title={colorStocked(stock, slug, c) ? undefined : t('Sur commande')} aria-pressed={c === cfg.color} onClick={() => set({ color: c })} />)}
           </div>
+          {!colorStocked(stock, slug, cfg.color) && <p className="order-note"><I name="clock" size={15} /> {t('Couleur sur commande : +{n} jours ouvrés', { n: ON_ORDER_DAYS })}</p>}
         </div>
 
         <div className="blk">
+          <div className="mode-pick" role="group" aria-label={t('Marquage')}>
+            <button aria-pressed={!blank} onClick={() => blank && set({ logoStatus: 'uploaded', zones: prevZones.current.length ? prevZones.current : [defaultZone(p)] })}><I name="palette" size={18} /> {t('Avec mon logo')}</button>
+            <button aria-pressed={blank} onClick={() => { if (!blank) { prevZones.current = cfg.zones; set({ logoStatus: 'blank', zones: [], logoRework: false, printNames: false }); } }}><I name="shirt" size={18} /> {t('Textile vierge')}</button>
+          </div>
+          {blank ? <p className="muted small">{t('Sans marquage, au prix du vêtement seul. Expédié rapidement.')}</p> : (<>
           <div className="lbl">{t('Votre logo')}</div>
           <label className={`drop ${cfg.logoId || cfg.logoStatus === 'text' ? 'has' : ''}`} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); onFile(e.dataTransfer.files[0]); }}>
             <strong>{logoLabel}</strong>
@@ -205,9 +242,10 @@ export function Configurator({ slug }: { slug: string }) {
             {cfg.logoLowRes && <p className="warnline">{t('Logo peu net : envoyez une version plus grande, ou confiez-le au graphiste.')}</p>}
           </div>
           <input type="text" value={cfg.text} maxLength={24} placeholder={t(cfg.logoStatus === 'text' ? 'Texte à imprimer (nom, slogan…)' : 'Texte facultatif sous le logo')} aria-label={t('Texte sous le logo')} onChange={(e) => set({ text: e.target.value })} />
+          </>)}
         </div>
 
-        <div className="blk">
+        {!blank && <div className="blk">
           <div className="lbl">{t('Emplacements')}</div>
           <div className="zones">
             {zones.map((z) => {
@@ -224,14 +262,15 @@ export function Configurator({ slug }: { slug: string }) {
           {hasBack && !cfg.zones.includes('back') && (
             <div className="nudge"><span>{t('Visible de loin ?')}</span><button className="btn line small" onClick={() => toggleZone('back')}>{t('+ Logo au dos')}</button></div>
           )}
-        </div>
+        </div>}
 
         <div className="blk">
           <div className="lbl">{t('Quantités')} {sizesFor(p).length > 1 && <span><Link className="link" href={`${l('/faq')}#tailles`}>{t('Guide des tailles')}</Link></span>}</div>
           <div className="sizes">
             {Object.keys(cfg.qty).map((s) => (
-              <div className="sz" key={s}>
+              <div className={`sz ${short.includes(s) ? 'short' : ''}`} key={s}>
                 <b>{s}</b>
+                {colorStocked(stock, slug, cfg.color) && stockHint(s)}
                 <div className="ctr">
                   <button aria-label={t('Retirer {s}', { s })} onClick={() => setQty(s, cfg.qty[s] - 1)}>−</button>
                   <input type="number" inputMode="numeric" min={0} value={cfg.qty[s]} aria-label={t('Quantité {s}', { s })} onChange={(e) => setQty(s, Number(e.target.value))} />
@@ -240,13 +279,14 @@ export function Configurator({ slug }: { slug: string }) {
               </div>
             ))}
           </div>
+          {short.length > 0 && colorStocked(stock, slug, cfg.color) && <p className="order-note"><I name="clock" size={15} /> {t('Au-delà du stock, sur commande : +{n} jours ouvrés', { n: ON_ORDER_DAYS })}</p>}
           {others > 0 && <p className="muted small">{t('+ {n} avec ce logo déjà dans le panier, comptées pour la remise.', { n: pcs(others) })}</p>}
-          {q > 0 && zones.some((z) => cfg.zones.includes(z.id) && !z.fixed) && (nt ? (
+          {!blank && q > 0 && zones.some((z) => cfg.zones.includes(z.id) && !z.fixed) && (nt ? (
             <div className="nudge"><span>+{pcs(nt[0] - pool)} = {t('marquage')} <b>-{Math.round(nt[1] * 100)} %</b></span><button className="btn line small" onClick={reachTier}>{t('Passer à {n}', { n: nt[0] - others })}</button></div>
           ) : cur[1] === MAX_DISCOUNT ? <div className="nudge ok"><I name="check" size={16} /> {t('Marquage')} -{Math.round(MAX_DISCOUNT * 100)} %</div> : null)}
-          <div className="tiers">
+          {!blank && <div className="tiers">
             {TIERS.map(([m, d]) => <div key={m} className={m === cur[0] ? 'on' : ''}><b><Price ht={at(m)} suffix={false} /></b>{m}+ pcs{d ? <small>{t('marquage')} -{Math.round(d * 100)} %</small> : null}</div>)}
-          </div>
+          </div>}
         </div>
 
         <div className="addrow">
@@ -258,15 +298,15 @@ export function Configurator({ slug }: { slug: string }) {
               <div className="tot"><Price ht={at(pool)} /> <small className="muted">/ {t('pièce')}</small></div>
               <small className="muted">{t('Choisissez vos tailles')}</small>
             </>)}
-            <p className="eta"><I name="truck" size={16} /> {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(), lang) })} · <span className="muted">{t('express possible')}</span></p>
+            <p className="eta"><I name="truck" size={16} /> {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), false, short.length > 0, blank), lang) })}{!blank && <> · <span className="muted">{t('express possible')}</span></>}</p>
           </div>
-          <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /><span>{t('Je valide ma maquette')} <b>{t('(bon à tirer)')}</b> {t('et je détiens les droits sur ce logo')}</span></label>
+          {!blank && <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /><span>{t('Je valide ma maquette')} <b>{t('(bon à tirer)')}</b> {t('et je détiens les droits sur ce logo')}</span></label>}
           <button className="btn cta" onClick={() => submit()} disabled={saving}>{t(saving ? 'Enregistrement de la maquette…' : editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier')}</button>
           {editIndex === null && <button className="link small team-link" onClick={() => submit(true)} disabled={saving}><I name="users" size={18} /> {t('Récupérer les noms et tailles de l\'équipe par un lien')}</button>}
         </div>
         {/* Mobile : la barre d'achat reste compacte, délai et lien d'équipe juste en dessous. */}
         <div className="addrow-extra">
-          <p className="eta"><I name="truck" size={16} /> {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(), lang) })} · <span className="muted">{t('express possible')}</span></p>
+          <p className="eta"><I name="truck" size={16} /> {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), false, short.length > 0, blank), lang) })}{!blank && <> · <span className="muted">{t('express possible')}</span></>}</p>
           {editIndex === null && <button className="link small team-link" onClick={() => submit(true)} disabled={saving}><I name="users" size={18} /> {t('Récupérer les noms et tailles de l\'équipe par un lien')}</button>}
         </div>
         <Perks items={[['eye', t('Imprimé comme la maquette')], ['lock', t('Paiement sécurisé')], ['redo', t('Défaut refait')], ['truck', t('7 jours')]]} />

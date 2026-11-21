@@ -6,6 +6,8 @@
 //   SHOPIFY_STOREFRONT_TOKEN   jeton public Storefront (Back office → Applications → Headless)
 import { COLOR_NAMES, ZONES, getProduct, zonesFor, type Zone } from './catalog';
 import { sign } from './secure';
+import { getStock } from './stock';
+import { ON_ORDER_DAYS, shortSizes, skey } from './stockTypes';
 import { cartTotals, lineFull, namesAllowed, qtyOf, reworkLogos, round, type LineConfig } from './pricing';
 import { admin, adminEnabled, createExactDiscount } from './shopifyAdmin';
 import { SITE_URL } from './site';
@@ -54,6 +56,7 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL, exp
   const out: CartLineInput[] = [];
   const cache = new Map<string, Variant[]>();
   const vs = async (h: string) => { if (!cache.has(h)) cache.set(h, await variantsOf(h)); return cache.get(h)!; };
+  const stock = await getStock().catch(() => null);
 
   for (const [i, l] of lines.entries()) {
     const p = getProduct(l.slug)!;
@@ -61,8 +64,8 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL, exp
     const group = `Article ${i + 1} · ${p.name}`;
     const attrs = [
       { key: 'Groupe', value: group },
-      { key: 'Emplacements', value: zonesFor(getProduct(l.slug)!).filter((z) => l.zones.includes(z.id)).map((z) => `${z.name} (${z.size})`).join(' + ') },
-      { key: 'Logo', value: l.logoStatus === 'text' ? 'Aucun : texte seul' : `Fourni${l.logoName ? ` (${l.logoName})` : ''}${l.logoLowRes ? ' · PETITE DÉFINITION acceptée par le client' : ''}` },
+      { key: 'Emplacements', value: l.logoStatus === 'blank' ? 'Aucun : textile vierge' : zonesFor(getProduct(l.slug)!).filter((z) => l.zones.includes(z.id)).map((z) => `${z.name} (${z.size})`).join(' + ') },
+      { key: 'Logo', value: l.logoStatus === 'blank' ? 'Aucun : textile vierge, SANS MARQUAGE' : l.logoStatus === 'text' ? 'Aucun : texte seul' : `Fourni${l.logoName ? ` (${l.logoName})` : ''}${l.logoLowRes ? ' · PETITE DÉFINITION acceptée par le client' : ''}` },
       ...(l.mockupId ? [{ key: 'Maquette validée (BAT)', value: `${origin}/api/logo/${l.mockupId}` }, { key: 'Droits sur le logo', value: 'Confirmés par le client à la validation' }, { key: 'BAT validé le', value: new Date(l.approvedAt || Date.now()).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }) }] : []),
       ...(l.logoId ? [{ key: 'Fichier logo à imprimer', value: `${origin}/api/logo/${l.logoId}` }] : []),
       ...(l.logoCut && l.logoCut !== 'none' ? [{ key: 'Détourage', value: l.logoCut === 'all' ? 'Fond retiré, intérieur compris (validé sur la maquette)' : 'Fond retiré automatiquement (validé sur la maquette)' }] : []),
@@ -81,7 +84,9 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL, exp
       const v = variants.find((x) => opt(x, 'Couleur') === color && (!shopSize || opt(x, 'Taille') === shopSize))
         ?? variants.find((x) => opt(x, 'Couleur') === color);
       if (!v) throw new Error(`Variante introuvable : ${p.name} ${color} ${size}`);
-      out.push({ merchandiseId: v.id, quantity: q, attributes: size === 'Total' ? [...attrs, { key: 'Tailles', value: 'À préciser avant production' }] : attrs });
+      // Stock atelier : clé cachée (préfixe _) pour la déduction au paiement, et mention « sur commande » pour l'atelier.
+      const stockAttrs = [{ key: '_stock', value: skey(l.slug, l.color, size) }, ...(shortSizes(stock, l).includes(size) ? [{ key: 'Disponibilité', value: `Sur commande fournisseur (+${ON_ORDER_DAYS} j ouvrés)` }] : [])];
+      out.push({ merchandiseId: v.id, quantity: q, attributes: [...attrs, ...stockAttrs, ...(size === 'Total' ? [{ key: 'Tailles', value: 'À préciser avant production' }] : [])] });
     }
     const pieces = qtyOf(l);
     // Design particulier : une ligne « creation-design » par pièce.

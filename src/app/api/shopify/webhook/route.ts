@@ -9,6 +9,7 @@ import { admin } from '@/lib/shopifyAdmin';
 import { REFERRAL_REWARD, issueBon, lookupCode, markBonUsed } from '@/lib/vouchers';
 import { getShop, saveShop } from '@/lib/shops';
 import { SHOP_COMMISSION } from '@/lib/catalog';
+import { decrementStock } from '@/lib/stock';
 
 /**
  * Webhook Shopify « commande payée » (enregistré par /api/shopify/setup).
@@ -62,6 +63,13 @@ export async function POST(req: Request) {
     }
   }
 
+  // Stock atelier : déduction des pièces prises en stock.
+  let stock = '';
+  try {
+    const take = o.line_items.flatMap((l) => (l.properties || []).filter((p) => p.name === '_stock').map((p) => ({ key: String(p.value), quantity: l.quantity })));
+    stock = await decrementStock(take);
+  } catch (e) { stock = `erreur ${(e as Error).message}`; }
+
   // Parrainage : bon utilisé → marqué ; code parrain → bon de 20 € au parrain si c'est la 1re commande du filleul.
   let parrainage = '';
   try {
@@ -91,7 +99,7 @@ export async function POST(req: Request) {
   await putJSON('commandes', key, {
     id: key, gid: o.admin_graphql_api_id, name: o.name, createdAt: o.created_at, value: sale.value, email: sale.email,
     panier: attr.panier, source: attr.utm_source, campaign: attr.utm_campaign, gclid: !!attr.gclid, fbclid: !!attr.fbclid,
-    retouches: [...reworkIds], conversions: [ga, meta], parrainage, boutique,
+    retouches: [...reworkIds], conversions: [ga, meta], parrainage, boutique, stock,
   });
   return NextResponse.json({ ok: true });
 }

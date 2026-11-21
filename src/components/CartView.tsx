@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor, defaultZone, expressFee, SAMPLE_EXTRA_DAYS, SAMPLE_MIN } from '@/lib/catalog';
 import { attributionForCheckout, track } from '@/lib/track';
 import { addBusinessDays, deliveryDate, fmtDay } from '@/lib/delivery';
+import { ON_ORDER_DAYS, onOrder, shortSizes } from '@/lib/stockTypes';
+import { useStock } from '@/lib/useStock';
+import type { Stock } from '@/lib/stockTypes';
 import { namesAllowed, cartTotals, eur, lineTotal, logoKey, pools, qtyOf, unitAt, unitPrice, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
@@ -17,6 +20,10 @@ export function CartView() {
   const { lines, remove, add, promo, setPromo, pro, express, setExpress, reseller, sample, setSample, voucher, setVoucher, connected, clear } = useCart();
   const [transfer, setTransfer] = useState<{ name: string; total: number; iban?: string; bic?: string; holder: string } | null>(null);
   const { t: tx, l: lk, lang } = useT();
+  const stock = useStock();
+  // Panier uniquement en textile vierge : pas d'impression, donc ni production express ni délai d'atelier.
+  const blankOnly = lines.length > 0 && lines.every((l) => l.logoStatus === 'blank');
+  useEffect(() => { if (blankOnly && express) setExpress(false); }, [blankOnly, express, setExpress]);
   const [code, setCode] = useState('');
   const [cgv, setCgv] = useState(false);
   const [quoteOpen, setQuoteOpen] = useState(false);
@@ -41,6 +48,7 @@ export function CartView() {
   );
 
   const t = cartTotals(lines, promo, express, reseller, voucher);
+  const anyOnOrder = lines.some((l) => onOrder(stock, l));
   const pool = pools(lines);
   const firstPool = lines.reduce((a, l) => a + (logoKey(l) === logoKey(lines[0]) ? qtyOf(l) : 0), 0);
   const first = lines[0];
@@ -106,8 +114,8 @@ export function CartView() {
       <h1>{tx('Votre panier')}</h1>
       <div className="cart">
         <div>
-          {lines.map((l, i) => <CartLine key={i} l={l} i={i} pool={pool[i]} onRemove={() => remove(i)} />)}
-          <div className="addmore">
+          {lines.map((l, i) => <CartLine key={i} l={l} i={i} pool={pool[i]} stock={stock} onRemove={() => remove(i)} />)}
+          {lines[0].logoStatus !== 'blank' && <div className="addmore">
             <span>{tx('Ajouter un autre vêtement avec le même logo :')}</span>
             <div className="chips">
               {CATEGORIES.map((c) => {
@@ -115,8 +123,8 @@ export function CartView() {
                 return <Link key={c.slug} className="chip" href={`${lk(`/produits/${x.slug}`)}?meme-logo=1`}>+ {categoryL(lang, c).name}</Link>;
               })}
             </div>
-          </div>
-          {ups.length > 0 && (
+          </div>}
+          {ups.length > 0 && lines[0].logoStatus !== 'blank' && (
             <>
               <div className="sec-head mt"><h2>{tx('Complétez la tenue')}</h2><span className="muted">{tx('Même logo : les pièces se cumulent, le marquage baisse')}</span></div>
               <div className="ups">
@@ -153,17 +161,17 @@ export function CartView() {
           <div className="row tot"><span>{tx('Total TTC')}</span><span>{eur(t.ttc, lang)}</span></div>
           {!pro && <p className="muted small">{tx('dont TVA')} {eur(t.vat, lang)}</p>}
           {t.saved > 1 && <div className="row save"><span>{tx('Vous économisez')}</span><span><Price raw ht={t.saved} /></span></div>}
-          <label className={`express ${express ? 'on' : ''}`}>
+          {!blankOnly && <label className={`express ${express ? 'on' : ''}`}>
             <input type="checkbox" checked={express} onChange={(e) => setExpress(e.target.checked)} />
-            <span className="opt-ic"><I name="zap" size={20} /></span><span><b>{tx('Production express')}</b><small>{tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), true), lang) })}</small></span>
+            <span className="opt-ic"><I name="zap" size={20} /></span><span><b>{tx('Production express')}</b><small>{tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), true, anyOnOrder), lang) })}</small></span>
             <b className="express-fee">+<Price raw ht={expressFee(t.pieces || 1)} /></b>
-          </label>
+          </label>}
           {sample && t.pieces >= SAMPLE_MIN && <div className="row save"><span className="with-ic"><I name="sample" size={16} /> {tx('Échantillon avant la série')}</span><span>{tx('Offert')} · <button className="link mutedl small" onClick={() => setSample(false)}>{tx('Retirer')}</button></span></div>}
-          <p className="eta"><I name="truck" size={16} /> {tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(addBusinessDays(deliveryDate(new Date(), express), sample && t.pieces >= SAMPLE_MIN ? SAMPLE_EXTRA_DAYS : 0), lang) })}</p>
+          <p className="eta"><I name="truck" size={16} /> {tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(addBusinessDays(deliveryDate(new Date(), express, anyOnOrder, blankOnly), sample && t.pieces >= SAMPLE_MIN ? SAMPLE_EXTRA_DAYS : 0), lang) })}</p>
           {!(promo && voucher) && (
             <div className="promo-in"><input type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder={tx('Code promo')} aria-label={tx('Code promo')} /><button className="btn line small" onClick={applyCode}>{tx('Appliquer')}</button></div>
           )}
-          <label className="consent"><input type="checkbox" checked={cgv} onChange={(e) => setCgv(e.target.checked)} /><span>{tx('J\'accepte les')} <Link href="/cgv">{tx('CGV')}</Link> {tx('(articles personnalisés : pas de rétractation)')}</span></label>
+          <label className="consent"><input type="checkbox" checked={cgv} onChange={(e) => setCgv(e.target.checked)} /><span>{tx('J\'accepte les')} <Link href="/cgv">{tx('CGV')}</Link> {tx(blankOnly ? '(textile vierge : rétractation 14 jours pour les particuliers)' : lines.some((l) => l.logoStatus === 'blank') ? '(articles personnalisés : pas de rétractation ; textile vierge : 14 jours)' : '(articles personnalisés : pas de rétractation)')}</span></label>
           <button className="btn cta block" onClick={checkout} disabled={busy}>{tx(busy ? 'Redirection…' : 'Commander avec obligation de paiement')}</button>
           {connected && pro && <button className="btn line block" onClick={payByTransfer} disabled={busy}><I name="bank" size={18} /> {tx('Payer par virement')}</button>}
           {!connected && pro && <p className="muted small">{tx('Virement possible pour les pros connectés à leur compte.')} <Link className="link" href={lk('/compte')}>{tx('Se connecter')}</Link></p>}
@@ -181,22 +189,24 @@ export function CartView() {
   );
 }
 
-function CartLine({ l, i, pool, onRemove }: { l: LineConfig; i: number; pool: number; onRemove: () => void }) {
+function CartLine({ l, i, pool, stock, onRemove }: { l: LineConfig; i: number; pool: number; onRemove: () => void ; stock: Stock | null }) {
   const { t: tx, l: lk, lang } = useT();
   const p0 = getProduct(l.slug);
   if (!p0) return null;
   const p = productL(lang, p0);
   const q = qtyOf(l);
-  const logo = l.logoStatus === 'text' ? `${tx('Texte')} : « ${l.text} »` : tx(l.logoLowRes ? 'Logo fourni (petite définition)' : 'Logo fourni');
+  const blank = l.logoStatus === 'blank';
+  const logo = blank ? tx('Textile vierge, sans marquage') : l.logoStatus === 'text' ? `${tx('Texte')} : « ${l.text} »` : tx(l.logoLowRes ? 'Logo fourni (petite définition)' : 'Logo fourni');
   const bat = tx(l.logoRework ? 'Retouche graphiste' : l.mockupId ? 'Maquette validée' : 'Maquette à valider');
   return (
     <div className="line">
       <div className="img"><Garment slug={l.slug} color={l.color} zones={l.zones} logo={l.logo} /></div>
       <div>
         <Link href={lk(`/produits/${p.slug}`)}><strong>{p.name}</strong></Link>
-        <small>{colorName(lang, l.color)} · {zonesL(lang, p0).filter((z) => l.zones.includes(z.id)).map((z) => z.name).join(' + ')}{pool > q ? ` · ${tx('{n} pièces au même logo', { n: pool })}` : ''}</small>
+        <small>{colorName(lang, l.color)}{!blank && <> · {zonesL(lang, p0).filter((z) => l.zones.includes(z.id)).map((z) => z.name).join(' + ')}{pool > q ? ` · ${tx('{n} pièces au même logo', { n: pool })}` : ''}</>}</small>
         <small>{Object.entries(l.qty).filter(([, v]) => v).map(([s, v]) => `${s} ×${v}`).join(', ')}</small>
-        <small>{logo} · {bat}</small>
+        <small>{blank ? logo : `${logo} · ${bat}`}</small>
+        {shortSizes(stock, l).length > 0 && <small className="order-note"><I name="clock" size={14} /> {tx('Sur commande ({s}) : +{n} jours ouvrés', { s: shortSizes(stock, l).join(', '), n: ON_ORDER_DAYS })}</small>}
         {l.teamId && <small className="with-ic"><I name="users" size={14} /> {tx('Liste d\'équipe')}{l.printNames && namesAllowed(l) ? ` · ${tx('prénoms imprimés')}` : ''}</small>}
         <div className="acts"><Link className="link" href={`${lk(`/produits/${p.slug}`)}?modifier=${i}`}>{tx('Modifier')}</Link><button className="link mutedl" onClick={onRemove}>{tx('Supprimer')}</button></div>
       </div>

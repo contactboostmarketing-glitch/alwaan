@@ -2,7 +2,8 @@
 // Espace atelier : dossiers de retouche du logo. Protégé par la clé atelier (gardée dans ce navigateur).
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { COLOR_NAMES, getProduct, zonesFor } from '@/lib/catalog';
+import { COLOR_NAMES, PRODUCTS, getProduct, sizesFor, zonesFor } from '@/lib/catalog';
+import { skey, type Stock } from '@/lib/stockTypes';
 import { uploadFile } from '@/lib/cutout';
 import { snapshot, toDataUrl, uploadMockup } from '@/lib/mockup';
 import { STATUS_LABEL, type Rework } from '@/lib/reworkTypes';
@@ -167,7 +168,7 @@ export function AtelierRework({ id }: { id: string }) {
 }
 
 function AtelierNav() {
-  return <nav className="atl-nav no-print"><Link href="/atelier/production">Production</Link><Link href="/atelier">Retouches</Link><Link href="/atelier/revendeurs">Revendeurs</Link></nav>;
+  return <nav className="atl-nav no-print"><Link href="/atelier/production">Production</Link><Link href="/atelier">Retouches</Link><Link href="/atelier/revendeurs">Revendeurs</Link><Link href="/atelier/stock">Stock</Link></nav>;
 }
 
 const day = (s: string) => new Date(s).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -285,5 +286,67 @@ function QcPhotos({ order, initial, staffKey }: { order: string; initial: string
       {photos.map((p) => <a key={p} href={`/api/logo/${p}?apercu`} target="_blank" rel="noopener">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={`/api/logo/${p}?apercu`} alt="Photo de contrôle" /></a>)}
       <label className="btn line small">{busy ? 'Envoi…' : photos.length ? '+ Photo' : 'Photo de contrôle'}<input type="file" accept="image/*" capture="environment" hidden onChange={(e) => onFile(e.target.files?.[0])} /></label>
     </div>
+  );
+}
+
+/**
+ * Stock du textile vierge à l'atelier, par vêtement, couleur et taille.
+ * Case vide = pas de stock suivi pour cette référence : elle est vendue « sur commande » (+5 jours ouvrés).
+ * Les commandes payées déduisent automatiquement les pièces prises en stock.
+ */
+export function AtelierStock() {
+  const { key, save } = useStaffKey();
+  const [stock, setStock] = useState<Stock | null>(null);
+  const [slug, setSlug] = useState(PRODUCTS[0].slug);
+  const [draft, setDraft] = useState<Record<string, string>>({});
+  const [err, setErr] = useState(''), [busy, setBusy] = useState(false), [ok, setOk] = useState('');
+  useEffect(() => { fetch('/api/stock', { cache: 'no-store' }).then((r) => r.json()).then(setStock).catch(() => setErr('Connexion impossible.')); }, []);
+  if (!key) return <KeyGate onKey={save} error={err} />;
+  const p = getProduct(slug)!;
+  const sizes = sizesFor(p);
+  const val = (k: string) => (k in draft ? draft[k] : stock?.q[k] !== undefined ? String(stock.q[k]) : '');
+  const dirty = Object.keys(draft).length > 0;
+  const saveAll = async () => {
+    setBusy(true); setErr(''); setOk('');
+    const changes = Object.fromEntries(Object.entries(draft).map(([k, v]) => [k, v.trim() === '' ? null : Number(v)]));
+    const r = await fetch('/api/stock', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-staff-key': key }, body: JSON.stringify({ changes }) });
+    const d = await r.json().catch(() => ({}));
+    setBusy(false);
+    if (r.status === 401) { setErr(d.error); save(''); return; }
+    if (!r.ok) { setErr(d.error || 'Enregistrement impossible.'); return; }
+    setStock(d); setDraft({}); setOk('Stock enregistré.');
+  };
+  const fillColor = (c: string, n: string) => setDraft((d) => ({ ...d, ...Object.fromEntries(sizes.map((s) => [skey(slug, c, s), n])) }));
+  return (
+    <section className="wrap atelier"><AtelierNav /><h1>Stock atelier</h1>
+      <p className="muted small">Case vide = référence <b>sur commande</b> (le client voit +5 jours ouvrés). Les commandes payées déduisent le stock automatiquement.{stock?.updatedAt ? ` Dernière mise à jour : ${when(stock.updatedAt)}.` : ''}</p>
+      <div className="stk-products">{PRODUCTS.map((x) => {
+        const n = Object.entries(stock?.q || {}).filter(([k]) => k.startsWith(`${x.slug}|`)).reduce((a, [, v]) => a + v, 0);
+        return <button key={x.slug} className="chip" aria-pressed={x.slug === slug} onClick={() => setSlug(x.slug)}>{x.name}{n ? <small> · {n}</small> : null}</button>;
+      })}</div>
+      <div className="stk-wrap">
+        <table className="stk">
+          <thead><tr><th>Couleur</th>{sizes.map((s) => <th key={s}>{s}</th>)}<th /></tr></thead>
+          <tbody>{p.colors.map((c) => {
+            const tracked = sizes.some((s) => val(skey(slug, c, s)) !== '');
+            return (
+              <tr key={c} className={tracked ? '' : 'untracked'}>
+                <th><span className="stk-sw" style={{ background: c }} />{COLOR_NAMES[c] || c}{!tracked && <small className="muted"> · sur commande</small>}</th>
+                {sizes.map((s) => { const k = skey(slug, c, s); const v = val(k); return (
+                  <td key={s}><input inputMode="numeric" value={v} placeholder="–" className={v !== '' && Number(v) <= 5 ? 'low' : ''} onChange={(e) => setDraft({ ...draft, [k]: e.target.value.replace(/[^0-9]/g, '') })} aria-label={`${COLOR_NAMES[c] || c} ${s}`} /></td>
+                ); })}
+                <td><button className="link small" onClick={() => fillColor(c, tracked ? '' : '0')}>{tracked ? 'Sur commande' : 'Suivre'}</button></td>
+              </tr>
+            );
+          })}</tbody>
+        </table>
+      </div>
+      <div className="atl-files">
+        <button className="btn cta" disabled={!dirty || busy} onClick={saveAll}>{busy ? 'Enregistrement…' : 'Enregistrer'}</button>
+        {dirty && <button className="btn line" onClick={() => setDraft({})}>Annuler</button>}
+        {ok && !dirty && <span className="okline">{ok}</span>}
+        {err && <span className="warnline">{err}</span>}
+      </div>
+    </section>
   );
 }
