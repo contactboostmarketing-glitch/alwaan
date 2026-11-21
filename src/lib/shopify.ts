@@ -71,6 +71,7 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL, exp
       ...(l.logoCut && l.logoCut !== 'none' ? [{ key: 'Détourage', value: l.logoCut === 'all' ? 'Fond retiré, intérieur compris (validé sur la maquette)' : 'Fond retiré automatiquement (validé sur la maquette)' }] : []),
       ...(l.logoSourceId && l.logoSourceId !== l.logoId ? [{ key: 'Fichier d\'origine du client', value: `${origin}/api/logo/${l.logoSourceId}` }] : []),
       ...(l.text ? [{ key: 'Texte', value: `${l.text}${l.text2 ? ` / 2e ligne : ${l.text2}` : ''} · police ${l.textFont || 'oswald'}${l.textColor ? ` · couleur ${l.textColor}` : ''}` }] : []),
+      ...(l.logoMono ? [{ key: 'Logo monochrome', value: `Logo imprimé en une seule couleur (${l.logoMono === '#ffffff' ? 'blanc' : l.logoMono === '#000000' ? 'noir' : l.logoMono}) à la demande du client` }] : []),
       ...(l.zoneText && Object.keys(l.zoneText).length ? [{ key: 'Texte à la place du logo', value: Object.entries(l.zoneText).map(([z, v]) => `${zonesFor(getProduct(l.slug)!).find((x) => x.id === z)?.name || z} : « ${v} »`).join(' · ') }] : []),
       ...(l.design ? [{ key: 'Design particulier', value: `${l.design}${l.designText ? ` · ${l.designText}` : ''}` }] : []),
       ...(l.teamId ? [{ key: 'Liste nominative (nom, prénom, taille)', value: `${origin}/api/equipe/${l.teamId}/liste?sig=${sign('liste', l.teamId)}` }] : []),

@@ -12,6 +12,8 @@ import { Perks } from './ui';
 import { useT } from '@/i18n/client';
 import { categoryL, colorName, productL, zonesL } from '@/i18n';
 import { snapshot, toDataUrl, uploadMockup } from '@/lib/mockup';
+import { uploadFile } from '@/lib/cutout';
+import { contrast, logoAverage, monochrome } from '@/lib/logoInk';
 import { track } from '@/lib/track';
 import { deliveryDate, fmtDay } from '@/lib/delivery';
 import { ON_ORDER_DAYS, available, colorStocked, shortSizes } from '@/lib/stockTypes';
@@ -165,7 +167,7 @@ export function Configurator({ slug }: { slug: string }) {
   // Logo : détourage automatique, puis envoi du fichier final (celui de la maquette) à l'atelier.
   const { logo: lg, pick, choose } = useLogo((l) => {
     setApproved(false);
-    setCfg((c) => ({ ...c, logo: l.preview, logoName: l.name, logoId: l.id, logoSourceId: l.sourceId, logoCut: l.mode, logoStatus: 'uploaded', logoLowRes: l.lowRes }));
+    setCfg((c) => ({ ...c, logoMono: undefined, logo: l.preview, logoName: l.name, logoId: l.id, logoSourceId: l.sourceId, logoCut: l.mode, logoStatus: 'uploaded', logoLowRes: l.lowRes }));
     if (l.error) flash(l.error);
   });
   const uploading = !!lg?.busy;
@@ -259,6 +261,31 @@ export function Configurator({ slug }: { slug: string }) {
     if (navigator.share) { navigator.share({ title: 'alwaan', text, url: d.url }).catch(() => {}); return; }
     try { await navigator.clipboard.writeText(d.url); flash(t('Lien copié : collez-le dans un email ou un message.')); } catch { window.prompt(t('Lien à partager'), d.url); }
   };
+  // Logo peu visible sur la couleur du textile (ex. logo noir sur polo noir) : on propose une version d'une seule couleur.
+  const orig = useRef<{ logo?: string; logoId?: string } | null>(null);
+  const [ink, setInk] = useState<{ avg: string; cover: number } | null>(null);
+  const [monoBusy, setMonoBusy] = useState(false);
+  useEffect(() => {
+    if (cfg.logoMono || !cfg.logo || cfg.logoStatus !== 'uploaded') { if (!cfg.logo) setInk(null); return; }
+    orig.current = { logo: cfg.logo, logoId: cfg.logoId };
+    logoAverage(cfg.logo).then(setInk);
+  }, [cfg.logo]); // eslint-disable-line react-hooks/exhaustive-deps
+  const lowContrast = !blank && cfg.logoStatus === 'uploaded' && !!cfg.logo && !!ink && contrast(cfg.logoMono || ink.avg, cfg.color) < 1.8;
+  const monoChoices = ['#ffffff', '#000000', ...TEXT_COLORS.filter((c) => c !== '#ffffff' && c !== '#000000')].filter((c) => contrast(c, cfg.color) >= 3).slice(0, 4);
+  const applyMono = async (hex: string) => {
+    const o = orig.current; if (!o?.logo) return;
+    setMonoBusy(true);
+    // Fichier d'impression en pleine définition si disponible, sinon l'aperçu.
+    const src = (o.logoId && (await toDataUrl(`/api/logo/${o.logoId}`))) || o.logo;
+    const m = src ? await monochrome(src, hex) : null;
+    const up = m ? await uploadFile(m.blob, 'logo-monochrome.png') : null;
+    setMonoBusy(false);
+    if (!m || !up?.id) { flash(t('Conversion du logo impossible. Réessayez.')); return; }
+    setApproved(false);
+    setCfg((c) => ({ ...c, logo: m.url, logoId: up.id, logoMono: hex }));
+  };
+  const undoMono = () => { const o = orig.current; if (!o) return; setApproved(false); setCfg((c) => ({ ...c, logo: o.logo, logoId: o.logoId, logoMono: undefined })); };
+  const monoName = (h: string) => (h === '#ffffff' ? t('blanc') : h === '#000000' ? t('noir') : t('couleur'));
   const hasBack = zones.some((z) => z.view === 'back');
   const err = (at: 'logo' | 'zones' | 'qty' | 'bat') => (fieldErr?.at === at ? <p className="err small field-err" role="alert">{fieldErr.msg}</p> : null);
   const logoLabel = t(cfg.logoStatus === 'text' ? 'Texte seul (sans logo)' : cfg.logo ? 'Logo ajouté' : 'Déposez votre logo');
@@ -325,6 +352,16 @@ export function Configurator({ slug }: { slug: string }) {
             <CutoutChoice logo={cfg.logoStatus === 'uploaded' ? lg : null} choose={choose} />
             <ReworkOption logo={cfg.logoStatus === 'uploaded' ? lg : null} on={!!cfg.logoRework} set={(v) => set({ logoRework: v })} />
             <button className="link" onClick={() => { setApproved(false); set({ logo: undefined, logoName: undefined, logoId: undefined, logoLowRes: false, logoStatus: 'text' }); }}>{t('Je n\'ai pas de logo : imprimer seulement un texte')}</button>
+            {lowContrast && (
+              <div className="mono-warn" role="status">
+                <b>{t('Votre logo risque de ne pas se voir sur ce textile.')}</b>
+                {ink!.cover > 0.9
+                  ? <small>{t('Retirez le fond (« Sans fond ») pour pouvoir l\'imprimer d\'une seule couleur, ou choisissez un textile plus contrasté.')}</small>
+                  : <><small>{t('Imprimez-le d\'une seule couleur :')}</small>
+                    <div className="mono-opts">{monoChoices.map((c) => <button key={c} className="btn line small" disabled={monoBusy} onClick={() => applyMono(c)}><i style={{ background: c }} /> {c === '#ffffff' ? t('Logo en blanc') : c === '#000000' ? t('Logo en noir') : t('Logo en couleur')}</button>)}</div></>}
+              </div>
+            )}
+            {cfg.logoMono && <p className="muted small">{t('Logo imprimé en {c}.', { c: monoName(cfg.logoMono) })} <button className="link small" onClick={undoMono}>{t('Revenir aux couleurs d\'origine')}</button></p>}
             {cfg.logoLowRes && <p className="warnline">{t('Logo peu net : envoyez une version plus grande, ou confiez-le au graphiste.')}</p>}
           </div>
           <input type="text" value={cfg.text} maxLength={24} placeholder={t(cfg.logoStatus === 'text' ? 'Texte à imprimer (nom, slogan…)' : 'Texte facultatif sous le logo')} aria-label={t('Texte sous le logo')} onChange={(e) => set({ text: e.target.value })} />
