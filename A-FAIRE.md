@@ -37,7 +37,8 @@ Liste des actions en attente (à faire par l'équipe alwaan, ou des informations
 - [ ] Sweat, pull, veste sans manches : référence Roly, prix d'achat HT, couleurs, tailles.
 
 ## Légal
-- [ ] Choisir un médiateur de la consommation (CM2C, Medicys…) et compléter la page Médiation.
+- [ ] Choisir un médiateur de la consommation (CM2C, Medicys…), puis renseigner dans Netlify MEDIATEUR_NOM, MEDIATEUR_ADRESSE, MEDIATEUR_SITE (la page Médiation se met à jour toute seule ; d'ici là elle oriente vers le conciliateur de justice).
+- [ ] Désactiver le badge « Powered by Netlify » (Project configuration → General) : il recouvre « Ajouter au panier » et « Tout accepter » sur mobile.
 - [ ] Faire relire CGV, confidentialité, cookies par un juriste.
 
 ## Tests en réel

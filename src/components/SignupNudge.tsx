@@ -6,12 +6,12 @@ import { useT } from '@/i18n/client';
 import { I } from './Icons';
 
 const KEY = 'alwaan-signup';
-const HIDE = /^\/(en\/)?(panier|cart|compte|account|atelier|avis|recommander|devis|quote|equipe|team|boutique|shop)/;
+const HIDE = /^\/(en\/)?(panier|cart|compte|account|atelier|avis|recommander|devis|quote|equipe|team|boutique|shop|produits|products|assistant|lien-equipe|team-link|(idees-cadeaux|gift-ideas)\/creer)/;
 
 export function SignupNudge() {
   const path = usePathname();
   const { t } = useT();
-  const [show, setShow] = useState(false), [email, setEmail] = useState(''), [state, setState] = useState<'' | 'busy' | 'ok'>(''), [err, setErr] = useState('');
+  const [show, setShow] = useState(false), [email, setEmail] = useState(''), [state, setState] = useState<'' | 'busy' | 'ok'>(''), [err, setErr] = useState(''), [code, setCode] = useState('');
   useEffect(() => {
     if (HIDE.test(path)) return;
     try { const v = localStorage.getItem(KEY); if (v && Date.now() - Number(v) < 30 * 864e5) return; } catch { return; }
@@ -28,13 +28,15 @@ export function SignupNudge() {
     const r = await fetch('/api/inscription', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }).catch(() => null);
     const d = r ? await r.json().catch(() => ({})) : {};
     if (!r?.ok) { setState(''); setErr(t(d.error || 'Envoi impossible.')); return; }
-    setState('ok'); try { localStorage.setItem(KEY, String(Date.now() + 3650 * 864e5)); } catch {}
+    setCode(d.code || ''); setState('ok'); try { localStorage.setItem(KEY, String(Date.now() + 3650 * 864e5)); } catch {}
   };
   return (
     <aside className="signup" role="dialog" aria-label={t('-10 % sur votre 1re commande')}>
       <button className="chat-x" aria-label={t('Fermer')} onClick={close}><I name="x" size={16} /></button>
       {state === 'ok' ? (
-        <><b>{t('Votre code : BIENVENUE')}</b><p className="muted small">{t('-10 % sur votre 1re commande, à saisir dans le panier. Envoyé aussi par email.')}</p></>
+        code
+          ? <><b>{t('Votre code : {c}', { c: code })}</b><p className="muted small">{t('-10 % sur votre 1re commande, à saisir dans le panier. Personnel, valable 30 jours.')}</p></>
+          : <><b>{t('Code envoyé par email')}</b><p className="muted small">{t('Votre code -10 % personnel vient de partir : pensez à vérifier les indésirables. Valable 30 jours.')}</p></>
       ) : (<>
         <b className="with-ic"><I name="gift" size={18} /> {t('-10 % sur votre 1re commande')}</b>
         <form onSubmit={(e) => { e.preventDefault(); send(); }}>

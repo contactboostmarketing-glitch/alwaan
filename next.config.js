@@ -12,6 +12,14 @@ const SECURITY_HEADERS = [
 module.exports = {
   reactStrictMode: true,
   poweredByHeader: false,
-  async redirects() { return [{ source: '/a-propos', destination: '/notre-atelier', permanent: true }]; },
+  async redirects() {
+    return [
+      { source: '/a-propos', destination: '/notre-atelier', permanent: true },
+      // Adresses devinées par les visiteurs (pas de page d'index) : on les envoie au bon endroit.
+      { source: '/avis', destination: '/realisations', permanent: false },
+      { source: '/boutique', destination: '/clubs-associations', permanent: false },
+      { source: '/en/shop', destination: '/en/clubs', permanent: false },
+    ];
+  },
   async headers() { return [{ source: '/:path*', headers: SECURITY_HEADERS }]; },
 };

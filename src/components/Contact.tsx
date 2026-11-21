@@ -18,6 +18,8 @@ export function ContactFloat() {
   const [text, setText] = useState(''), [busy, setBusy] = useState(false), [handoff, setHandoff] = useState(false);
   const list = useRef<HTMLDivElement>(null);
   useEffect(() => { list.current?.scrollTo(0, list.current.scrollHeight); }, [msgs, busy]);
+  // Ouverture depuis un bouton de la page (ex. fiche produit mobile, où la bulle flottante est masquée).
+  useEffect(() => { const o = () => setOpen(true); window.addEventListener('alwaan:chat', o); return () => window.removeEventListener('alwaan:chat', o); }, []);
   if (path.startsWith('/atelier')) return null;
 
   const userCount = msgs.filter((m) => m.role === 'user').length;

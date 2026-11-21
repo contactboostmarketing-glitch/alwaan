@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCategory, getSector } from '@/lib/catalog';
+import { getCategory, getSector, customName } from '@/lib/catalog';
 import { GUIDES, getGuide } from '@/lib/guides';
 import { SITE_URL } from '@/lib/site';
 import { Breadcrumbs, Faq, JsonLd } from '@/components/ui';
@@ -32,7 +32,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
         <Faq items={g.faq} />
         <nav className="guide-links" aria-label="Pour aller plus loin">
           <b>Nos vêtements</b>
-          {g.categories.map((c) => <Link key={c} href={`/vetements/${c}`}>{getCategory(c)!.name} personnalisés</Link>)}
+          {g.categories.map((c) => <Link key={c} href={`/vetements/${c}`}>{customName(getCategory(c)!)}</Link>)}
           {(g.sectors || []).map((s) => <Link key={s} href={`/metiers/${s}`}>{getSector(s)!.h1}</Link>)}
           <b>À lire aussi</b>
           {g.related.map((r) => { const x = getGuide(r); return x ? <Link key={r} href={`/guides/${r}`}>{x.title}</Link> : null; })}

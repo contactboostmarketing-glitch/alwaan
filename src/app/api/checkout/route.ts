@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { COLOR_NAMES, PROMO_CODES, getProduct, sizesFor, zonesFor, SAMPLE_MIN, promoRate } from '@/lib/catalog';
 import { validRelanceCode } from '@/lib/relance';
-import { cartTotals, logoKey, pools, qtyOf, unitPrice, type LineConfig } from '@/lib/pricing';
+import { cartTotals, keptAdvantages, logoKey, pools, qtyOf, unitPrice, type LineConfig } from '@/lib/pricing';
 import { createRework } from '@/lib/rework';
 import { saveCart } from '@/lib/savedCart';
 import { sessionEmail } from '@/lib/customer';
@@ -28,14 +28,16 @@ export async function POST(req: Request) {
   const express = body?.express === true;
   // Remise revendeur : vérifiée côté serveur (compte connecté + statut validé), jamais sur parole du navigateur.
   const customerEmail = await sessionEmail(req, publicOrigin(req));
-  const reseller = await isReseller(customerEmail);
+  const resellerOk = await isReseller(customerEmail);
   // Code parrain (pas pour soi-même) ou bon d'achat non utilisé, vérifiés ici.
   const code = typeof body?.voucher === 'string' ? await lookupCode(body.voucher) : null;
   const voucherOk = code && !(code.kind === 'parrain' && customerEmail && code.email === customerEmail.toLowerCase()) ? code : null;
-  const voucher = voucherOk ? { amount: voucherOk.amount, min: voucherOk.min } : null;
-  // Code promo : codes fixes, ou code de relance RETOUR-XXXXXX à usage unique (vérifié ici).
+  // Code promo : codes fixes, ou code à usage unique RETOUR- / AVIS- / BIENV- (vérifié ici).
   const rawPromo = typeof body?.promo === 'string' ? body.promo.trim().toUpperCase() : '';
-  const promo = rawPromo && (PROMO_CODES[rawPromo] || (await validRelanceCode(rawPromo))) ? rawPromo : null;
+  const promoOk = rawPromo && (PROMO_CODES[rawPromo] || (await validRelanceCode(rawPromo))) ? rawPromo : null;
+  // Un seul avantage par commande (CGV) : on garde le plus intéressant, les autres codes ne sont ni appliqués ni consommés.
+  const kept = keptAdvantages(lines, promoOk, express, resellerOk, voucherOk ? { amount: voucherOk.amount, min: voucherOk.min } : null);
+  const { promo, reseller, voucher } = kept;
 
   // Shopify en priorité : panier, paiement et commandes gérés dans le back office.
   if (shopifyEnabled()) {
@@ -59,7 +61,7 @@ export async function POST(req: Request) {
       if (body?.sample === true && lines.reduce((a, l) => a + qtyOf(l), 0) >= SAMPLE_MIN) attr._echantillon = 'oui';
       if (reseller) attr._revendeur = 'oui';
       const shopSlug = lines.find((l) => l.shop)?.shop; if (shopSlug) attr._boutique = shopSlug;
-      if (voucherOk) attr[voucherOk.kind === 'parrain' ? '_parrain' : '_bon'] = String(body.voucher).trim().toUpperCase();
+      if (voucherOk && voucher) attr[voucherOk.kind === 'parrain' ? '_parrain' : '_bon'] = String(body.voucher).trim().toUpperCase();
       // Virement : réservé aux pros connectés à leur compte.
       if (body?.payment === 'virement') {
         if (!customerEmail || !body?.pro) return NextResponse.json({ error: 'Le virement est réservé aux professionnels connectés à leur compte.' }, { status: 403 });

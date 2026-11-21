@@ -78,6 +78,11 @@ export function Configurator({ slug }: { slug: string }) {
   const [view, setView] = useState<'front' | 'back'>('front');
   const [toast, setToast] = useState('');
   const [approved, setApproved] = useState(false);
+  // Erreur affichée sous le champ concerné (et non dans un toast loin du bouton).
+  const [fieldErr, setFieldErr] = useState<{ at: 'logo' | 'zones' | 'qty' | 'bat'; msg: string } | null>(null);
+  const [justAdded, setJustAdded] = useState(false);
+  useEffect(() => { setFieldErr(null); }, [cfg, approved]);
+  useEffect(() => { if (!justAdded) return; const id = setTimeout(() => setJustAdded(false), 8000); return () => clearTimeout(id); }, [justAdded]);
   const prevZones = useRef<string[]>([]);
   const [saving, setSaving] = useState(false);
   const shots = useRef<HTMLDivElement>(null);
@@ -112,6 +117,12 @@ export function Configurator({ slug }: { slug: string }) {
   const at = (n: number) => unitAt(cfg, n);
   const set = (patch: Partial<LineConfig>) => setCfg((c) => ({ ...c, ...patch }));
   const flash = (m: string) => { setToast(m); setTimeout(() => setToast(''), 3200); };
+  const fail = (at: 'logo' | 'zones' | 'qty' | 'bat', msg: string) => {
+    setFieldErr({ at, msg });
+    const el = document.getElementById(`cfg-${at}`);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    (el?.querySelector('input:not([type=file]),button') as HTMLElement | null)?.focus({ preventScroll: true });
+  };
 
   const toggleZone = (id: string) => {
     // Le grand devant recouvre le cœur et l'anti-cœur : l'un remplace les autres.
@@ -139,7 +150,7 @@ export function Configurator({ slug }: { slug: string }) {
   };
   // forTeam : la liste d'équipe fixe les quantités ensuite, elles ne sont pas exigées ici.
   const submit = async (forTeam = false) => {
-    if (!q && !forTeam) { flash(t('Indiquez au moins une pièce')); return; }
+    if (!q && !forTeam) { fail('qty', t('Indiquez au moins une pièce')); return; }
     if (blank) {
       // Textile vierge : pas de maquette ni de validation, on ajoute directement.
       const item: LineConfig = { slug, color: cfg.color, zones: [], qty: cfg.qty, logoStatus: 'blank' };
@@ -155,16 +166,16 @@ export function Configurator({ slug }: { slug: string }) {
       if (editIndex !== null) { update(editIndex, item); router.push(l('/panier')); return; }
       add(item);
       track('add_to_cart', { value: lineTotal(item, pool), items: [{ item_id: p.slug, item_name: p.name, quantity: q }] });
-      setAdded(true);
-      flash(t('{q} × {name} ajoutés au panier', { q, name: pL.name }));
+      setAdded(true); setJustAdded(true);
+      flash(t('Ajouté au panier : {q} × {name}', { q, name: pL.name }));
       return;
     }
-    if (!cfg.zones.length) { flash(t('Choisissez au moins un emplacement')); return; }
+    if (!cfg.zones.length) { fail('zones', t('Choisissez au moins un emplacement')); return; }
     if (uploading) { flash(t('Envoi du logo en cours, un instant…')); return; }
-    if (cfg.logoStatus === 'uploaded' && lg?.hasBg && !lg.decided && !cfg.logoRework) { flash(t('Votre logo a un fond : choisissez avec ou sans fond.')); return; }
-    if (cfg.logoStatus === 'uploaded' && !cfg.logoId) { flash(t('Ajoutez votre logo, ou choisissez « Texte seul ».')); return; }
-    if (cfg.logoStatus === 'text' && !cfg.text?.trim()) { flash(t('Écrivez le texte à imprimer.')); return; }
-    if (!approved) { flash(t('Cochez la validation de votre maquette.')); return; }
+    if (cfg.logoStatus === 'uploaded' && lg?.hasBg && !lg.decided && !cfg.logoRework) { fail('logo', t('Votre logo a un fond : choisissez avec ou sans fond.')); return; }
+    if (cfg.logoStatus === 'uploaded' && !cfg.logoId) { fail('logo', t('Ajoutez votre logo, ou choisissez « Texte seul ».')); return; }
+    if (cfg.logoStatus === 'text' && !cfg.text?.trim()) { fail('logo', t('Écrivez le texte à imprimer.')); return; }
+    if (!approved) { fail('bat', t('Cochez la validation de votre maquette.')); return; }
     // La maquette validée est figée en image et jointe à la commande (BAT).
     setSaving(true);
     const svgs = Array.from(shots.current?.querySelectorAll('svg') ?? []) as SVGSVGElement[];
@@ -188,10 +199,11 @@ export function Configurator({ slug }: { slug: string }) {
     add(item);
     track('add_to_cart', { value: lineTotal(item, pool), items: [{ item_id: p.slug, item_name: p.name, quantity: qtyOf(item) }] });
     setApproved(false);
-    setAdded(true);
-    flash(t('{q} × {name} ajoutés au panier', { q, name: pL.name }));
+    setAdded(true); setJustAdded(true);
+    flash(t('Ajouté au panier : {q} × {name}', { q, name: pL.name }));
   };
   const hasBack = zones.some((z) => z.view === 'back');
+  const err = (at: 'logo' | 'zones' | 'qty' | 'bat') => (fieldErr?.at === at ? <p className="err small field-err" role="alert">{fieldErr.msg}</p> : null);
   const logoLabel = t(cfg.logoStatus === 'text' ? 'Texte seul (sans logo)' : cfg.logo ? 'Logo ajouté' : 'Déposez votre logo');
 
   return (
@@ -225,7 +237,7 @@ export function Configurator({ slug }: { slug: string }) {
           {!colorStocked(stock, slug, cfg.color) && <p className="order-note"><I name="clock" size={15} /> {t('Couleur sur commande : +{n} jours ouvrés', { n: ON_ORDER_DAYS })}</p>}
         </div>
 
-        <div className="blk">
+        <div className={`blk ${fieldErr?.at === 'logo' ? 'invalid' : ''}`} id="cfg-logo">
           <div className="mode-pick" role="group" aria-label={t('Marquage')}>
             <button aria-pressed={!blank} onClick={() => blank && set({ logoStatus: 'uploaded', zones: prevZones.current.length ? prevZones.current : [defaultZone(p)] })}><I name="palette" size={18} /> {t('Avec mon logo')}</button>
             <button aria-pressed={blank} onClick={() => { if (!blank) { prevZones.current = cfg.zones; set({ logoStatus: 'blank', zones: [], logoRework: false, printNames: false }); } }}><I name="shirt" size={18} /> {t('Textile vierge')}</button>
@@ -244,10 +256,11 @@ export function Configurator({ slug }: { slug: string }) {
             {cfg.logoLowRes && <p className="warnline">{t('Logo peu net : envoyez une version plus grande, ou confiez-le au graphiste.')}</p>}
           </div>
           <input type="text" value={cfg.text} maxLength={24} placeholder={t(cfg.logoStatus === 'text' ? 'Texte à imprimer (nom, slogan…)' : 'Texte facultatif sous le logo')} aria-label={t('Texte sous le logo')} onChange={(e) => set({ text: e.target.value })} />
+          {err('logo')}
           </>)}
         </div>
 
-        {!blank && <div className="blk">
+        {!blank && <div className={`blk ${fieldErr?.at === 'zones' ? 'invalid' : ''}`} id="cfg-zones">
           <div className="lbl">{t('Emplacements')}</div>
           <div className="zones">
             {zones.map((z) => {
@@ -261,12 +274,13 @@ export function Configurator({ slug }: { slug: string }) {
               );
             })}
           </div>
+          {err('zones')}
           {hasBack && !cfg.zones.includes('back') && (
             <div className="nudge"><span>{t('Visible de loin ?')}</span><button className="btn line small" onClick={() => toggleZone('back')}>{t('+ Logo au dos')}</button></div>
           )}
         </div>}
 
-        <div className="blk">
+        <div className={`blk ${fieldErr?.at === 'qty' ? 'invalid' : ''}`} id="cfg-qty">
           <div className="lbl">{t('Quantités')} {sizesFor(p).length > 1 && <span><Link className="link" href={`${l('/faq')}#tailles`}>{t('Guide des tailles')}</Link></span>}</div>
           <div className="sizes">
             {Object.keys(cfg.qty).map((s) => (
@@ -281,16 +295,21 @@ export function Configurator({ slug }: { slug: string }) {
               </div>
             ))}
           </div>
+          {err('qty')}
           {short.length > 0 && colorStocked(stock, slug, cfg.color) && <p className="order-note"><I name="clock" size={15} /> {t('Au-delà du stock, sur commande : +{n} jours ouvrés', { n: ON_ORDER_DAYS })}</p>}
           {others > 0 && <p className="muted small">{t('+ {n} avec ce logo déjà dans le panier, comptées pour la remise.', { n: pcs(others) })}</p>}
           {!blank && q > 0 && zones.some((z) => cfg.zones.includes(z.id) && !z.fixed) && (nt ? (
             <div className="nudge"><span>+{pcs(nt[0] - pool)} = {t('marquage')} <b>-{Math.round(nt[1] * 100)} %</b></span><button className="btn line small" onClick={reachTier}>{t('Passer à {n}', { n: nt[0] - others })}</button></div>
           ) : cur[1] === MAX_DISCOUNT ? <div className="nudge ok"><I name="check" size={16} /> {t('Marquage')} -{Math.round(MAX_DISCOUNT * 100)} %</div> : null)}
           {!blank && <div className="tiers">
-            {TIERS.map(([m, d]) => <div key={m} className={m === cur[0] ? 'on' : ''}><b><Price ht={at(m)} suffix={false} /></b>{m}+ pcs{d ? <small>{t('marquage')} -{Math.round(d * 100)} %</small> : null}</div>)}
+            {TIERS.map(([m, d]) => <div key={m} className={m === cur[0] ? 'on' : ''}><b><Price ht={at(m)} suffix={false} /></b>{m}+ pcs{d ? <small>{t('marquage')} -{Math.round(d * 100)} %</small> : null}</div>)}
           </div>}
         </div>
 
+        {!blank && <div className={`bat-blk ${fieldErr?.at === 'bat' ? 'invalid' : ''}`} id="cfg-bat">
+          <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} aria-invalid={fieldErr?.at === 'bat' || undefined} /><span>{t('Je valide ma maquette')} <b>{t('(bon à tirer)')}</b> {t('et je détiens les droits sur ce logo')}</span></label>
+          {err('bat')}
+        </div>}
         <div className="addrow">
           <div>
             {q ? (<>
@@ -302,16 +321,18 @@ export function Configurator({ slug }: { slug: string }) {
             </>)}
             <p className="eta"><I name="truck" size={16} /> {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), false, short.length > 0, blank), lang) })}{!blank && <> · <span className="muted">{t('express possible')}</span></>}</p>
           </div>
-          {!blank && <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /><span>{t('Je valide ma maquette')} <b>{t('(bon à tirer)')}</b> {t('et je détiens les droits sur ce logo')}</span></label>}
-          <button className="btn cta" onClick={() => submit()} disabled={saving}>{t(saving ? 'Enregistrement de la maquette…' : editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier')}</button>
+          {justAdded && editIndex === null
+            ? <Link className="btn cta added" href={l('/panier')}><I name="check" size={18} strokeWidth={3} /> {t('Ajouté · Voir le panier')}</Link>
+            : <button className="btn cta" onClick={() => submit()} disabled={saving}>{t(saving ? 'Enregistrement de la maquette…' : editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier')}</button>}
           {editIndex === null && <button className="link small team-link" onClick={() => submit(true)} disabled={saving}><I name="users" size={18} /> {t('Récupérer les noms et tailles de l\'équipe par un lien')}</button>}
         </div>
         {/* Mobile : la barre d'achat reste compacte, délai et lien d'équipe juste en dessous. */}
         <div className="addrow-extra">
           <p className="eta"><I name="truck" size={16} /> {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), false, short.length > 0, blank), lang) })}{!blank && <> · <span className="muted">{t('express possible')}</span></>}</p>
           {editIndex === null && <button className="link small team-link" onClick={() => submit(true)} disabled={saving}><I name="users" size={18} /> {t('Récupérer les noms et tailles de l\'équipe par un lien')}</button>}
+          <button className="link small" onClick={() => window.dispatchEvent(new Event('alwaan:chat'))}><I name="sparkles" size={18} /> {t('Une question ? Le conseiller vous répond')}</button>
         </div>
-        <Perks items={[['eye', t('Imprimé comme la maquette')], ['lock', t('Paiement sécurisé')], ['redo', t('Défaut refait')], ['truck', t('7 jours')], ['home', t('Imprimé dans le Nord')]]} />
+        <Perks items={[['eye', t('Imprimé comme la maquette')], ['lock', t('Paiement sécurisé')], ['redo', t('Défaut refait')], ['truck', t('Expédié en 7 jours ouvrés')], ['home', t('Imprimé dans le Nord')]]} />
       </div>
       {added && <SameLogo current={p.category} logo={cfg.logo} />}
       {toast && <div className="toast" role="status">{toast} {added && <Link href={l('/panier')}>{t('Voir le panier')}</Link>}</div>}

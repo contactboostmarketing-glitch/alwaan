@@ -23,7 +23,7 @@ export function GET() {
       items.push(`<item>
 <g:id>${esc(`${p.slug}-${h}`)}</g:id>
 <g:item_group_id>${esc(p.slug)}</g:item_group_id>
-<g:title>${esc(`${p.name} personnalisé à votre logo · ${color}`)}</g:title>
+<g:title>${esc(`${p.name} personnalisable à votre logo · ${color}`)}</g:title>
 <g:description>${esc(`${p.type}. ${p.composition}. Impression DTF de votre logo, maquette en direct, dès 1 pièce. Marquage -40 % dès 30 pièces. ${c.intro}`)}</g:description>
 <g:link>${SITE_URL}/produits/${p.slug}?couleur=${h}</g:link>
 <g:image_link>${esc(p.photos?.[hex] || `${SITE_URL}/images/produits/${p.slug}-${h}.png`)}</g:image_link>

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor, defaultZone, expressFee, SAMPLE_EXTRA_DAYS, SAMPLE_MIN } from '@/lib/catalog';
 import { attributionForCheckout, track } from '@/lib/track';
-import { addBusinessDays, deliveryDate, fmtDay } from '@/lib/delivery';
+import { deliveryDate, fmtDay } from '@/lib/delivery';
 import { ON_ORDER_DAYS, onOrder, shortSizes } from '@/lib/stockTypes';
 import { useStock } from '@/lib/useStock';
 import type { Stock } from '@/lib/stockTypes';
@@ -25,7 +25,7 @@ export function CartView() {
   const blankOnly = lines.length > 0 && lines.every((l) => l.logoStatus === 'blank');
   useEffect(() => { if (blankOnly && express) setExpress(false); }, [blankOnly, express, setExpress]);
   const [code, setCode] = useState('');
-  const [cgv, setCgv] = useState(false);
+  const [cgv, setCgv] = useState(false), [cgvErr, setCgvErr] = useState(false);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [company, setCompany] = useState('');
   const [quoting, setQuoting] = useState(false);
@@ -85,7 +85,7 @@ export function CartView() {
   };
   // Virement (pros connectés) : commande provisoire Shopify + coordonnées bancaires.
   const payByTransfer = async () => {
-    if (!cgv) { setMsg(tx('Cochez l\'acceptation des CGV pour continuer.')); return; }
+    if (!cgv) { setCgvErr(true); document.getElementById('cart-cgv')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); (document.querySelector('#cart-cgv input') as HTMLInputElement | null)?.focus({ preventScroll: true }); return; }
     setBusy(true); setMsg('');
     try {
       const r = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -96,7 +96,7 @@ export function CartView() {
     setBusy(false);
   };
   const checkout = async () => {
-    if (!cgv) { setMsg(tx('Cochez l\'acceptation des CGV pour continuer.')); return; }
+    if (!cgv) { setCgvErr(true); document.getElementById('cart-cgv')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); (document.querySelector('#cart-cgv input') as HTMLInputElement | null)?.focus({ preventScroll: true }); return; }
     setBusy(true); setMsg('');
     track('begin_checkout', { value: t.ht, items: lines.map((l) => ({ item_id: l.slug, item_name: getProduct(l.slug)?.name || l.slug, quantity: qtyOf(l) })) });
     try {
@@ -154,7 +154,8 @@ export function CartView() {
           {t.discount > 0 && <div className="row save"><span>{tx('Code')} {promo}</span><span>-<Price raw ht={t.discount} /></span></div>}
           {t.reseller > 0 && <div className="row save"><span>{tx('Remise revendeur -10 %')}</span><span>-<Price raw ht={t.reseller} /></span></div>}
           {t.voucher > 0 && voucher && <div className="row save"><span>{tx(voucher.kind === 'parrain' ? 'Parrainage' : 'Bon d\'achat')} {voucher.code}</span><span>-<Price raw ht={t.voucher} /></span></div>}
-          {voucher && !t.voucher && <p className="muted small">{tx('Code {c} : -{a} € dès {m} € HT d\'articles', { c: voucher.code, a: voucher.amount, m: voucher.min })}</p>}
+          {t.skipped && <p className="muted small">{tx('Un seul avantage par commande : nous appliquons automatiquement le plus intéressant pour vous.')}</p>}
+          {voucher && !t.voucher && !t.skipped && <p className="muted small">{tx('Code {c} : -{a} € dès {m} € HT d\'articles', { c: voucher.code, a: voucher.amount, m: voucher.min })}</p>}
           {t.express > 0 && <div className="row"><span className="with-ic"><I name="zap" size={16} /> {tx('Production express')}</span><span><Price raw ht={t.express} /></span></div>}
           <div className="row"><span>{tx('Livraison')}</span><span>{t.shipping ? <Price raw ht={t.shipping} /> : tx('Offerte')}</span></div>
           {pro && <><div className="row"><span>{tx('Total HT')}</span><span>{eur(t.ht, lang)}</span></div><div className="row"><span>{tx('TVA 20 %')}</span><span>{eur(t.vat, lang)}</span></div></>}
@@ -167,11 +168,12 @@ export function CartView() {
             <b className="express-fee">+<Price raw ht={expressFee(t.pieces || 1)} /></b>
           </label>}
           {sample && t.pieces >= SAMPLE_MIN && <div className="row save"><span className="with-ic"><I name="sample" size={16} /> {tx('Échantillon avant la série')}</span><span>{tx('Offert')} · <button className="link mutedl small" onClick={() => setSample(false)}>{tx('Retirer')}</button></span></div>}
-          <p className="eta"><I name="truck" size={16} /> {tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(addBusinessDays(deliveryDate(new Date(), express, anyOnOrder, blankOnly), sample && t.pieces >= SAMPLE_MIN ? SAMPLE_EXTRA_DAYS : 0), lang) })}</p>
+          <p className="eta"><I name="truck" size={16} /> {tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), express, anyOnOrder, blankOnly, sample && t.pieces >= SAMPLE_MIN ? SAMPLE_EXTRA_DAYS : 0), lang) })}</p>
           {!(promo && voucher) && (
             <div className="promo-in"><input type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder={tx('Code promo')} aria-label={tx('Code promo')} /><button className="btn line small" onClick={applyCode}>{tx('Appliquer')}</button></div>
           )}
-          <label className="consent"><input type="checkbox" checked={cgv} onChange={(e) => setCgv(e.target.checked)} /><span>{tx('J\'accepte les')} <Link href="/cgv">{tx('CGV')}</Link> {tx(blankOnly ? '(textile vierge : rétractation 14 jours pour les particuliers)' : lines.some((l) => l.logoStatus === 'blank') ? '(articles personnalisés : pas de rétractation ; textile vierge : 14 jours)' : '(articles personnalisés : pas de rétractation)')}</span></label>
+          <label className={`consent ${cgvErr ? 'invalid' : ''}`} id="cart-cgv"><input type="checkbox" checked={cgv} aria-invalid={cgvErr || undefined} aria-describedby={cgvErr ? 'cart-cgv-err' : undefined} onChange={(e) => { setCgv(e.target.checked); setCgvErr(false); }} /><span>{tx('J\'accepte les')} <Link href="/cgv">{tx('CGV')}</Link> {tx(blankOnly ? '(textile vierge : rétractation 14 jours pour les particuliers)' : lines.some((l) => l.logoStatus === 'blank') ? '(articles personnalisés : pas de rétractation ; textile vierge : 14 jours)' : '(articles personnalisés : pas de rétractation)')}</span></label>
+          {cgvErr && <p className="err small field-err" id="cart-cgv-err" role="alert">{tx('Cochez l\'acceptation des CGV pour continuer.')}</p>}
           <button className="btn cta block" onClick={checkout} disabled={busy}>{tx(busy ? 'Redirection…' : 'Commander avec obligation de paiement')}</button>
           {connected && pro && <button className="btn line block" onClick={payByTransfer} disabled={busy}><I name="bank" size={18} /> {tx('Payer par virement')}</button>}
           {!connected && pro && <p className="muted small">{tx('Virement possible pour les pros connectés à leur compte.')} <Link className="link" href={lk('/compte')}>{tx('Se connecter')}</Link></p>}

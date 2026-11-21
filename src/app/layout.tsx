@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   // Google Search Console / Merchant Center : code de vérification (méthode « balise HTML ») dans Netlify.
   ...(process.env.GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } } : {}),
   title: { default: `${SITE_NAME} · ${TAGLINE}`, template: `%s · ${SITE_NAME}` },
-  description: 'Polos, t-shirts, tabliers, casquettes et haute visibilité à votre logo. Dès 1 pièce, maquette en direct avec votre logo, livraison en 7 jours.',
+  description: 'Polos, t-shirts, tabliers, casquettes et haute visibilité à votre logo. Dès 1 pièce, maquette en direct avec votre logo, expédition en 7 jours ouvrés.',
   openGraph: { siteName: SITE_NAME, locale: 'fr_FR', type: 'website' },
   robots: INDEXABLE ? undefined : { index: false, follow: false },
   alternates: { canonical: '/', languages: { 'fr-FR': '/', 'fr-BE': '/', en: '/en', 'x-default': '/' } },

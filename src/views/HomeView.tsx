@@ -26,10 +26,10 @@ export function HomeView({ lang }: { lang: Lang }) {
       <section className="hero" data-season={season.id} style={seasonVars}><span className="season-deco" aria-hidden="true"><I name={season.icon} size={150} strokeWidth={1} /></span><div className="wrap">
         <div>
           <span className="season-kicker"><I name={season.icon} size={16} /> {sc.kicker}</span>
-          <h1>{lang === 'en' ? <>Your workwear with <span>your logo</span>, delivered in 7 days</> : <>Vos tenues à <span>votre logo</span>, livrées en 7 jours</>}</h1>
+          <h1>{lang === 'en' ? <>Your workwear with <span>your logo</span>, shipped in 7 business days</> : <>Vos tenues à <span>votre logo</span>, expédiées en 7 jours ouvrés</>}</h1>
           <p className="lead">{t('Votre logo, votre tenue en direct. Dès 1 pièce.')}</p>
           <div className="ctas"><Link className="btn cta" href={href(lang, '/assistant')}>{t('Créer ma tenue en 1 minute')}</Link><Link className="btn line" href={href(lang, '/lien-equipe')}><I name="users" size={18} /> {t('Lien d\'équipe')}</Link></div>
-          <Perks items={[['eye', t('Maquette en direct')], ['one', t('Dès 1 pièce')], ['tag', t('-40 % dès 30 pièces')], ['home', <Link key="at" href={href(lang, '/notre-atelier')}>{t('Imprimé dans notre atelier du Nord')}</Link>]]} />
+          <Perks items={[['eye', t('Maquette en direct')], ['one', t('Dès 1 pièce')], ['tag', t('Marquage -40 % dès 30 pièces')], ['home', <Link key="at" href={href(lang, '/notre-atelier')}>{t('Imprimé dans notre atelier du Nord')}</Link>]]} />
         </div>
         <div className="hero-vis">
           {hero.map((p) => <div key={p.slug}><Garment slug={p.slug} color={defaultColor(p)} zones={[defaultZone(p)]} /></div>)}
@@ -91,7 +91,7 @@ export function HomeView({ lang }: { lang: Lang }) {
           <Link key={pk.id} className="pack" href={`${href(lang, '/assistant')}?pack=${pk.id}`}>
             <span className="pack-vis" aria-hidden="true">{pk.products.map((s) => { const p = PRODUCTS.find((x) => x.slug === s)!; return <Garment key={s} slug={s} color={defaultColor(p)} zones={[defaultZone(p)]} />; })}</span>
             <strong className="with-ic"><I name={pk.icon} size={18} /> {pk[lang].name}</strong><small>{pk[lang].sub}</small>
-            <span className="price">{t('dès')} <Price ht={pk.products.reduce((a, s) => a + fromPrice(PRODUCTS.find((x) => x.slug === s)!), 0)} /> <small>{t('par personne')}</small></span>
+            <span className="price">{t('dès')} <Price ht={pk.products.reduce((a, s) => a + fromPrice(PRODUCTS.find((x) => x.slug === s)!), 0)} /> <small>{t('par personne, dès 30 pièces')}</small></span>
           </Link>
         ))}</div>
       </div></section>
@@ -117,7 +117,7 @@ export function HomeView({ lang }: { lang: Lang }) {
           <li><Icon name="shirt" size={30} /><b>{t('Vous choisissez')}</b><small>{t('Vêtement, couleur, emplacement')}</small></li>
           <li><Icon name="upload" size={30} /><b>{t('Votre logo')}</b><small>{t('PNG, JPG, SVG ou texte')}</small></li>
           <li><Icon name="eye" size={30} /><b>{t('Vous validez')}</b><small>{t('Ce que vous voyez est imprimé')}</small></li>
-          <li><Icon name="truck" size={30} /><b>{t('Livré en 7 jours')}</b><small>{t('Impression DTF haute définition')}</small></li>
+          <li><Icon name="truck" size={30} /><b>{t('Expédié en 7 jours ouvrés')}</b><small>{t('Impression DTF haute définition')}</small></li>
         </ol>
       </div></section>
 

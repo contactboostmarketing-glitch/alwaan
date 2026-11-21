@@ -46,7 +46,7 @@ export function GiftsView({ lang, occasion }: { lang: Lang; occasion?: string })
         <span className="season-kicker"><I name="gift" size={16} /> {t('Pour les particuliers')}</span>
         <h1>{o ? o[lang].name : t('Idées cadeaux à personnaliser')}</h1>
         <p className="lead">{t('Choisissez un design, écrivez votre texte, c\'est prêt. Dès 1 pièce.')}</p>
-        <Perks items={[['eye', t('Aperçu en direct')], ['one', t('Dès 1 pièce')], ['truck', t('7 jours')]]} />
+        <Perks items={[['eye', t('Aperçu en direct')], ['one', t('Dès 1 pièce')], ['truck', t('Expédié en 7 jours ouvrés')]]} />
         <EventBanner />
         <div className="occasions">{OCCASIONS.map((x) => (
           <Link key={x.id} className="occasion" aria-current={x.id === occasion ? 'page' : undefined} href={`${href(lang, '/idees-cadeaux')}/${x.id}`}><span className="occ-ic"><I name={x.icon} size={22} /></span><b>{x[lang].name}</b><small>{x[lang].sub}</small></Link>

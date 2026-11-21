@@ -137,10 +137,11 @@ export const MAX_DISCOUNT = TIERS[TIERS.length - 1][1];
 export const FREE_SHIPPING_HT = 150;
 export const SHIPPING_HT = 9.9;
 export const VAT = 0.2;
-export const PROMO_CODES: Record<string, number> = { BIENVENUE: 0.1 };
-/** Codes -10 % à usage unique (vérifiés côté serveur) : RETOUR-XXXXXX (panier abandonné), AVIS-XXXXXX (merci pour l'avis). */
+/** Codes fixes réutilisables : aucun (un code public circule et se réutilise à l'infini). */
+export const PROMO_CODES: Record<string, number> = {};
+/** Codes -10 % à usage unique, nominatifs (vérifiés côté serveur) : RETOUR-XXXXXX (panier abandonné), AVIS-XXXXXX (merci pour l'avis), BIENV-XXXXXX (inscription aux offres). */
 export const RELANCE_RATE = 0.1;
-export const RELANCE_CODE = /^(RETOUR|AVIS)-[A-Z0-9]{6}$/;
+export const RELANCE_CODE = /^(RETOUR|AVIS|BIENV)-[A-Z0-9]{6}$/;
 export const promoRate = (code?: string | null) => { const c = (code || '').trim().toUpperCase(); return PROMO_CODES[c] ?? (RELANCE_CODE.test(c) ? RELANCE_RATE : 0); };
 /** Logo retravaillé par notre graphiste (fond, netteté, vectorisation) : forfait HT, une fois par logo. */
 export const REWORK_FEE = 4;
@@ -195,6 +196,8 @@ for (const c of CATEGORIES) c.details = DETAILS[c.slug];
 
 export const getProduct = (slug: string) => PRODUCTS.find((x) => x.slug === slug);
 export const getCategory = (slug: string) => CATEGORIES.find((x) => x.slug === slug);
+/** « Polos personnalisés », « Casquettes personnalisées », « Haute visibilité personnalisée » : accord tiré du slug. */
+export const customName = (c: { slug: string; name: string }) => `${c.name} ${c.slug.endsWith('-personnalisees') ? 'personnalisées' : c.slug.endsWith('-personnalisee') ? 'personnalisée' : 'personnalisés'}`;
 export const getSector = (slug: string) => SECTORS.find((x) => x.slug === slug);
 export const productsIn = (cat: string) => PRODUCTS.filter((x) => x.category === cat);
 export const defaultColor = (prod: Product) => (prod.colors.includes('#1d2a5c') ? '#1d2a5c' : prod.colors[0]);

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { CATEGORIES, PRODUCTS, SECTORS } from '@/lib/catalog';
+import { CATEGORIES, PRODUCTS, SECTORS, customName } from '@/lib/catalog';
 import { CITIES, getCity } from '@/lib/cities';
 import { deliveryDate, fmtDay } from '@/lib/delivery';
 import { Breadcrumbs, Faq, JsonLd, LinkChips, ProductCard } from '@/components/ui';
@@ -41,7 +41,7 @@ export default async function Page({ params }: { params: Promise<{ ville: string
         <h2 className="mt">Les plus demandés à {c.name}</h2>
         <div className="grid g4">{products.map((p) => <ProductCard key={p.slug} p={p} />)}</div>
         <LinkChips title="Par métier" links={SECTORS.filter((s) => c.sectors.includes(s.slug)).map((s) => [`Tenues ${s.name.toLowerCase()}`, `/metiers/${s.slug}`] as [string, string])} />
-        <LinkChips title="Tous nos vêtements" links={CATEGORIES.map((x) => [`${x.name} personnalisés`, `/vetements/${x.slug}`] as [string, string])} />
+        <LinkChips title="Tous nos vêtements" links={CATEGORIES.map((x) => [customName(x), `/vetements/${x.slug}`] as [string, string])} />
         <h2 className="mt">Questions fréquentes</h2>
         <Faq items={faq} />
         <LinkChips title="Autres villes" links={others.map((x) => [x.name, `/vetements-personnalises/${x.slug}`] as [string, string])} />

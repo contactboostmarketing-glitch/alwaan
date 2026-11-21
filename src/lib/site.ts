@@ -27,6 +27,7 @@ export const COMPANY = {
   iban: process.env.COMPANY_IBAN || 'FR76 1695 8000 0194 8869 7526 491',
   bic: process.env.COMPANY_BIC || 'QNTOFRP1XXX',
 };
+const MEDIATOR = { name: process.env.MEDIATEUR_NOM || '', address: process.env.MEDIATEUR_ADRESSE || '', site: process.env.MEDIATEUR_SITE || '' };
 export const TAGLINE = 'Tenues professionnelles personnalisées';
 
 /** final : texte rédigé (CGV, confidentialité : voir legalTexts.ts) ; sinon page encore à compléter. */
@@ -40,8 +41,15 @@ export const LEGAL_PAGES: Record<string, { title: string; body: string[]; final?
   cookies: { title: 'Cookies', final: true, body: [
     'Liste des cookies : nécessaires, mesure d\'audience, publicité (Google Ads, Meta Pixel).',
     'Aucun cookie publicitaire n\'est déposé sans votre accord. Refuser est aussi simple qu\'accepter. Votre choix est conservé 6 mois.'] },
-  mediation: { title: 'Médiation de la consommation', body: [
-    'Nom et coordonnées du médiateur auquel le client particulier peut recourir gratuitement en cas de litige non résolu.'] },
+  // Médiateur : variables Netlify MEDIATEUR_NOM, MEDIATEUR_ADRESSE, MEDIATEUR_SITE une fois l'adhésion signée.
+  mediation: { title: 'Médiation de la consommation', final: true, body: [
+    `Avant toute médiation, adressez votre réclamation par écrit à alwaan${COMPANY.email ? ` (${COMPANY.email})` : ''} ou depuis votre espace client : nous répondons sous 7 jours.`,
+    ...(MEDIATOR.name
+      ? [`Conformément aux articles L611-1 et suivants du Code de la consommation, le client particulier peut recourir gratuitement au médiateur de la consommation dont relève alwaan : ${MEDIATOR.name}${MEDIATOR.address ? `, ${MEDIATOR.address}` : ''}${MEDIATOR.site ? `, ${MEDIATOR.site}` : ''}.`,
+        'La saisine du médiateur est possible si votre réclamation écrite n\'a pas abouti, dans un délai d\'un an à compter de celle-ci. Le médiateur ne peut pas être saisi pour un litige entre professionnels.']
+      : ['Notre adhésion à un médiateur de la consommation est en cours : ses coordonnées seront indiquées ici dès sa signature.',
+        'D\'ici là, si votre réclamation écrite n\'a pas abouti, vous pouvez saisir gratuitement un conciliateur de justice (conciliateurs.fr).']),
+  ] },
   livraison: { title: 'Livraison et délais', final: true, body: [
     'Délais indicatifs : production en 7 jours ouvrés après la commande, ou 4 jours ouvrés en production express (option payante : 15 € jusqu\'à 10 pièces, 20 € jusqu\'à 20, 30 € jusqu\'à 30, 60 € au-delà). Livraison en France et en Belgique.',
     'Livraison offerte dès 150 € HT d\'articles, sinon 9,90 € HT. Suivi par email.'] },

@@ -265,6 +265,7 @@ export function Assistant() {
   return (
     <div className="asst">
       <div className="asst-top">
+        <h1 className="sr-only">{t('Créer ma tenue en 1 minute')}</h1>
         <div className="asst-bar">
           <button className="asst-back" onClick={back} disabled={!hist.length} aria-label={t('Étape précédente')}>‹</button>
           <div className="asst-prog" aria-hidden="true">{STEPS.map((s, i) => <i key={s} className={i <= idx ? 'on' : ''} />)}</div>

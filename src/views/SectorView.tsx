@@ -25,7 +25,7 @@ export function SectorView({ lang, slug }: { lang: Lang; slug: string }) {
       <section className="wrap">
         <div className="cat-head">
           <div><h1>{s.h1}</h1><p className="mt8">{s.intro}</p></div>
-          <Perks items={[['one', t('Dès 1 pièce')], ['eye', t('Maquette en direct')], ['truck', t('7 jours')]]} />
+          <Perks items={[['one', t('Dès 1 pièce')], ['eye', t('Maquette en direct')], ['truck', t('Expédié en 7 jours ouvrés')]]} />
         </div>
         {s.categories.map((ck) => {
           const c = categoryBySlug(lang, ck)!;

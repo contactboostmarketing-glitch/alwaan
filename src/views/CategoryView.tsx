@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { I } from '@/components/Icons';
-import { CATEGORIES, GENERAL_FAQ, SECTORS, getCategory, productsIn } from '@/lib/catalog';
+import { CATEGORIES, GENERAL_FAQ, SECTORS, getCategory, productsIn, customName } from '@/lib/catalog';
 import { Breadcrumbs, Faq, LinkChips, MoreInfo, Perks, ProductCard } from '@/components/ui';
 import { guidesFor } from '@/lib/guides';
 import { categoryL, generalFaq, href, sectorL, tr, type Lang } from '@/i18n';
@@ -26,8 +26,8 @@ export function CategoryView({ lang, slug }: { lang: Lang; slug: string }) {
       <Breadcrumbs lang={lang} items={[[t('Vêtements')], [c.name]]} />
       <section className="wrap">
         <div className="cat-head">
-          <div><h1>{lang === 'en' ? `Custom ${c.name.toLowerCase()}` : `${c.name} personnalisés`}</h1><p className="mt8">{c.intro}</p></div>
-          <Perks items={[['one', t('Dès 1 pièce')], ['eye', t('Maquette en direct')], ['truck', t('7 jours')]]} />
+          <div><h1>{lang === 'en' ? `Custom ${c.name.toLowerCase()}` : customName(c)}</h1><p className="mt8">{c.intro}</p></div>
+          <Perks items={[['one', t('Dès 1 pièce')], ['eye', t('Maquette en direct')], ['truck', t('Expédié en 7 jours ouvrés')]]} />
         </div>
         <div className="grid cat-grid">
           {list.map((p) => <ProductCard key={p.slug} p={p} lang={lang} />)}
@@ -46,7 +46,7 @@ export function CategoryView({ lang, slug }: { lang: Lang; slug: string }) {
         </div>
         <div className="seo1">
           <LinkChips title={t('Par métier')} links={sectors.map((s) => [`${c.name} · ${s.name.toLowerCase()}`, href(lang, `/metiers/${s.slug}`)])} />
-          <LinkChips title={t('Autres vêtements')} links={CATEGORIES.filter((o) => o.slug !== c.slug).map((o) => { const x = categoryL(lang, o); return [lang === 'en' ? `Custom ${x.name.toLowerCase()}` : `${x.name} personnalisés`, href(lang, `/vetements/${o.slug}`)]; })} />
+          <LinkChips title={t('Autres vêtements')} links={CATEGORIES.filter((o) => o.slug !== c.slug).map((o) => { const x = categoryL(lang, o); return [lang === 'en' ? `Custom ${x.name.toLowerCase()}` : customName(x), href(lang, `/vetements/${o.slug}`)]; })} />
           <MoreInfo title={lang === 'en' ? `Choosing your custom ${c.singular}` : `Bien choisir son ${c.singular} personnalisé`}>{c.details?.map((d) => <p key={d.slice(0, 30)}>{d}</p>)}</MoreInfo>
           <h2 className="mt">{t('Questions fréquentes')}</h2><Faq items={[...c.faq, ...generalFaq(lang, GENERAL_FAQ).slice(0, 2)]} />
           {lang === 'fr' && <LinkChips title="Nos guides" links={guidesFor(c.slug).map((g) => [g.title, `/guides/${g.slug}`])} />}

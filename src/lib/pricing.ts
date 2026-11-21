@@ -83,7 +83,7 @@ export function reworkLogos(lines: LineConfig[]): number[] {
 }
 
 /** voucher : code parrain ou bon d'achat (montant fixe HT, à partir d'un minimum d'articles). */
-export function cartTotals(lines: LineConfig[], promo?: string | null, withExpress = false, isReseller = false, voucher?: { amount: number; min: number } | null) {
+function totalsWith(lines: LineConfig[], promo?: string | null, withExpress = false, isReseller = false, voucher?: { amount: number; min: number } | null) {
   const pool = pools(lines);
   const pieces = lines.reduce((a, l) => a + qtyOf(l), 0);
   // Production express : forfait selon le nombre total de pièces, hors remise et hors seuil de livraison offerte.
@@ -101,6 +101,28 @@ export function cartTotals(lines: LineConfig[], promo?: string | null, withExpre
   const vat = round(ht * VAT);
   const saved = round(lines.reduce((a, l) => a + lineFull(l), 0) + rework - goods + discount + reseller);
   return { voucher: voucherOff, reseller, express, pieces, rework, goods, discount, shipping, ht, vat, ttc: round(ht + vat), saved, remainingForFree: Math.max(0, FREE_SHIPPING_HT - net) };
+}
+
+export type Advantage = 'promo' | 'revendeur' | 'bon' | null;
+/**
+ * Un seul avantage par commande (CGV) : code promo, remise revendeur ou code parrain / bon d'achat.
+ * Si plusieurs sont présents, on applique automatiquement le plus intéressant pour le client.
+ */
+export function cartTotals(lines: LineConfig[], promo?: string | null, withExpress = false, isReseller = false, voucher?: { amount: number; min: number } | null) {
+  const base = totalsWith(lines, null, withExpress);
+  const options: [Advantage, ReturnType<typeof totalsWith>][] = [];
+  if (promo && promoRate(promo)) options.push(['promo', totalsWith(lines, promo, withExpress)]);
+  if (voucher) options.push(['bon', totalsWith(lines, null, withExpress, false, voucher)]);
+  if (isReseller) options.push(['revendeur', totalsWith(lines, null, withExpress, true)]);
+  // Seuls les avantages qui baissent vraiment le total comptent ; à égalité, la remise revendeur l'emporte (le code reste utilisable).
+  const useful = options.filter(([, t]) => t.ht < base.ht);
+  const [applied, t] = useful.reduce<[Advantage, typeof base]>((best, o) => (o[1].ht <= best[1].ht ? o : best), [null, base]);
+  return { ...t, applied, skipped: useful.length > 1 };
+}
+/** Avantages réellement retenus (à transmettre au paiement et aux attributs de commande). */
+export function keptAdvantages(lines: LineConfig[], promo: string | null, withExpress: boolean, isReseller: boolean, voucher: { amount: number; min: number } | null) {
+  const { applied } = cartTotals(lines, promo, withExpress, isReseller, voucher);
+  return { promo: applied === 'promo' ? promo : null, reseller: applied === 'revendeur', voucher: applied === 'bon' ? voucher : null };
 }
 
 export const round = (n: number) => Math.round(n * 100) / 100;

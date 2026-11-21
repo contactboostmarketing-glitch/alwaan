@@ -74,7 +74,7 @@ export function ClubsView({ lang }: { lang: Lang }) {
         <div className="advantages">{t.uses.map(([ic, b, s]) => <div key={b} className="adv"><span className="adv-ic"><I name={ic} size={22} /></span><b>{b}</b><small>{s}</small></div>)}</div>
         <h2 className="mt">{t.prodH}</h2>
         <div className="grid g4">{picks.map((p) => <ProductCard key={p.slug} p={p} lang={lang} />)}</div>
-        <p className="muted small">{lang === 'en' ? 'From' : 'Dès'} {fromPrice(picks[0]).toFixed(2).replace('.', lang === 'en' ? '.' : ',')} € HT {lang === 'en' ? 'per printed t-shirt' : 'le t-shirt imprimé'}.</p>
+        <p className="muted small">{lang === 'en' ? 'From' : 'Dès'} {fromPrice(picks[0]).toFixed(2).replace('.', lang === 'en' ? '.' : ',')} € HT {lang === 'en' ? 'per printed t-shirt, from 30 pieces' : 'le t-shirt imprimé, dès 30 pièces'}.</p>
         <h2 className="mt">{t.whyH}</h2>
         <div className="advantages">{t.why.map(([ic, b, s]) => <div key={b} className="adv"><span className="adv-ic"><I name={ic} size={22} /></span><b>{b}</b><small>{s}</small></div>)}</div>
         <h2 className="mt">FAQ</h2>
