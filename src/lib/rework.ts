@@ -2,6 +2,7 @@
 // L'atelier dépose le logo retravaillé, le site génère les nouvelles maquettes,
 // le client les valide (ou demande une modification) en un clic sur /bat/<id>. Rien n'est imprimé avant.
 import { randomBytes } from 'crypto';
+import { safeEqual } from './secure';
 import { getJSON, listKeys, putJSON } from './blobStore';
 import type { Rework, ReworkItem } from './reworkTypes';
 export * from './reworkTypes';
@@ -27,4 +28,4 @@ export async function listReworks(): Promise<Rework[]> {
 
 /** Clé de l'atelier (pages /atelier) : STAFF_KEY, sinon la clé de synchronisation. */
 export const staffKey = () => process.env.STAFF_KEY || process.env.SYNC_KEY || process.env.ROLY_SYNC_KEY || '';
-export const isStaff = (req: Request) => !!staffKey() && req.headers.get('x-staff-key') === staffKey();
+export const isStaff = (req: Request) => safeEqual(req.headers.get('x-staff-key'), staffKey());

@@ -1,3 +1,4 @@
+import { safeEqual } from '@/lib/secure';
 import { randomBytes } from 'crypto';
 import { NextResponse } from 'next/server';
 import { getProduct, sizesFor } from '@/lib/catalog';
@@ -10,7 +11,7 @@ const sizesOf = (slug: string) => sizesFor(getProduct(slug)!);
 export async function GET(req: Request, { params }: Ctx) {
   const t = await getTeam((await params).id);
   if (!t) return NextResponse.json({ error: 'Lien introuvable.' }, { status: 404 });
-  const admin = new URL(req.url).searchParams.get('cle') === t.adminKey;
+  const admin = safeEqual(new URL(req.url).searchParams.get('cle'), t.adminKey);
   return NextResponse.json({
     id: t.id, title: t.title, closed: !!t.closed, count: t.members.length,
     lines: t.lines.map((l) => ({ ...l, sizes: sizesOf(l.slug) })),
@@ -23,7 +24,7 @@ export async function POST(req: Request, { params }: Ctx) {
   const t = await getTeam((await params).id);
   if (!t) return NextResponse.json({ error: 'Lien introuvable.' }, { status: 404 });
   const b = await req.json().catch(() => null);
-  if (b?.cle && b.cle === t.adminKey) {
+  if (typeof b?.cle === 'string' && safeEqual(b.cle, t.adminKey)) {
     if (typeof b.closed === 'boolean') t.closed = b.closed;
     if (typeof b.remove === 'string') t.members = t.members.filter((m) => m.id !== b.remove);
     if (typeof b.title === 'string') t.title = b.title.trim().slice(0, 80);

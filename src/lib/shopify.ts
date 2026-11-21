@@ -5,6 +5,7 @@
 //   SHOPIFY_STORE_DOMAIN       ex. alwaan.myshopify.com
 //   SHOPIFY_STOREFRONT_TOKEN   jeton public Storefront (Back office → Applications → Headless)
 import { COLOR_NAMES, ZONES, getProduct, zonesFor, type Zone } from './catalog';
+import { sign } from './secure';
 import { cartTotals, lineFull, namesAllowed, qtyOf, reworkLogos, round, type LineConfig } from './pricing';
 import { admin, adminEnabled, createExactDiscount } from './shopifyAdmin';
 import { SITE_URL } from './site';
@@ -68,7 +69,7 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL, exp
       ...(l.logoSourceId && l.logoSourceId !== l.logoId ? [{ key: 'Fichier d\'origine du client', value: `${origin}/api/logo/${l.logoSourceId}` }] : []),
       ...(l.text ? [{ key: 'Texte', value: l.text }] : []),
       ...(l.design ? [{ key: 'Design particulier', value: `${l.design}${l.designText ? ` · ${l.designText}` : ''}` }] : []),
-      ...(l.teamId ? [{ key: 'Liste nominative (nom, prénom, taille)', value: `${origin}/api/equipe/${l.teamId}/liste` }] : []),
+      ...(l.teamId ? [{ key: 'Liste nominative (nom, prénom, taille)', value: `${origin}/api/equipe/${l.teamId}/liste?sig=${sign('liste', l.teamId)}` }] : []),
       ...(l.printNames && namesAllowed(l) ? [{ key: 'Prénom imprimé', value: 'OUI : prénom de chaque personne sous le logo (voir la liste nominative)' }] : []),
       ...(l.logoRework ? [{ key: 'Retouche graphiste', value: 'OUI : NE PAS IMPRIMER avant validation du client' }] : []),
       ...(l.reworkId ? [{ key: 'Dossier retouche (atelier)', value: `${origin}/atelier/retouche/${l.reworkId}` }] : []),

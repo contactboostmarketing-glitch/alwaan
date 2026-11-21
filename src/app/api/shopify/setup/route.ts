@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { DESIGN_FEE, EXPRESS_FEES, NAME_FEE, PRODUCTS, REWORK_FEE, ZONES, zonesFor, type Zone } from '@/lib/catalog';
 import { DESIGN_HANDLE, NAME_HANDLE, REWORK_HANDLE, expressHandle, markHandle } from '@/lib/shopify';
 import { admin, adminEnabled } from '@/lib/shopifyAdmin';
+import { safeEqual } from '@/lib/secure';
 import { publicOrigin } from '@/lib/site';
 
 /**
@@ -117,7 +118,7 @@ async function ensureWebhook(origin: string): Promise<string> {
 
 export async function POST(req: Request) {
   const key = process.env.SYNC_KEY || process.env.ROLY_SYNC_KEY;
-  if (!key || req.headers.get('x-sync-key') !== key) return new Response('Non autorisé', { status: 401 });
+  if (!safeEqual(req.headers.get('x-sync-key'), key)) return new Response('Non autorisé', { status: 401 });
   if (!adminEnabled()) return NextResponse.json({ ok: false, error: 'Identifiants Admin Shopify manquants' });
   const dry = new URL(req.url).searchParams.has('dry');
   try {
@@ -144,7 +145,7 @@ export async function POST(req: Request) {
 /** Diagnostic : droits réellement accordés à l'application sur la boutique. */
 export async function GET(req: Request) {
   const key = process.env.SYNC_KEY || process.env.ROLY_SYNC_KEY;
-  if (!key || req.headers.get('x-sync-key') !== key) return new Response('Non autorisé', { status: 401 });
+  if (!safeEqual(req.headers.get('x-sync-key'), key)) return new Response('Non autorisé', { status: 401 });
   try {
     const d = await admin<{ currentAppInstallation: { accessScopes: { handle: string }[] } }>(`{ currentAppInstallation { accessScopes { handle } } }`, {});
     return NextResponse.json({ ok: true, scopes: d.currentAppInstallation.accessScopes.map((s) => s.handle) });
