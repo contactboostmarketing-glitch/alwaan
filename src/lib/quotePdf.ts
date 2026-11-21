@@ -11,7 +11,7 @@ const eur = (n: number) => clean(n.toLocaleString('fr-FR', { style: 'currency', 
 
 export { COMPANY };
 
-export async function quotePdf(o: { number: string; date: Date; validUntil: Date; lines: LineConfig[]; promo?: string | null; express?: boolean; reseller?: boolean; company?: string; email?: string; link: string }): Promise<Uint8Array> {
+export async function quotePdf(o: { number: string; date: Date; validUntil: Date; lines: LineConfig[]; promo?: string | null; express?: boolean; reseller?: boolean; company?: string; legal?: string; email?: string; link: string }): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
   doc.setTitle(`Devis ${o.number}`); doc.setAuthor(COMPANY.name);
   const font = await doc.embedFont(StandardFonts.Helvetica), bold = await doc.embedFont(StandardFonts.HelveticaBold);
@@ -26,7 +26,7 @@ export async function quotePdf(o: { number: string; date: Date; validUntil: Date
   for (const l of [COMPANY.address, `${COMPANY.legalForm} · SIRET ${COMPANY.siret} · ${COMPANY.rcs}`, `TVA ${COMPANY.vat}`, COMPANY.email, COMPANY.phone].filter(Boolean) as string[]) { text(l, 40, 9, font, muted); y -= 12; }
   y = 758; right(`Date : ${o.date.toLocaleDateString('fr-FR')}`, 555, 9); y -= 12; right(`Valable jusqu'au ${o.validUntil.toLocaleDateString('fr-FR')}`, 555, 9);
   y = 700;
-  if (o.company || o.email) { text('Client', 40, 9, bold, muted); y -= 13; if (o.company) { text(o.company, 40, 11, bold); y -= 13; } if (o.email) { text(o.email, 40, 9); y -= 13; } y -= 8; }
+  if (o.company || o.email) { text('Client', 40, 9, bold, muted); y -= 13; if (o.company) { text(o.company, 40, 11, bold); y -= 13; } if (o.legal) { text(o.legal, 40, 9); y -= 12; } if (o.email) { text(o.email, 40, 9); y -= 13; } y -= 8; }
 
   // En-tête du tableau
   page.drawRectangle({ x: 40, y: y - 6, width: 515, height: 20, color: rgb(0.95, 0.96, 0.98) });

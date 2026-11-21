@@ -1,6 +1,7 @@
 // Facture PDF d'une commande Shopify (numéro = numéro de commande, séquentiel), mentions légales du vendeur.
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { admin } from './shopifyAdmin';
+import { companyLines, type CompanyInfo } from './profile';
 import { COMPANY } from './site';
 
 const clean = (s: string) => s.replace(/[  ]/g, ' ').replace(/[–—]/g, '-').replace(/[’]/g, "'").replace(/[^\x20-\x7e -ÿ€œŒ×•]/g, '');
@@ -16,7 +17,7 @@ const FIELDS = (addr: boolean) => `name createdAt currentSubtotalPriceSet { shop
   ${addr ? 'billingAddress { company name address1 address2 zip city country }' : ''}
   lineItems(first: 100) { nodes { title variantTitle quantity originalUnitPriceSet { shopMoney { amount } } originalTotalSet { shopMoney { amount } } } }`;
 
-export async function invoicePdf(orderGid: string): Promise<{ pdf: Uint8Array; name: string }> {
+export async function invoicePdf(orderGid: string, buyer: CompanyInfo = {}): Promise<{ pdf: Uint8Array; name: string }> {
   const q = (addr: boolean) => admin<{ order: AdminOrder | null }>(`query($id: ID!) { order(id: $id) { ${FIELDS(addr)} } }`, { id: orderGid });
   // L'adresse relève des données client protégées : sans accès, la facture sort sans adresse.
   const o = (await q(true).catch(() => q(false))).order;
@@ -34,7 +35,8 @@ export async function invoicePdf(orderGid: string): Promise<{ pdf: Uint8Array; n
   y = 758; right(`Date : ${new Date(o.createdAt).toLocaleDateString('fr-FR')}`, 555, 9);
   y = 690;
   const b = o.billingAddress;
-  if (b) { text('Facturé à', 40, 9, bold, muted); y -= 13; for (const l of [b.company, b.name, b.address1, b.address2, [b.zip, b.city].filter(Boolean).join(' '), b.country].filter(Boolean) as string[]) { text(l, 40, 10); y -= 12; } y -= 10; }
+  const legal = companyLines(buyer);
+  if (b || buyer.company) { text('Facturé à', 40, 9, bold, muted); y -= 13; for (const l of [buyer.company || b?.company, legal, b?.name, b?.address1, b?.address2, [b?.zip, b?.city].filter(Boolean).join(' '), b?.country].filter(Boolean) as string[]) { text(l, 40, 10); y -= 12; } y -= 10; }
   page.drawRectangle({ x: 40, y: y - 6, width: 515, height: 20, color: rgb(0.95, 0.96, 0.98) });
   text('Désignation', 46, 9, bold); right('Qté', 400, 9, bold); right('PU HT', 475, 9, bold); right('Total HT', 550, 9, bold); y -= 22;
   for (const l of o.lineItems.nodes) {

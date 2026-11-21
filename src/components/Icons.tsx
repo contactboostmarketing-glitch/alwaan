@@ -49,6 +49,12 @@ const P: Record<string, string> = {
   redo: 'M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5',
   upload: 'M12 15V4M7 9l5-5 5 5M4 15v5h16v-5',
   one: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM10.5 9l2-1.5v9',
+  user: 'M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1',
+  pin: 'M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21ZM12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z',
+  menu: 'M4 7h16M4 12h16M4 17h16',
+  x: 'M6 6l12 12M18 6 6 18',
+  mail: 'M3 5h18v14H3zM3 6l9 7 9-7',
+  building: 'M4 21V3h11v18M15 9h5v12M8 7h3M8 11h3M8 15h3M2 21h20',
   grandparent: 'M9 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM4 21v-5a5 5 0 0 1 10 0v5M18 11v10M16 11h4',
 };
 export type IconName = keyof typeof P;

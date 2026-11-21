@@ -7,6 +7,7 @@ import { uploadFile } from '@/lib/cutout';
 import { eur } from '@/lib/pricing';
 import { useT } from '@/i18n/client';
 import { I } from './Icons';
+import { ProfileTab } from './ProfileTab';
 
 type Me = {
   enabled: boolean; connected?: boolean; firstName?: string; email?: string;
@@ -18,7 +19,7 @@ type Me = {
   shops?: { slug: string; name: string; items: number; stats: { orders: number; revenueHT: number; commission: number; pending: number } }[];
 };
 
-const TABS = ['accueil', 'commandes', 'factures', 'devis', 'logos', 'parrainage', 'boutique', 'revendeur'] as const;
+const TABS = ['accueil', 'commandes', 'factures', 'devis', 'logos', 'parrainage', 'boutique', 'revendeur', 'profil'] as const;
 type Tab = (typeof TABS)[number];
 
 export function AccountView() {
@@ -27,6 +28,7 @@ export function AccountView() {
   const err = params.get('erreur');
   const [tab, setTab] = useState<Tab>(() => (TABS.includes(params.get('s') as Tab) ? (params.get('s') as Tab) : 'accueil'));
   const [me, setMe] = useState<Me | null>(null);
+  const [open, setOpen] = useState(false);
   const load = () => fetch('/api/compte/me').then((r) => r.json()).then(setMe).catch(() => setMe({ enabled: true, connected: false }));
   useEffect(() => { load(); }, []);
   const day = (s: string) => new Date(s).toLocaleDateString(lang === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -45,22 +47,27 @@ export function AccountView() {
     </section>
   );
 
-  const go = (id: Tab) => { setTab(id); try { const u = new URL(window.location.href); u.searchParams.set('s', id); window.history.replaceState(null, '', u.toString()); } catch {} window.scrollTo(0, 0); };
+  const go = (id: Tab) => { setTab(id); setOpen(false); try { const u = new URL(window.location.href); u.searchParams.set('s', id); window.history.replaceState(null, '', u.toString()); } catch {} window.scrollTo(0, 0); };
   const orders = me.orders || [], quotes = me.quotes || [], logos = me.logos || [], shops = me.shops || [], bons = (me.bons || []).filter((b) => !b.used);
   const MENU: [Tab, string, string, number?][] = [
     ['accueil', 'home', t('Accueil')], ['commandes', 'box', t('Mes commandes'), orders.length], ['factures', 'receipt', t('Mes factures'), orders.length],
     ['devis', 'file', t('Mes devis'), quotes.length], ['logos', 'palette', t('Mes logos'), logos.length], ['parrainage', 'gift', t('Parrainage'), bons.length || undefined],
-    ['boutique', 'bag', t('Ma boutique'), shops.length || undefined], ['revendeur', 'tag', t('Revendeur')],
+    ['boutique', 'bag', t('Ma boutique'), shops.length || undefined], ['revendeur', 'tag', t('Revendeur')], ['profil', 'user', t('Mon profil')],
   ];
   const reorderHref = (u: string) => u.replace(/^https?:\/\/[^/]+/, '');
   const empty = (txt: string, cta?: [string, string]) => <div className="acct-empty"><p className="muted">{txt}</p>{cta && <Link className="btn cta" href={cta[1]}>{cta[0]}</Link>}</div>;
 
   return (
-    <section className="wrap acct acct-layout">
+    <section className={`wrap acct acct-layout ${open ? 'menu-open' : ''}`}>
+      <div className="acct-bar">
+        <b>{MENU.find((m) => m[0] === tab)?.[2]}</b>
+        <button className="acct-burger" aria-expanded={open} aria-label={t('Menu du compte')} onClick={() => setOpen(!open)}><I name={open ? 'x' : 'menu'} size={20} /> {t('Menu')}</button>
+      </div>
+      {open && <div className="acct-scrim" onClick={() => setOpen(false)} />}
       <nav className="acct-menu" aria-label={t('Mon compte')}>
         <div className="acct-me"><b>{me.firstName || t('Mon compte')}</b><small className="muted">{me.email}</small></div>
         {MENU.map(([id, ic, label, n]) => (
-          <button key={id} className="acct-tab" aria-current={tab === id ? 'page' : undefined} onClick={(e) => { go(id); e.currentTarget.scrollIntoView({ inline: 'center', block: 'nearest' }); }}><span><I name={ic} size={18} /></span>{label}{n ? <i>{n}</i> : null}</button>
+          <button key={id} className="acct-tab" aria-current={tab === id ? 'page' : undefined} onClick={() => go(id)}><span><I name={ic} size={18} /></span>{label}{n ? <i>{n}</i> : null}</button>
         ))}
         <a className="acct-tab acct-logout" href="/api/compte/logout"><span><I name="logout" size={18} /></span>{t('Se déconnecter')}</a>
       </nav>
@@ -88,6 +95,7 @@ export function AccountView() {
             <Link href={l('/lien-equipe')}><I name="users" className="ico" /> {t('Lien d\'équipe')}</Link>
             {logos[0] && <Link href={`${l('/assistant')}?logo=${encodeURIComponent(logos[0].id)}`}><I name="palette" className="ico" /> {t('Commander avec mon logo')}</Link>}
             <button onClick={() => go('parrainage')}><I name="gift" className="ico" /> {t('Parrainer un confrère')}</button>
+            <button onClick={() => go('profil')}><I name="user" className="ico" /> {t('Mes informations et adresses')}</button>
           </div>
         </>)}
 
@@ -164,6 +172,8 @@ export function AccountView() {
           ))}
           <Link className="btn cta" href={lang === 'en' ? '/en/account/shop' : '/compte/boutique'}>{t('Créer une boutique')}</Link>
         </>)}
+
+        {tab === 'profil' && <ProfileTab onSaved={load} />}
 
         {tab === 'revendeur' && (<>
           <h1>{t('Espace revendeur')}</h1>

@@ -12,7 +12,7 @@ export type SavedCart = {
   promo?: string | null;
   express?: boolean;
   reseller?: boolean;
-  quote?: { number: string; company?: string; email?: string; validUntil: string };
+  quote?: { number: string; company?: string; legal?: string; email?: string; validUntil: string };
 };
 export const CART_ID = /^[a-f0-9]{24}$/;
 
