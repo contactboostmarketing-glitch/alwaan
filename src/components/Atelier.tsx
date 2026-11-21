@@ -168,7 +168,7 @@ export function AtelierRework({ id }: { id: string }) {
 }
 
 function AtelierNav() {
-  return <nav className="atl-nav no-print"><Link href="/atelier/production">Production</Link><Link href="/atelier">Retouches</Link><Link href="/atelier/revendeurs">Revendeurs</Link><Link href="/atelier/stock">Stock</Link><Link href="/atelier/avis">Avis</Link><Link href="/atelier/tableau">Tableau de bord</Link></nav>;
+  return <nav className="atl-nav no-print"><Link href="/atelier/production">Production</Link><Link href="/atelier">Retouches</Link><Link href="/atelier/revendeurs">Revendeurs</Link><Link href="/atelier/stock">Stock</Link><Link href="/atelier/avis">Avis</Link><Link href="/atelier/retours">Retours clients</Link><Link href="/atelier/tableau">Tableau de bord</Link></nav>;
 }
 
 const day = (s: string) => new Date(s).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -429,6 +429,56 @@ export function AtelierDashboard() {
         <div><h2>Sources</h2><table className="stk"><thead><tr><th>Source</th><th>CA HT</th><th>Commandes</th></tr></thead><tbody>{d.sources.map((x) => <tr key={x.s}><td>{x.s}</td><td>{euro(x.ht)}</td><td>{x.n}</td></tr>)}</tbody></table></div>
         <div><h2>Produits les plus commandés</h2><table className="stk"><thead><tr><th>Produit</th><th>Commandes</th></tr></thead><tbody>{d.products.map((x) => <tr key={x.name}><td>{x.name}</td><td>{x.n}</td></tr>)}</tbody></table></div>
       </div>
+    </section>
+  );
+}
+
+const R_TYPES: [string, string][] = [['question', 'Question'], ['demande', 'Demande'], ['litige', 'Litige'], ['retour', 'Retour / échange'], ['compliment', 'Compliment'], ['suggestion', 'Suggestion']];
+const R_CANAUX: [string, string][] = [['whatsapp', 'WhatsApp'], ['email', 'Email'], ['telephone', 'Téléphone'], ['chat', 'Chat du site'], ['avis-google', 'Avis Google'], ['salon', 'Salon / sur place'], ['autre', 'Autre']];
+type FeedbackRow = { id: string; at: string; type: string; canal: string; text: string; slugs: string[]; photoId?: string; publicPhoto?: boolean; resolved?: boolean };
+
+/** Carnet des retours clients : tout ce qui arrive hors du site (WhatsApp, email, téléphone, litiges), pour ne rien perdre. */
+export function AtelierFeedback() {
+  const { key, save } = useStaffKey();
+  const [items, setItems] = useState<FeedbackRow[] | null>(null);
+  const [err, setErr] = useState(''), [busy, setBusy] = useState(false);
+  const [f, setF] = useState({ type: 'question', canal: 'whatsapp', text: '', slug: '', photoId: '', publicPhoto: false });
+  const load = () => fetch('/api/atelier/retours', { headers: { 'x-staff-key': key } }).then(async (r) => { const d = await r.json(); if (r.status === 401) { setErr(d.error); save(''); return; } setItems(d.items); }).catch(() => setErr('Connexion impossible.'));
+  useEffect(() => { if (key) load(); }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!key) return <KeyGate onKey={save} error={err} />;
+  const post = (body: object) => fetch('/api/atelier/retours', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-staff-key': key }, body: JSON.stringify(body) });
+  const add = async () => {
+    setBusy(true); setErr('');
+    const r = await post({ type: f.type, canal: f.canal, text: f.text, slugs: f.slug ? [f.slug] : [], photoId: f.photoId || undefined, publicPhoto: f.publicPhoto });
+    setBusy(false);
+    if (!r.ok) { setErr((await r.json().catch(() => ({}))).error || 'Enregistrement impossible.'); return; }
+    setF({ ...f, text: '', slug: '', photoId: '', publicPhoto: false }); load();
+  };
+  return (
+    <section className="wrap atelier"><AtelierNav /><h1>Retours clients</h1>
+      <p className="muted small">Notez ici les messages WhatsApp, emails, appels, litiges et suggestions. Pas besoin de nom ni de coordonnées : les données personnelles sont retirées automatiquement avant toute analyse. Ces retours nourrissent la FAQ et les guides du site.</p>
+      <div className="quote-box">
+        <div className="prof-row">
+          <label className="prof-field"><span>Type</span><select value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}>{R_TYPES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
+          <label className="prof-field"><span>Canal</span><select value={f.canal} onChange={(e) => setF({ ...f, canal: e.target.value })}>{R_CANAUX.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
+        </div>
+        <textarea rows={4} value={f.text} onChange={(e) => setF({ ...f, text: e.target.value })} placeholder="Ce que le client a dit ou demandé (copier-coller possible)" aria-label="Texte" />
+        <label className="prof-field"><span>Produit concerné (facultatif)</span><select value={f.slug} onChange={(e) => setF({ ...f, slug: e.target.value })}><option value="">Aucun</option>{PRODUCTS.map((p) => <option key={p.slug} value={p.slug}>{p.name}</option>)}</select></label>
+        <label className="asst-drop small-drop"><strong>{f.photoId ? 'Photo ajoutée · changer' : 'Ajouter une photo (facultatif)'}</strong>
+          <input type="file" accept="image/*" hidden onChange={async (e) => { const file = e.target.files?.[0]; if (!file) return; const u = await uploadFile(file, file.name); if (u.id) setF((x) => ({ ...x, photoId: u.id! })); else setErr(u.error || 'Envoi impossible.'); }} /></label>
+        {f.photoId && <label className="prof-check"><input type="checkbox" checked={f.publicPhoto} onChange={(e) => setF({ ...f, publicPhoto: e.target.checked })} /> Le client accepte que la photo soit publiée sur le site</label>}
+        <button className="btn cta" disabled={busy || f.text.trim().length < 3} onClick={add}>{busy ? 'Enregistrement…' : 'Enregistrer'}</button>
+        {err && <p className="err">{err}</p>}
+      </div>
+      {!items ? <p className="muted">Chargement…</p> : items.map((r) => (
+        <article key={r.id} className="prod-card">
+          <header><b>{R_TYPES.find(([v]) => v === r.type)?.[1]}</b><span className="muted">{R_CANAUX.find(([v]) => v === r.canal)?.[1]}</span>{r.type === 'litige' && <span className={`st ${r.resolved ? 'st-valide' : 'st-modif'}`}>{r.resolved ? 'Résolu' : 'En cours'}</span>}<small className="muted">{when(r.at)}</small></header>
+          <p style={{ whiteSpace: 'pre-wrap' }}>{r.text}</p>
+          <p className="small muted">{r.slugs.map((s) => getProduct(s)?.name || s).join(', ')}</p>
+          {r.photoId && <a href={`/api/logo/${r.photoId}?apercu`} target="_blank" rel="noopener">{/* eslint-disable-next-line @next/next/no-img-element */}<img className="team-shot" src={`/api/logo/${r.photoId}?apercu`} alt="Photo jointe" /></a>}
+          {r.type === 'litige' && <div className="atl-files"><button className="btn line small" onClick={async () => { await post({ action: 'resolu', id: r.id }); load(); }}>{r.resolved ? 'Rouvrir' : 'Marquer résolu'}</button></div>}
+        </article>
+      ))}
     </section>
   );
 }

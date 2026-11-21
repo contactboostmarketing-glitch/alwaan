@@ -31,7 +31,7 @@ export function ContactFloat() {
     if (!content || busy) return;
     const next: Msg[] = [...msgs, { role: 'user', content }];
     setMsgs(next); setText(''); setBusy(true);
-    const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: next }) }).catch(() => null);
+    const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: next, page: path }) }).catch(() => null);
     const d = r ? await r.json().catch(() => null) : null;
     setBusy(false);
     setMsgs([...next, { role: 'assistant', content: d?.text || d?.error || t('Connexion impossible. Écrivez-nous sur WhatsApp.') }]);

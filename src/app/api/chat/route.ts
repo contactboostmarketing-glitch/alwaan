@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { limited, tooMany } from '@/lib/rateLimit';
 import { answer, type ChatTurn } from '@/lib/supportChat';
+import { logQuestion } from '@/lib/feedback';
 
 export const maxDuration = 30;
 
@@ -16,7 +17,12 @@ export async function POST(req: Request) {
   // La conversation commence et se termine par un message du client.
   while (turns.length && turns[0].role !== 'user') turns.shift();
   if (!turns.length || turns[turns.length - 1].role !== 'user') return NextResponse.json({ error: 'Message vide.' }, { status: 400 });
-  try { return NextResponse.json(await answer(turns)); }
+  try {
+    const r = await answer(turns);
+    // Question anonymisée conservée pour améliorer les contenus du site (FAQ, guides).
+    await logQuestion({ text: turns[turns.length - 1].content, page: typeof b?.page === 'string' ? b.page.slice(0, 120) : undefined, handoff: r.handoff });
+    return NextResponse.json(r);
+  }
   catch (e) {
     console.error('[chat]', e);
     return NextResponse.json({ text: 'Petit souci technique de notre côté. Écrivez à l\'équipe sur WhatsApp, on vous répond vite.', handoff: true });
