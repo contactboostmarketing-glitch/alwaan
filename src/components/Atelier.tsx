@@ -8,6 +8,7 @@ import { snapshot, toDataUrl, uploadMockup } from '@/lib/mockup';
 import { STATUS_LABEL, type Rework } from '@/lib/reworkTypes';
 import type { ProdOrder } from '@/lib/production';
 import { Garment } from './Garment';
+import { I } from './Icons';
 
 const KEY = 'alwaan-staff-key';
 const readKey = () => { try { return localStorage.getItem(KEY) || ''; } catch { return ''; } };
@@ -119,7 +120,7 @@ export function AtelierRework({ id }: { id: string }) {
       <h1>Retouche du logo <span className={`st st-${r.status}`}>{STATUS_LABEL[r.status]}</span></h1>
       <p className="muted">{r.order ? <>Commande <b>{r.order.name}</b>{r.order.email ? ` · ${r.order.email}` : ''}{r.order.cancelled ? ' · ANNULÉE' : ''}</> : 'Pas encore de commande payée : ne rien imprimer.'}</p>
       {r.decision && !r.decision.ok && <p className="warnline"><b>Demande du client :</b> {r.decision.comment}</p>}
-      {r.status === 'valide' && <p className="okline">✓ Validé par le client le {when(r.decision?.at)} : à imprimer.</p>}
+      {r.status === 'valide' && <p className="okline">Validé par le client le {when(r.decision?.at)} : à imprimer.</p>}
 
       <h2>1. Logo du client</h2>
       <div className="atl-files">
@@ -154,7 +155,7 @@ export function AtelierRework({ id }: { id: string }) {
       {r.proof && (<>
         <h2>3. Envoyer au client</h2>
         <div className="asst-say"><input readOnly value={link} aria-label="Lien de validation" onFocus={(e) => e.target.select()} />
-          <button onClick={() => { navigator.clipboard?.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1500); }}>{copied ? 'Copié ✓' : 'Copier'}</button></div>
+          <button onClick={() => { navigator.clipboard?.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1500); }}>{copied ? 'Copié' : 'Copier'}</button></div>
         <div className="atl-files"><a className="btn line small" href={mail}>Email</a><a className="btn line small" href={wa} target="_blank" rel="noopener">WhatsApp</a><a className="btn line small" href={link} target="_blank">Voir la page client</a></div>
       </>)}
 
@@ -205,7 +206,7 @@ export function AtelierProduction() {
         return (
           <article key={o.id} className={`prod-card ${o.blocked ? 'blocked' : ''}`}>
             <header>
-              <b>{o.name}</b>{o.express && <span className="st st-modif">⚡ EXPRESS</span>}{o.sample && <span className="st st-a_retoucher">🧵 ÉCHANTILLON AVANT SÉRIE</span>}
+              <b>{o.name}</b>{o.express && <span className="st st-modif">EXPRESS</span>}{o.sample && <span className="st st-a_retoucher">ÉCHANTILLON AVANT SÉRIE</span>}
               <span className={`st ${o.blocked ? 'st-modif' : late ? 'st-modif' : 'st-valide'}`}>{o.blocked ? 'Attente BAT client' : late ? `En retard · ${day(o.due)}` : `À expédier le ${day(o.due)}`}</span>
               <small className="muted">{o.pieces} pcs · payé le {day(o.createdAt)}</small>
             </header>
@@ -282,7 +283,7 @@ function QcPhotos({ order, initial, staffKey }: { order: string; initial: string
   return (
     <div className="qc no-print">
       {photos.map((p) => <a key={p} href={`/api/logo/${p}?apercu`} target="_blank" rel="noopener">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={`/api/logo/${p}?apercu`} alt="Photo de contrôle" /></a>)}
-      <label className="btn line small">{busy ? 'Envoi…' : photos.length ? '+ Photo' : '📷 Photo de contrôle'}<input type="file" accept="image/*" capture="environment" hidden onChange={(e) => onFile(e.target.files?.[0])} /></label>
+      <label className="btn line small">{busy ? 'Envoi…' : photos.length ? '+ Photo' : 'Photo de contrôle'}<input type="file" accept="image/*" capture="environment" hidden onChange={(e) => onFile(e.target.files?.[0])} /></label>
     </div>
   );
 }

@@ -15,6 +15,7 @@ import { CutoutChoice, ReworkOption, useLogo } from './LogoCutout';
 import { PACKS } from '@/lib/packs';
 import { useT } from '@/i18n/client';
 import { categoryL, colorName, productL } from '@/i18n';
+import { I } from './Icons';
 
 type Place = 'heart' | 'chest' | 'back' | 'heart-back';
 const PLACES: { id: Place; name: string; sub: string; zones: string[]; reco?: boolean }[] = [
@@ -145,7 +146,7 @@ export function Assistant() {
     } catch { setMsg(t('Enregistrement impossible. Vérifiez votre connexion.')); setSaved('idle'); }
   };
   const saveBox = saved === 'ok' ? (
-    <p className="nudge ok">✓ {t('Maquette sauvegardée.')}</p>
+    <p className="nudge ok"><I name="check" size={16} /> {t('Maquette sauvegardée.')}</p>
   ) : (
     <form className="asst-save" onSubmit={(e) => { e.preventDefault(); saveDraft(); }}>
       <strong>{t('Gardez votre maquette')}</strong>
@@ -326,7 +327,7 @@ export function Assistant() {
               const on = picked.includes(p.slug);
               return (
                 <button key={p.slug} className="asst-opt" aria-pressed={on} onClick={() => setPicked((x) => on ? x.filter((s) => s !== p.slug) : [...x, p.slug])}>
-                  {on && <span className="tick">✓</span>}
+                  {on && <span className="tick"><I name="check" size={12} strokeWidth={3} /></span>}
                   <Garment slug={p.slug} color={defaultColor(p)} zones={zonesOf(p, place)} logo={logo?.preview} text={logo?.status === 'text' ? text : undefined} />
                   <strong>{categoryL(lang, CATEGORIES.find((c) => c.slug === p.category)!).name}</strong><small>{productL(lang, p).name} · {t('dès')} <Price ht={unitAt({ slug: p.slug, zones: zonesOf(p, place) }, TIERS[TIERS.length - 1][0])} /></small>
                 </button>
@@ -337,11 +338,11 @@ export function Assistant() {
         </>)}
 
         {step === 'color' && (<>
-          <p className="bubble">{t('Quelle couleur ?')}{recos.length ? <> <b>✓</b> = {t('logo bien visible.')}</> : null}{products.some((p) => p.colors.length <= 2) && products.some((p) => p.colors.length > 2) ? ' ' + t('Haute visibilité et chemises : couleurs d\'origine.') : ''}</p>
+          <p className="bubble">{t('Quelle couleur ?')}{recos.length ? <> <I name="check" size={14} strokeWidth={2.5} /> = {t('logo bien visible.')}</> : null}{products.some((p) => p.colors.length <= 2) && products.some((p) => p.colors.length > 2) ? ' ' + t('Haute visibilité et chemises : couleurs d\'origine.') : ''}</p>
           <div className="asst-sw">
             {palette.map((c) => (
               <button key={c} className="sw-big" aria-pressed={color === c} onClick={() => { setColor(c); go('mockup'); }}>
-                {recos.includes(c) && <span className="star">✓</span>}<i style={{ background: c }} />{colorName(lang, c)}
+                {recos.includes(c) && <span className="star"><I name="check" size={11} strokeWidth={3} /></span>}<i style={{ background: c }} />{colorName(lang, c)}
               </button>
             ))}
           </div>
@@ -363,7 +364,7 @@ export function Assistant() {
         </>)}
 
         {step === 'qty' && (<>
-          <button className="team-cta" disabled={teamBusy} onClick={toTeam}><span>👥</span><span><b>{t('Laisser chacun donner sa taille')}</b><small>{t('Un lien à partager : nom, prénom et taille de chaque personne, le panier se remplit tout seul.')}</small></span></button>
+          <button className="team-cta" disabled={teamBusy} onClick={toTeam}><span className="opt-ic"><I name="users" size={26} /></span><span><b>{t('Laisser chacun donner sa taille')}</b><small>{t('Un lien à partager : nom, prénom et taille de chaque personne, le panier se remplit tout seul.')}</small></span></button>
           <p className="bubble">{t('Ou combien de personnes ? Je répartis les tailles.')}</p>
           <div className="asst-people">{[5, 10, 20, 30].map((n) => <button key={n} aria-pressed={people === n} onClick={() => choosePeople(n)}>{n}</button>)}</div>
           {lines.map((l) => {

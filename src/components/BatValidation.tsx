@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { COLOR_NAMES, getProduct } from '@/lib/catalog';
 import type { Rework } from '@/lib/reworkTypes';
+import { I } from './Icons';
 
 type View = Pick<Rework, 'id' | 'status' | 'items' | 'proof'> & { decision?: { at: string; ok: boolean; comment?: string } };
 
@@ -29,8 +30,8 @@ export function BatValidation({ id }: { id: string }) {
   return (
     <section className="wrap bat-page">
       {r.status === 'a_retoucher' && <><h1>Votre maquette arrive</h1><p className="muted">Notre graphiste retravaille votre logo.</p></>}
-      {r.status === 'modif' && <><h1>C&apos;est noté ✓</h1><p className="muted">Nouvelle maquette très vite.</p></>}
-      {r.status === 'valide' && <><h1>Maquette validée ✓</h1><p className="muted">On lance l&apos;impression.</p></>}
+      {r.status === 'modif' && <><h1>C&apos;est noté</h1><p className="muted">Nouvelle maquette très vite.</p></>}
+      {r.status === 'valide' && <><h1 className="with-ic"><I name="check" size={28} /> Maquette validée</h1><p className="muted">On lance l&apos;impression.</p></>}
       {r.status === 'envoye' && <h1>Votre maquette</h1>}
 
       {(r.status === 'envoye' || r.status === 'valide') && (
@@ -49,7 +50,7 @@ export function BatValidation({ id }: { id: string }) {
       {r.status === 'envoye' && (
         <div className="bat-actions">
           {!change ? (<>
-            <button className="btn cta" disabled={busy} onClick={() => decide(true)}>✓ Je valide</button>
+            <button className="btn cta" disabled={busy} onClick={() => decide(true)}><I name="check" size={16} /> Je valide</button>
             <button className="btn line" disabled={busy} onClick={() => setChange(true)}>Modifier</button>
             <small className="muted">Valider = bon à tirer : l&apos;impression reprend cette maquette.</small>
           </>) : (<>

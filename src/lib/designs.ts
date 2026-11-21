@@ -1,7 +1,7 @@
 // Designs prêts à personnaliser pour les particuliers (EVJF/EVG, anniversaires, famille, fêtes).
 // Chaque design produit une illustration SVG : le client tape son texte, voit le rendu sur le vêtement,
 // et l'image générée devient le fichier imprimé (ce qu'il voit est ce qui est imprimé).
-export type Occasion = { id: string; emoji: string; fr: { name: string; sub: string }; en: { name: string; sub: string } };
+export type Occasion = { id: string; icon: string; fr: { name: string; sub: string }; en: { name: string; sub: string } };
 export type Field = { key: string; fr: string; en: string; def: string; max: number };
 export type Design = {
   id: string; occasion: string; fr: string; en: string; fields: Field[];
@@ -11,13 +11,13 @@ export type Design = {
 };
 
 export const OCCASIONS: Occasion[] = [
-  { id: 'evjf-evg', emoji: '💍', fr: { name: 'EVJF & EVG', sub: 'Team Bride, Team Groom' }, en: { name: 'Hen & stag parties', sub: 'Team Bride, Team Groom' } },
-  { id: 'anniversaire', emoji: '🎂', fr: { name: 'Anniversaires', sub: 'Âge, année, prénom' }, en: { name: 'Birthdays', sub: 'Age, year, name' } },
-  { id: 'famille', emoji: '👨‍👩‍👧', fr: { name: 'Famille & fêtes', sub: 'Papa, maman, Noël, naissance' }, en: { name: 'Family & holidays', sub: 'Dad, mum, Christmas, baby' } },
-  { id: 'papi-mamie', emoji: '👵', fr: { name: 'Papi & mamie', sub: 'Super papi, mamie en or' }, en: { name: 'Grandparents', sub: 'Super grandpa, golden granny' } },
-  { id: 'retraite', emoji: '🏖️', fr: { name: 'Retraite', sub: 'Officiellement en retraite' }, en: { name: 'Retirement', sub: 'Officially retired' } },
-  { id: 'saint-valentin', emoji: '❤️', fr: { name: 'Saint-Valentin', sub: 'Pour les amoureux' }, en: { name: 'Valentine’s Day', sub: 'For lovers' } },
-  { id: 'sport', emoji: '⚽', fr: { name: 'Sport & potes', sub: 'Nom et numéro, équipe' }, en: { name: 'Sport & mates', sub: 'Name and number, team' } },
+  { id: 'evjf-evg', icon: 'ring', fr: { name: 'EVJF & EVG', sub: 'Team Bride, Team Groom' }, en: { name: 'Hen & stag parties', sub: 'Team Bride, Team Groom' } },
+  { id: 'anniversaire', icon: 'cake', fr: { name: 'Anniversaires', sub: 'Âge, année, prénom' }, en: { name: 'Birthdays', sub: 'Age, year, name' } },
+  { id: 'famille', icon: 'users', fr: { name: 'Famille & fêtes', sub: 'Papa, maman, Noël, naissance' }, en: { name: 'Family & holidays', sub: 'Dad, mum, Christmas, baby' } },
+  { id: 'papi-mamie', icon: 'grandparent', fr: { name: 'Papi & mamie', sub: 'Super papi, mamie en or' }, en: { name: 'Grandparents', sub: 'Super grandpa, golden granny' } },
+  { id: 'retraite', icon: 'sun', fr: { name: 'Retraite', sub: 'Officiellement en retraite' }, en: { name: 'Retirement', sub: 'Officially retired' } },
+  { id: 'saint-valentin', icon: 'heart', fr: { name: 'Saint-Valentin', sub: 'Pour les amoureux' }, en: { name: 'Valentine’s Day', sub: 'For lovers' } },
+  { id: 'sport', icon: 'trophy', fr: { name: 'Sport & potes', sub: 'Nom et numéro, équipe' }, en: { name: 'Sport & mates', sub: 'Name and number, team' } },
 ];
 
 const D = "Impact, 'Arial Black', 'Helvetica Neue', Arial, sans-serif";

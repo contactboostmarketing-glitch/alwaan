@@ -14,6 +14,7 @@ import { categoryL, colorName, productL, zonesL } from '@/i18n';
 import { snapshot, uploadMockup } from '@/lib/mockup';
 import { track } from '@/lib/track';
 import { deliveryDate, fmtDay } from '@/lib/delivery';
+import { I } from './Icons';
 
 function initial(slug: string): LineConfig {
   const p = getProduct(slug)!;
@@ -213,7 +214,7 @@ export function Configurator({ slug }: { slug: string }) {
               const on = cfg.zones.includes(z.id);
               return (
                 <button key={z.id} className="ztile" aria-pressed={on} aria-label={`${z.name}, ${z.size}`} title={`${z.name} · ${z.size}`} onClick={() => toggleZone(z.id)}>
-                  {on && <span className="tick">✓</span>}
+                  {on && <span className="tick"><I name="check" size={12} strokeWidth={3} /></span>}
                   <Garment slug={slug} color={cfg.color} view={z.view} zones={[z.id]} logo={cfg.logo} text={cfg.logoStatus === 'text' ? cfg.text : undefined} />
                   <b>{z.name}</b><small>+<Price ht={z.price} suffix={false} /></small>
                 </button>
@@ -242,7 +243,7 @@ export function Configurator({ slug }: { slug: string }) {
           {others > 0 && <p className="muted small">{t('+ {n} avec ce logo déjà dans le panier, comptées pour la remise.', { n: pcs(others) })}</p>}
           {q > 0 && zones.some((z) => cfg.zones.includes(z.id) && !z.fixed) && (nt ? (
             <div className="nudge"><span>+{pcs(nt[0] - pool)} = {t('marquage')} <b>-{Math.round(nt[1] * 100)} %</b></span><button className="btn line small" onClick={reachTier}>{t('Passer à {n}', { n: nt[0] - others })}</button></div>
-          ) : cur[1] === MAX_DISCOUNT ? <div className="nudge ok">✓ {t('Marquage')} -{Math.round(MAX_DISCOUNT * 100)} %</div> : null)}
+          ) : cur[1] === MAX_DISCOUNT ? <div className="nudge ok"><I name="check" size={16} /> {t('Marquage')} -{Math.round(MAX_DISCOUNT * 100)} %</div> : null)}
           <div className="tiers">
             {TIERS.map(([m, d]) => <div key={m} className={m === cur[0] ? 'on' : ''}><b><Price ht={at(m)} suffix={false} /></b>{m}+ pcs{d ? <small>{t('marquage')} -{Math.round(d * 100)} %</small> : null}</div>)}
           </div>
@@ -257,11 +258,11 @@ export function Configurator({ slug }: { slug: string }) {
               <div className="tot"><Price ht={at(pool)} /> <small className="muted">/ {t('pièce')}</small></div>
               <small className="muted">{t('Choisissez vos tailles')}</small>
             </>)}
-            <p className="eta">🚚 {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(), lang) })} · <span className="muted">{t('express possible')}</span></p>
+            <p className="eta"><I name="truck" size={16} /> {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(), lang) })} · <span className="muted">{t('express possible')}</span></p>
           </div>
           <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} /><span>{t('Je valide ma maquette')} <b>{t('(bon à tirer)')}</b> {t('et je détiens les droits sur ce logo')}</span></label>
           <button className="btn cta" onClick={() => submit()} disabled={saving}>{t(saving ? 'Enregistrement de la maquette…' : editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier')}</button>
-          {editIndex === null && <button className="link small team-link" onClick={() => submit(true)} disabled={saving}>👥 {t('Récupérer les noms et tailles de l\'équipe par un lien')}</button>}
+          {editIndex === null && <button className="link small team-link" onClick={() => submit(true)} disabled={saving}><I name="users" size={18} /> {t('Récupérer les noms et tailles de l\'équipe par un lien')}</button>}
         </div>
         <Perks items={[['eye', t('Imprimé comme la maquette')], ['lock', t('Paiement sécurisé')], ['redo', t('Défaut refait')], ['truck', t('7 jours')]]} />
       </div>

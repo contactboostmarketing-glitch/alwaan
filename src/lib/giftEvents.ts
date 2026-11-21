@@ -2,7 +2,7 @@
 // avec ses designs et la date limite de commande pour être livré à temps.
 import { addBusinessDays, PRODUCTION_DAYS, TRANSIT_DAYS } from './delivery';
 
-export type GiftEvent = { id: string; emoji: string; date: Date; designs: string[]; occasion: string; fr: string; en: string };
+export type GiftEvent = { id: string; icon: string; date: Date; designs: string[]; occasion: string; fr: string; en: string };
 
 const nthSunday = (y: number, m: number, n: number) => { const d = new Date(y, m, 1); d.setDate(1 + ((7 - d.getDay()) % 7) + (n - 1) * 7); return d; };
 const lastSunday = (y: number, m: number) => { const d = new Date(y, m + 1, 0); d.setDate(d.getDate() - d.getDay()); return d; };
@@ -20,13 +20,13 @@ function mothersDay(y: number) {
 
 export function giftEvents(y: number): GiftEvent[] {
   return [
-    { id: 'saint-valentin', emoji: '❤️', date: new Date(y, 1, 14), designs: ['love'], occasion: 'saint-valentin', fr: 'Saint-Valentin', en: 'Valentine’s Day' },
-    { id: 'grands-meres', emoji: '👵', date: nthSunday(y, 2, 1), designs: ['mamie-en-or', 'super-papi'], occasion: 'papi-mamie', fr: 'Fête des grands-mères', en: 'Grandmothers’ Day' },
-    { id: 'meres', emoji: '💐', date: mothersDay(y), designs: ['meilleure-maman', 'mamie-en-or'], occasion: 'famille', fr: 'Fête des mères', en: 'Mother’s Day' },
-    { id: 'peres', emoji: '👔', date: nthSunday(y, 5, 3), designs: ['papa-depuis', 'chef-papa', 'super-papi'], occasion: 'famille', fr: 'Fête des pères', en: 'Father’s Day' },
-    { id: 'retraites-ete', emoji: '🏖️', date: new Date(y, 5, 30), designs: ['retraite-officielle', 'retraite-mission'], occasion: 'retraite', fr: 'Départs en retraite de l’été', en: 'Summer retirements' },
-    { id: 'grands-peres', emoji: '👴', date: nthSunday(y, 9, 1), designs: ['super-papi', 'papi-depuis'], occasion: 'papi-mamie', fr: 'Fête des grands-pères', en: 'Grandfathers’ Day' },
-    { id: 'noel', emoji: '🎄', date: new Date(y, 11, 24), designs: ['noel-famille', 'super-papi', 'mamie-en-or'], occasion: 'famille', fr: 'Noël', en: 'Christmas' },
+    { id: 'saint-valentin', icon: 'heart', date: new Date(y, 1, 14), designs: ['love'], occasion: 'saint-valentin', fr: 'Saint-Valentin', en: 'Valentine’s Day' },
+    { id: 'grands-meres', icon: 'grandparent', date: nthSunday(y, 2, 1), designs: ['mamie-en-or', 'super-papi'], occasion: 'papi-mamie', fr: 'Fête des grands-mères', en: 'Grandmothers’ Day' },
+    { id: 'meres', icon: 'flower', date: mothersDay(y), designs: ['meilleure-maman', 'mamie-en-or'], occasion: 'famille', fr: 'Fête des mères', en: 'Mother’s Day' },
+    { id: 'peres', icon: 'shirt', date: nthSunday(y, 5, 3), designs: ['papa-depuis', 'chef-papa', 'super-papi'], occasion: 'famille', fr: 'Fête des pères', en: 'Father’s Day' },
+    { id: 'retraites-ete', icon: 'sun', date: new Date(y, 5, 30), designs: ['retraite-officielle', 'retraite-mission'], occasion: 'retraite', fr: 'Départs en retraite de l’été', en: 'Summer retirements' },
+    { id: 'grands-peres', icon: 'grandparent', date: nthSunday(y, 9, 1), designs: ['super-papi', 'papi-depuis'], occasion: 'papi-mamie', fr: 'Fête des grands-pères', en: 'Grandfathers’ Day' },
+    { id: 'noel', icon: 'tree', date: new Date(y, 11, 24), designs: ['noel-famille', 'super-papi', 'mamie-en-or'], occasion: 'famille', fr: 'Noël', en: 'Christmas' },
   ];
 }
 

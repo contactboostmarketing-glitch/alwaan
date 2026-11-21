@@ -8,6 +8,7 @@ import { designDataUrl, designZone } from '@/lib/designArt';
 import { nextGiftEvent } from '@/lib/giftEvents';
 import { useT } from '@/i18n/client';
 import { Garment } from './Garment';
+import { I } from '@/components/Icons';
 
 export function EventBanner({ compact = false }: { compact?: boolean }) {
   const { t, l, lang } = useT();
@@ -18,10 +19,10 @@ export function EventBanner({ compact = false }: { compact?: boolean }) {
   const name = lang === 'en' ? ev.en : ev.fr;
   const deadline = ev.orderBy ? t('Commandez avant le {d} pour l\'avoir à temps', { d: fmt(ev.orderBy) }) : t('Encore possible en production express');
   const base = l('/idees-cadeaux');
-  if (compact) return <Link className="gifts-strip event-strip" href={`${base}/${ev.occasion}`}>{ev.emoji} <b>{name} · {fmt(ev.date)}</b> · {deadline} →</Link>;
+  if (compact) return <Link className="gifts-strip event-strip" href={`${base}/${ev.occasion}`}><I name={ev.icon} size={16} /> <b>{name} · {fmt(ev.date)}</b> · {deadline} →</Link>;
   return (
     <div className="event-banner">
-      <div><b className="event-title">{ev.emoji} {name} · {fmt(ev.date)}</b><span className="season-deadline">⏰ {deadline}</span></div>
+      <div><b className="event-title"><I name={ev.icon} size={18} /> {name} · {fmt(ev.date)}</b><span className="season-deadline"><I name="clock" size={15} /> {deadline}</span></div>
       <div className="event-designs">{ev.designs.map((id) => { const d = getDesign(id); if (!d) return null; const p = getProduct(d.products[0])!; const c = d.colors?.find((x) => p.colors.includes(x)) ?? p.colors[0];
         return <Link key={id} href={`${base}/creer/${id}`} className="event-design"><Garment slug={p.slug} color={c} zones={[designZone(p)]} logo={designDataUrl(d, c)} /><small>{d[lang]}</small></Link>; })}</div>
     </div>

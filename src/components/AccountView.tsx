@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { uploadFile } from '@/lib/cutout';
 import { eur } from '@/lib/pricing';
 import { useT } from '@/i18n/client';
+import { I } from './Icons';
 
 type Me = {
   enabled: boolean; connected?: boolean; firstName?: string; email?: string;
@@ -36,7 +37,7 @@ export function AccountView() {
     <section className="wrap acct narrow">
       <h1>{t('Mon compte')}</h1>
       <ul className="perks acct-perks">
-        <li>📦 {t('Vos commandes et leur suivi')}</li><li>🧾 {t('Vos factures')}</li><li>📄 {t('Vos devis')}</li><li>🎨 {t('Vos logos, prêts à réutiliser')}</li><li>🏷️ {t('Espace revendeur : -10 % sur tout')}</li>
+        <li><I name="box" className="ico" /> {t('Vos commandes et leur suivi')}</li><li><I name="receipt" className="ico" /> {t('Vos factures')}</li><li><I name="file" className="ico" /> {t('Vos devis')}</li><li><I name="palette" className="ico" /> {t('Vos logos, prêts à réutiliser')}</li><li><I name="tag" className="ico" /> {t('Espace revendeur : -10 % sur tout')}</li>
       </ul>
       {err && <p className="warnline">{t('La connexion n\'a pas abouti. Réessayez.')}</p>}
       <a className="btn cta block" href={`/api/compte/login?lang=${lang}`}>{t('Se connecter')}</a>
@@ -47,9 +48,9 @@ export function AccountView() {
   const go = (id: Tab) => { setTab(id); try { const u = new URL(window.location.href); u.searchParams.set('s', id); window.history.replaceState(null, '', u.toString()); } catch {} window.scrollTo(0, 0); };
   const orders = me.orders || [], quotes = me.quotes || [], logos = me.logos || [], shops = me.shops || [], bons = (me.bons || []).filter((b) => !b.used);
   const MENU: [Tab, string, string, number?][] = [
-    ['accueil', '🏠', t('Accueil')], ['commandes', '📦', t('Mes commandes'), orders.length], ['factures', '🧾', t('Mes factures'), orders.length],
-    ['devis', '📄', t('Mes devis'), quotes.length], ['logos', '🎨', t('Mes logos'), logos.length], ['parrainage', '🎁', t('Parrainage'), bons.length || undefined],
-    ['boutique', '🛍️', t('Ma boutique'), shops.length || undefined], ['revendeur', '🏷️', t('Revendeur')],
+    ['accueil', 'home', t('Accueil')], ['commandes', 'box', t('Mes commandes'), orders.length], ['factures', 'receipt', t('Mes factures'), orders.length],
+    ['devis', 'file', t('Mes devis'), quotes.length], ['logos', 'palette', t('Mes logos'), logos.length], ['parrainage', 'gift', t('Parrainage'), bons.length || undefined],
+    ['boutique', 'bag', t('Ma boutique'), shops.length || undefined], ['revendeur', 'tag', t('Revendeur')],
   ];
   const reorderHref = (u: string) => u.replace(/^https?:\/\/[^/]+/, '');
   const empty = (txt: string, cta?: [string, string]) => <div className="acct-empty"><p className="muted">{txt}</p>{cta && <Link className="btn cta" href={cta[1]}>{cta[0]}</Link>}</div>;
@@ -59,16 +60,16 @@ export function AccountView() {
       <nav className="acct-menu" aria-label={t('Mon compte')}>
         <div className="acct-me"><b>{me.firstName || t('Mon compte')}</b><small className="muted">{me.email}</small></div>
         {MENU.map(([id, ic, label, n]) => (
-          <button key={id} className="acct-tab" aria-current={tab === id ? 'page' : undefined} onClick={(e) => { go(id); e.currentTarget.scrollIntoView({ inline: 'center', block: 'nearest' }); }}><span>{ic}</span>{label}{n ? <i>{n}</i> : null}</button>
+          <button key={id} className="acct-tab" aria-current={tab === id ? 'page' : undefined} onClick={(e) => { go(id); e.currentTarget.scrollIntoView({ inline: 'center', block: 'nearest' }); }}><span><I name={ic} size={18} /></span>{label}{n ? <i>{n}</i> : null}</button>
         ))}
-        <a className="acct-tab acct-logout" href="/api/compte/logout"><span>↩</span>{t('Se déconnecter')}</a>
+        <a className="acct-tab acct-logout" href="/api/compte/logout"><span><I name="logout" size={18} /></span>{t('Se déconnecter')}</a>
       </nav>
 
       <div className="acct-main">
         {tab === 'accueil' && (<>
-          <h1>{me.firstName ? t('Bonjour {n} 👋', { n: me.firstName }) : t('Bienvenue 👋')}</h1>
+          <h1>{me.firstName ? t('Bonjour {n}', { n: me.firstName }) : t('Bienvenue')}</h1>
           <p className="muted">{t('Heureux de vous revoir. Retrouvez ici vos commandes, factures, devis et logos.')}</p>
-          {me.reseller?.status === 'valide' && <p className="okline">🏷️ {t('Revendeur validé : -10 % sur tout')}</p>}
+          {me.reseller?.status === 'valide' && <p className="okline with-ic"><I name="tag" size={16} /> {t('Revendeur validé : -10 % sur tout')}</p>}
           <div className="acct-kpis">
             <button onClick={() => go('commandes')}><b>{orders.length}</b><small>{t('commandes')}</small></button>
             <button onClick={() => go('devis')}><b>{quotes.length}</b><small>{t('devis')}</small></button>
@@ -83,10 +84,10 @@ export function AccountView() {
           )}
           <h2>{t('Raccourcis')}</h2>
           <div className="acct-quick">
-            <Link href={l('/assistant')}>✨ {t('Créer une tenue')}</Link>
-            <Link href={l('/lien-equipe')}>👥 {t('Lien d\'équipe')}</Link>
-            {logos[0] && <Link href={`${l('/assistant')}?logo=${encodeURIComponent(logos[0].id)}`}>🎨 {t('Commander avec mon logo')}</Link>}
-            <button onClick={() => go('parrainage')}>🎁 {t('Parrainer un confrère')}</button>
+            <Link href={l('/assistant')}><I name="sparkles" className="ico" /> {t('Créer une tenue')}</Link>
+            <Link href={l('/lien-equipe')}><I name="users" className="ico" /> {t('Lien d\'équipe')}</Link>
+            {logos[0] && <Link href={`${l('/assistant')}?logo=${encodeURIComponent(logos[0].id)}`}><I name="palette" className="ico" /> {t('Commander avec mon logo')}</Link>}
+            <button onClick={() => go('parrainage')}><I name="gift" className="ico" /> {t('Parrainer un confrère')}</button>
           </div>
         </>)}
 
@@ -94,7 +95,7 @@ export function AccountView() {
           <h1>{t('Mes commandes')}</h1>
           {!orders.length ? empty(t('Aucune commande pour l\'instant.'), [t('Créer une tenue'), l('/assistant')]) : orders.map((o) => (
             <article key={o.id} className="acct-card">
-              <header><b>{o.name}</b><small className="muted">{day(o.date)}</small>{o.express && <span className="st st-modif">⚡ Express</span>}<b className="acct-total">{eur(o.total, lang)}</b></header>
+              <header><b>{o.name}</b><small className="muted">{day(o.date)}</small>{o.express && <span className="st st-modif with-ic"><I name="zap" size={13} /> Express</span>}<b className="acct-total">{eur(o.total, lang)}</b></header>
               {!!o.photos?.length && <div className="qc">{o.photos.map((p) => <a key={p} href={`/api/logo/${p}?apercu`} target="_blank" rel="noopener" title={t('Photo de contrôle')}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={`/api/logo/${p}?apercu`} alt={t('Photo de contrôle')} /></a>)}</div>}
               <p className="small muted">{o.items.slice(0, 4).map((i) => `${i.quantity} × ${i.title}`).join(' · ')}{o.items.length > 4 ? ' …' : ''}</p>
               <div className="atl-files">
@@ -148,7 +149,7 @@ export function AccountView() {
             <a className="btn line small" href={`https://wa.me/?text=${encodeURIComponent(t('Je te recommande alwaan pour tes tenues pro : 20 € offerts avec mon lien {u}', { u: `https://alwaan.fr/?parrain=${me.referral}` }))}`} target="_blank" rel="noopener">WhatsApp</a></div>
           <h2>{t('Mes bons d\'achat')}</h2>
           {!me.bons?.length ? <p className="muted">{t('Vos bons apparaîtront ici dès la première commande d\'un filleul.')}</p>
-            : <div className="atl-files">{me.bons.map((b) => <span key={b.code} className={`st ${b.used ? '' : 'st-valide'}`}>🎁 {b.code} · {b.amount} € {b.used ? `(${t('utilisé')})` : ''}</span>)}</div>}
+            : <div className="atl-files">{me.bons.map((b) => <span key={b.code} className={`st ${b.used ? '' : 'st-valide'}`}><I name="gift" size={13} /> {b.code} · {b.amount} € {b.used ? `(${t('utilisé')})` : ''}</span>)}</div>}
         </>)}
 
         {tab === 'boutique' && (<>
@@ -166,7 +167,7 @@ export function AccountView() {
 
         {tab === 'revendeur' && (<>
           <h1>{t('Espace revendeur')}</h1>
-          {me.reseller?.status === 'valide' ? <p className="okline">🏷️ {t('Revendeur validé : -10 % sur tout')}</p> : <ResellerBox status={me.reseller?.status} onDone={load} />}
+          {me.reseller?.status === 'valide' ? <p className="okline with-ic"><I name="tag" size={16} /> {t('Revendeur validé : -10 % sur tout')}</p> : <ResellerBox status={me.reseller?.status} onDone={load} />}
         </>)}
       </div>
     </section>
@@ -195,7 +196,7 @@ function ResellerBox({ status, onDone }: { status?: 'en_attente' | 'valide' | 'r
       <div className="quote-box">
         <input value={company} onChange={(e) => setCompany(e.target.value)} placeholder={t('Société')} aria-label={t('Société')} />
         <input value={siret} onChange={(e) => setSiret(e.target.value)} placeholder="SIRET" aria-label="SIRET" inputMode="numeric" />
-        <label className="asst-drop small-drop"><strong>{kbis.busy ? t('Envoi…') : kbis.id ? `✓ ${kbis.name}` : t('Kbis de moins de 3 mois (PDF ou photo)')}</strong>
+        <label className="asst-drop small-drop"><strong>{kbis.busy ? t('Envoi…') : kbis.id ? kbis.name : t('Kbis de moins de 3 mois (PDF ou photo)')}</strong>
           <input type="file" accept="application/pdf,image/*" hidden onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setKbis({ busy: true }); const u = await uploadFile(f, f.name); setKbis(u.id ? { id: u.id, name: f.name } : {}); if (u.error) setMsg(t(u.error)); }} /></label>
         <button className="btn cta" disabled={busy || !company || !siret || !kbis.id} onClick={send}>{busy ? t('Envoi…') : t('Demander le statut revendeur')}</button>
         {msg && <p className="err">{msg}</p>}

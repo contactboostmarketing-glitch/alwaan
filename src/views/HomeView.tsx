@@ -8,6 +8,7 @@ import { HOME_EN_ABOUT } from '@/i18n/catalog-en';
 import { currentSeason, orderBy } from '@/lib/seasons';
 import { PACKS } from '@/lib/packs';
 import { GiftsBand } from '@/components/GiftsBand';
+import { I } from '@/components/Icons';
 
 const ABOUT_FR = [
   'alwaan imprime vos vêtements de travail et vos textiles promotionnels à votre logo : polos, t-shirts, chemises, tabliers, casquettes et vêtements haute visibilité EN ISO 20471. Nous équipons les restaurants, hôtels, commerces, artisans, entreprises du BTP et de la logistique, clubs et associations en France et en Belgique.',
@@ -22,12 +23,12 @@ export function HomeView({ lang }: { lang: Lang }) {
   const seasonVars = { '--season': season.accent, '--season-soft': season.soft } as React.CSSProperties;
   return (
     <>
-      <section className="hero" data-season={season.id} style={seasonVars}><span className="season-deco" aria-hidden="true">{season.emoji}</span><div className="wrap">
+      <section className="hero" data-season={season.id} style={seasonVars}><span className="season-deco" aria-hidden="true"><I name={season.icon} size={150} strokeWidth={1} /></span><div className="wrap">
         <div>
-          <span className="season-kicker">{season.emoji} {sc.kicker}</span>
+          <span className="season-kicker"><I name={season.icon} size={16} /> {sc.kicker}</span>
           <h1>{lang === 'en' ? <>Your workwear with <span>your logo</span>, delivered in 7 days</> : <>Vos tenues à <span>votre logo</span>, livrées en 7 jours</>}</h1>
           <p className="lead">{t('Votre logo, votre tenue en direct. Dès 1 pièce.')}</p>
-          <div className="ctas"><Link className="btn cta" href={href(lang, '/assistant')}>{t('Créer ma tenue en 1 minute')}</Link><Link className="btn line" href={href(lang, '/lien-equipe')}>👥 {t('Lien d\'équipe')}</Link></div>
+          <div className="ctas"><Link className="btn cta" href={href(lang, '/assistant')}>{t('Créer ma tenue en 1 minute')}</Link><Link className="btn line" href={href(lang, '/lien-equipe')}><I name="users" size={18} /> {t('Lien d\'équipe')}</Link></div>
           <Perks items={[['eye', t('Maquette en direct')], ['one', t('Dès 1 pièce')], ['tag', t('-40 % dès 30 pièces')]]} />
         </div>
         <div className="hero-vis">
@@ -43,15 +44,15 @@ export function HomeView({ lang }: { lang: Lang }) {
             <div className="tf-row"><b>Julie M.</b><span>M</span></div><div className="tf-row"><b>Karim B.</b><span>L</span></div><div className="tf-row"><b>Sophie D.</b><span>S</span></div><div className="tf-row new"><b>Marco R.</b><span>XL</span></div>
           </div>
           <div>
-            <span className="season-kicker">👥 {t('Exclusif alwaan')}</span>
+            <span className="season-kicker"><I name="users" size={16} /> {t('Exclusif alwaan')}</span>
             <h2>{t('Un lien, et chacun donne sa taille')}</h2>
             <p className="muted">{t('Plus de tableau de tailles : partagez un lien, votre panier se remplit tout seul.')}</p>
             <span className="btn cta">{t('Découvrir le lien d\'équipe')}</span>
           </div>
         </Link>
         <div className="advantages">
-          {([['🖼️', 'Maquette en direct', 'Votre logo sur le vêtement, en vrai'], ['✂️', 'Fond retiré tout seul', 'Votre logo prêt à imprimer'], ['✅', 'Maquette = bon à tirer', 'Imprimé exactement comme validé'], ['1️⃣', 'Dès 1 pièce', 'Et -40 % sur le marquage dès 30'], ['🏷️', 'Prénom imprimé', 'Au nom de chacun, dès 21 pièces'], ['⚡', 'Express 4 jours', 'Pour les urgences'], ['🛍️', 'Boutique club', 'Vos membres commandent seuls'], ['📸', 'Photo avant envoi', 'Contrôle de chaque commande']] as const).map(([e, b, s2]) => (
-            <div key={b} className="adv"><span>{e}</span><b>{t(b)}</b><small>{t(s2)}</small></div>
+          {([['image', 'Maquette en direct', 'Votre logo sur le vêtement, en vrai'], ['scissors', 'Fond retiré tout seul', 'Votre logo prêt à imprimer'], ['shield', 'Maquette = bon à tirer', 'Imprimé exactement comme validé'], ['one', 'Dès 1 pièce', 'Et -40 % sur le marquage dès 30'], ['tag', 'Prénom imprimé', 'Au nom de chacun, dès 21 pièces'], ['zap', 'Express 4 jours', 'Pour les urgences'], ['bag', 'Boutique club', 'Vos membres commandent seuls'], ['camera', 'Photo avant envoi', 'Contrôle de chaque commande']] as const).map(([e, b, s2]) => (
+            <div key={b} className="adv"><span className="adv-ic"><I name={e} size={22} /></span><b>{t(b)}</b><small>{t(s2)}</small></div>
           ))}
         </div>
       </div></section>
@@ -61,7 +62,7 @@ export function HomeView({ lang }: { lang: Lang }) {
           <div>
             <h2>{sc.title}</h2>
             <p className="muted">{sc.text}</p>
-            {until && <p className="season-deadline">⏰ {lang === 'en' ? `Order by ${until.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} to receive it before Christmas` : `Commandez avant le ${until.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} pour être livré avant Noël`}</p>}
+            {until && <p className="season-deadline"><I name="clock" size={16} /> {lang === 'en' ? `Order by ${until.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} to receive it before Christmas` : `Commandez avant le ${until.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} pour être livré avant Noël`}</p>}
             <Link className="btn cta" href={href(lang, '/assistant')}>{sc.cta}</Link>
           </div>
         </div>
@@ -89,7 +90,7 @@ export function HomeView({ lang }: { lang: Lang }) {
         <div className="packs">{PACKS.map((pk) => (
           <Link key={pk.id} className="pack" href={`${href(lang, '/assistant')}?pack=${pk.id}`}>
             <span className="pack-vis" aria-hidden="true">{pk.products.map((s) => { const p = PRODUCTS.find((x) => x.slug === s)!; return <Garment key={s} slug={s} color={defaultColor(p)} zones={[defaultZone(p)]} />; })}</span>
-            <strong>{pk.emoji} {pk[lang].name}</strong><small>{pk[lang].sub}</small>
+            <strong className="with-ic"><I name={pk.icon} size={18} /> {pk[lang].name}</strong><small>{pk[lang].sub}</small>
             <span className="price">{t('dès')} <Price ht={pk.products.reduce((a, s) => a + fromPrice(PRODUCTS.find((x) => x.slug === s)!), 0)} /> <small>{t('par personne')}</small></span>
           </Link>
         ))}</div>

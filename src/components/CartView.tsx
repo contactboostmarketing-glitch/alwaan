@@ -10,6 +10,7 @@ import { Garment } from './Garment';
 import { Price } from './Price';
 import { useT } from '@/i18n/client';
 import { categoryL, colorName, productL, zonesL } from '@/i18n';
+import { I } from './Icons';
 
 
 export function CartView() {
@@ -26,7 +27,7 @@ export function CartView() {
 
   if (transfer) return (
     <section className="wrap empty transfer-ok">
-      <h1>✓ {tx('Commande {n} enregistrée', { n: transfer.name })}</h1>
+      <h1 className="with-ic"><I name="check" size={28} /> {tx('Commande {n} enregistrée', { n: transfer.name })}</h1>
       <p>{tx('Montant à régler par virement')} : <b>{eur(transfer.total, lang)} {tx('TTC')}</b></p>
       {transfer.iban ? <div className="iban"><span>{tx('Bénéficiaire')} : <b>{transfer.holder}</b></span><span>IBAN : <b>{transfer.iban}</b></span>{transfer.bic && <span>BIC : <b>{transfer.bic}</b></span>}<span>{tx('Référence')} : <b>{transfer.name}</b></span></div>
         : <p className="muted">{tx('Nos coordonnées bancaires vous sont envoyées par email.')}</p>}
@@ -145,7 +146,7 @@ export function CartView() {
           {t.reseller > 0 && <div className="row save"><span>{tx('Remise revendeur -10 %')}</span><span>-<Price raw ht={t.reseller} /></span></div>}
           {t.voucher > 0 && voucher && <div className="row save"><span>{tx(voucher.kind === 'parrain' ? 'Parrainage' : 'Bon d\'achat')} {voucher.code}</span><span>-<Price raw ht={t.voucher} /></span></div>}
           {voucher && !t.voucher && <p className="muted small">{tx('Code {c} : -{a} € dès {m} € HT d\'articles', { c: voucher.code, a: voucher.amount, m: voucher.min })}</p>}
-          {t.express > 0 && <div className="row"><span>⚡ {tx('Production express')}</span><span><Price raw ht={t.express} /></span></div>}
+          {t.express > 0 && <div className="row"><span className="with-ic"><I name="zap" size={16} /> {tx('Production express')}</span><span><Price raw ht={t.express} /></span></div>}
           <div className="row"><span>{tx('Livraison')}</span><span>{t.shipping ? <Price raw ht={t.shipping} /> : tx('Offerte')}</span></div>
           {pro && <><div className="row"><span>{tx('Total HT')}</span><span>{eur(t.ht, lang)}</span></div><div className="row"><span>{tx('TVA 20 %')}</span><span>{eur(t.vat, lang)}</span></div></>}
           <div className="row tot"><span>{tx('Total TTC')}</span><span>{eur(t.ttc, lang)}</span></div>
@@ -153,17 +154,17 @@ export function CartView() {
           {t.saved > 1 && <div className="row save"><span>{tx('Vous économisez')}</span><span><Price raw ht={t.saved} /></span></div>}
           <label className={`express ${express ? 'on' : ''}`}>
             <input type="checkbox" checked={express} onChange={(e) => setExpress(e.target.checked)} />
-            <span><b>⚡ {tx('Production express')}</b><small>{tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), true), lang) })}</small></span>
+            <span className="opt-ic"><I name="zap" size={20} /></span><span><b>{tx('Production express')}</b><small>{tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), true), lang) })}</small></span>
             <b className="express-fee">+<Price raw ht={expressFee(t.pieces || 1)} /></b>
           </label>
-          {sample && t.pieces >= SAMPLE_MIN && <div className="row save"><span>🧵 {tx('Échantillon avant la série')}</span><span>{tx('Offert')} · <button className="link mutedl small" onClick={() => setSample(false)}>{tx('Retirer')}</button></span></div>}
-          <p className="eta">🚚 {tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(addBusinessDays(deliveryDate(new Date(), express), sample && t.pieces >= SAMPLE_MIN ? SAMPLE_EXTRA_DAYS : 0), lang) })}</p>
+          {sample && t.pieces >= SAMPLE_MIN && <div className="row save"><span className="with-ic"><I name="sample" size={16} /> {tx('Échantillon avant la série')}</span><span>{tx('Offert')} · <button className="link mutedl small" onClick={() => setSample(false)}>{tx('Retirer')}</button></span></div>}
+          <p className="eta"><I name="truck" size={16} /> {tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(addBusinessDays(deliveryDate(new Date(), express), sample && t.pieces >= SAMPLE_MIN ? SAMPLE_EXTRA_DAYS : 0), lang) })}</p>
           {!(promo && voucher) && (
             <div className="promo-in"><input type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder={tx('Code promo')} aria-label={tx('Code promo')} /><button className="btn line small" onClick={applyCode}>{tx('Appliquer')}</button></div>
           )}
           <label className="consent"><input type="checkbox" checked={cgv} onChange={(e) => setCgv(e.target.checked)} /><span>{tx('J\'accepte les')} <Link href="/cgv">{tx('CGV')}</Link> {tx('(articles personnalisés : pas de rétractation)')}</span></label>
           <button className="btn cta block" onClick={checkout} disabled={busy}>{tx(busy ? 'Redirection…' : 'Commander avec obligation de paiement')}</button>
-          {connected && pro && <button className="btn line block" onClick={payByTransfer} disabled={busy}>🏦 {tx('Payer par virement')}</button>}
+          {connected && pro && <button className="btn line block" onClick={payByTransfer} disabled={busy}><I name="bank" size={18} /> {tx('Payer par virement')}</button>}
           {!connected && pro && <p className="muted small">{tx('Virement possible pour les pros connectés à leur compte.')} <Link className="link" href={lk('/compte')}>{tx('Se connecter')}</Link></p>}
           {msg && <p className="err" role="alert">{msg}</p>}
           <div className="paylogos"><span>CB</span><span>Visa</span><span>Mastercard</span><span>Apple Pay</span><span>Google Pay</span></div>
@@ -195,7 +196,7 @@ function CartLine({ l, i, pool, onRemove }: { l: LineConfig; i: number; pool: nu
         <small>{colorName(lang, l.color)} · {zonesL(lang, p0).filter((z) => l.zones.includes(z.id)).map((z) => z.name).join(' + ')}{pool > q ? ` · ${tx('{n} pièces au même logo', { n: pool })}` : ''}</small>
         <small>{Object.entries(l.qty).filter(([, v]) => v).map(([s, v]) => `${s} ×${v}`).join(', ')}</small>
         <small>{logo} · {bat}</small>
-        {l.teamId && <small>👥 {tx('Liste d\'équipe')}{l.printNames && namesAllowed(l) ? ` · ${tx('prénoms imprimés')}` : ''}</small>}
+        {l.teamId && <small className="with-ic"><I name="users" size={14} /> {tx('Liste d\'équipe')}{l.printNames && namesAllowed(l) ? ` · ${tx('prénoms imprimés')}` : ''}</small>}
         <div className="acts"><Link className="link" href={`${lk(`/produits/${p.slug}`)}?modifier=${i}`}>{tx('Modifier')}</Link><button className="link mutedl" onClick={onRemove}>{tx('Supprimer')}</button></div>
       </div>
       <div className="pr"><Price raw ht={lineTotal(l, pool)} /><small>{q} pcs · <Price raw ht={unitPrice(l, pool)} suffix={false} />/pc</small></div>
@@ -229,7 +230,7 @@ function SampleOffer({ eligible, onAccept, hint }: { eligible: boolean; onAccept
   return (
     <div className="offer-back" role="dialog" aria-modal="true" aria-label={tx('Échantillon avant la série')} onClick={() => setOpen(false)}>
       <div className="offer" onClick={(e) => e.stopPropagation()}>
-        <span className="offer-emoji">🧵</span>
+        <span className="offer-ic"><I name="sample" size={30} /></span>
         <h2>{tx('Pas encore sûr ? Recevez d\'abord un échantillon')}</h2>
         <p className="muted">{tx('On imprime 1 pièce de votre commande et on vous l\'envoie. Vous validez, on lance la série. Offert.')}</p>
         <button className="btn cta block" onClick={() => { onAccept(); setOpen(false); }}>{tx('Oui, je veux mon échantillon')}</button>

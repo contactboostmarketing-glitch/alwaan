@@ -6,6 +6,7 @@ import { colorName, href, productL, tr, type Lang } from '@/i18n';
 import { SITE_URL } from '@/lib/site';
 import { Garment } from './Garment';
 import { Price } from './Price';
+import { I } from './Icons';
 
 export function JsonLd({ data }: { data: object }) {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
@@ -76,19 +77,9 @@ export function LinkChips({ title, links }: { title?: string; links: [string, st
   );
 }
 
-const ICONS: Record<string, string> = {
-  eye: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Zm10 3a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
-  one: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm1 13h-2V10H9.5V8.5L12.3 8H13v8Z',
-  tag: 'M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9Zm5-4.5A1.5 1.5 0 1 0 8 10.5 1.5 1.5 0 0 0 8 7.5Z',
-  truck: 'M2 6h11v9H2zM13 9h4l3 3v3h-7zM6 18.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm11 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z',
-  shirt: 'M8 3 3 6l2 4 2-1v12h10V9l2 1 2-4-5-3c-.5 1.7-2 3-4 3S8.5 4.7 8 3Z',
-  upload: 'M12 3 7 8h3v6h4V8h3l-5-5ZM4 17v3h16v-3h-2v1H6v-1H4Z',
-  check: 'M9.5 16.2 5.3 12l-1.4 1.4 5.6 5.6L20.1 8.4 18.7 7z',
-  lock: 'M7 10V8a5 5 0 0 1 10 0v2h1v11H6V10h1Zm2 0h6V8a3 3 0 0 0-6 0v2Z',
-  redo: 'M12 5V2L7 6l5 4V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7Z',
-};
-export function Icon({ name, size = 18 }: { name: keyof typeof ICONS | string; size?: number }) {
-  return <svg className="ico" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true"><path d={ICONS[name] || ICONS.check} fill="currentColor" /></svg>;
+/** Icône au trait (voir Icons.tsx). */
+export function Icon({ name, size = 18 }: { name: string; size?: number }) {
+  return <I name={name} size={size} className="ico" />;
 }
 
 /** Atouts en pictos + 2 ou 3 mots. */

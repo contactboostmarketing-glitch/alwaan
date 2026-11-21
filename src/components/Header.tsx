@@ -40,7 +40,7 @@ export function Header() {
           {CATEGORIES.map((c) => (
             <Link key={c.slug} href={l(`/vetements/${c.slug}`)} aria-current={path === l(`/vetements/${c.slug}`) ? 'page' : undefined}>{categoryL(lang, c).name}</Link>
           ))}
-          <Link href={l('/idees-cadeaux')} aria-current={path.startsWith(l('/idees-cadeaux')) ? 'page' : undefined}>🎁 {t('Cadeaux')}</Link>
+          <Link href={l('/idees-cadeaux')} aria-current={path.startsWith(l('/idees-cadeaux')) ? 'page' : undefined}>{t('Cadeaux')}</Link>
           <Link href={l('/devis')} aria-current={path === l('/devis') ? 'page' : undefined}>{t('Devis')}</Link>
           <Link className="menu-cta" href={l('/assistant')} aria-current={path === l('/assistant') ? 'page' : undefined}>{t('Créer ma tenue en 1 min')}</Link>
         </nav>

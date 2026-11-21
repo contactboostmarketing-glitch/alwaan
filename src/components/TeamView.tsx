@@ -9,6 +9,7 @@ import { productL } from '@/i18n';
 import { useT } from '@/i18n/client';
 import { useCart } from './CartProvider';
 import { Price } from './Price';
+import { I } from './Icons';
 
 type Member = { id: string; first: string; last: string; sizes: Record<string, string> };
 type TLine = Omit<LineConfig, 'qty'> & { sizes: string[] };
@@ -47,7 +48,7 @@ export function TeamView({ id }: { id: string }) {
       <section className="wrap bat-page narrow">
         <h1>{v.title || t('Votre tenue')}</h1>
         {v.closed ? <p className="nudge">{t('La liste est close.')}</p> : sent ? (<>
-          <p className="okline">✓ {t('Merci {n}, c\'est noté !', { n: f.first })}</p>
+          <p className="okline with-ic"><I name="check" size={16} /> {t('Merci {n}, c\'est noté !', { n: f.first })}</p>
           <button className="link" onClick={() => { setF({ first: '', last: '', sizes: {} }); setSent(false); }}>{t('Ajouter une autre personne')}</button>
         </>) : (
           <div className="quote-box">
@@ -91,7 +92,7 @@ export function TeamView({ id }: { id: string }) {
       <p className="muted">{t('Partagez ce lien : chacun donne son nom, son prénom et sa taille.')}</p>
       <input className="team-title" value={v.title} onChange={(e) => setV({ ...v, title: e.target.value })} onBlur={() => act({ title: v.title })} placeholder={t('Nom de l\'équipe (facultatif)')} aria-label={t('Nom de l\'équipe (facultatif)')} />
       <div className="asst-say"><input readOnly value={link} onFocus={(e) => e.target.select()} aria-label={t('Lien à partager')} />
-        <button onClick={() => { navigator.clipboard?.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1500); }}>{copied ? '✓' : t('Copier')}</button></div>
+        <button onClick={() => { navigator.clipboard?.writeText(link); setCopied(true); setTimeout(() => setCopied(false), 1500); }}>{copied ? <I name="check" size={16} /> : t('Copier')}</button></div>
       <div className="atl-files"><a className="btn line small" href={`https://wa.me/?text=${msg}`} target="_blank" rel="noopener">WhatsApp</a><a className="btn line small" href={`mailto:?subject=${encodeURIComponent(t('Ta taille pour la tenue'))}&body=${msg}`}>Email</a></div>
       <p className="warnline small">{t('Gardez cette page : elle seule permet de voir les réponses.')}</p>
 

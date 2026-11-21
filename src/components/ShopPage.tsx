@@ -10,6 +10,7 @@ import { colorName, productL } from '@/i18n';
 import { useT } from '@/i18n/client';
 import { useCart } from './CartProvider';
 import { Price } from './Price';
+import { I } from './Icons';
 
 type Item = { slug: string; color: string; zones: string[]; mockupId: string };
 type Shop = { slug: string; name: string; logoId: string; items: Item[] };
@@ -38,7 +39,7 @@ export function ShopPage({ slug }: { slug: string }) {
     <section className="wrap shop">
       {fresh && (
         <div className="season-card mb">
-          <h2>✓ {t('Votre boutique est en ligne')}</h2>
+          <h2 className="with-ic"><I name="check" size={22} /> {t('Votre boutique est en ligne')}</h2>
           <p className="muted small">{t('Partagez ce lien à vos membres :')}</p>
           <div className="asst-say"><input readOnly value={link} onFocus={(e) => e.target.select()} aria-label={t('Lien à partager')} /><button onClick={() => navigator.clipboard?.writeText(link)}>{t('Copier')}</button></div>
         </div>

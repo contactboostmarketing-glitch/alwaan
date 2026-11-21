@@ -15,6 +15,7 @@ import { useCart } from './CartProvider';
 import { Garment } from './Garment';
 import { Price } from './Price';
 import { RetailMode } from './RetailMode';
+import { I } from './Icons';
 
 async function svgToPng(svg: string, size = 2000): Promise<Blob> {
   const img = new Image();
@@ -89,7 +90,7 @@ export function DesignStudio({ id }: { id: string }) {
             <label className="consent bat"><input type="checkbox" checked={ok} onChange={(e) => setOk(e.target.checked)} /><span>{t('Je valide ma maquette')} <b>{t('(bon à tirer)')}</b></span></label>
             <button className="btn cta" disabled={busy} onClick={submit}>{busy ? t('Enregistrement de la maquette…') : t('Ajouter au panier')}</button>
             {msg && <p className="err">{msg}</p>}
-            {added && <p className="okline">✓ {t('Ajouté au panier')} · <Link href={l('/panier')}>{t('Voir le panier')}</Link></p>}
+            {added && <p className="okline with-ic"><I name="check" size={16} /> {t('Ajouté au panier')} · <Link href={l('/panier')}>{t('Voir le panier')}</Link></p>}
           </div>
         </div>
       </div>

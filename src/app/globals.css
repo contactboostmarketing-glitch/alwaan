@@ -562,3 +562,34 @@ footer.site{background:var(--soft);margin-top:40px;padding-block:32px;font-size:
   .acct-main{grid-row:2}
   .acct-kpis{grid-template-columns:repeat(2,1fr)}
 }
+/* Icônes au trait : alignement et couleurs cohérentes */
+.ico{flex:none;vertical-align:-3px;color:var(--blue)}
+.with-ic{display:inline-flex;align-items:center;gap:6px}
+h1.with-ic,h2.with-ic{display:flex}
+.with-ic svg{flex:none}
+.adv-ic,.occ-ic,.step-ic,.opt-ic,.offer-ic{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#fff;color:var(--blue);border:1px solid #dfe6f3}
+.adv-ic{margin-bottom:6px}
+.occasion .occ-ic{grid-row:span 2;width:42px;height:42px;font-size:inherit}
+.steps-ic .step-ic{margin-bottom:4px}
+.team-cta .opt-ic{width:48px;height:48px;background:#eef3ff;border-color:#d6e2fb}
+.express .opt-ic{width:36px;height:36px;color:var(--cta)}
+.offer-ic{width:56px;height:56px;margin:0 auto;color:var(--cta);border-color:#f3cde0;background:#fdf0f6}
+.season-kicker{display:inline-flex;align-items:center;gap:6px}
+.season-kicker svg{color:var(--season,var(--blue))}
+.season-deco{opacity:.09;color:var(--season,#2b63d9);top:14px;right:6px}
+.season-deadline{display:flex;align-items:center;gap:6px}
+.event-title{display:flex;align-items:center;gap:8px}
+.event-title svg,.gifts-strip svg{color:var(--cta)}
+.gifts-strip{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pack strong.with-ic svg{color:var(--blue)}
+.acct-tab span{display:grid;place-items:center;color:var(--muted)}
+.acct-tab[aria-current="page"] span{color:var(--blue)}
+.acct-perks li{display:flex;align-items:center;gap:8px}
+.acct-quick a,.acct-quick button{display:flex;align-items:center;gap:8px}
+.ztile .tick,.asst-opt .tick{display:grid;place-items:center}
+.sw-big .star{display:grid;place-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.block{display:flex}
+.team-link{display:flex;align-items:center;justify-content:center;gap:8px}
+.eta{display:flex;align-items:center;gap:6px}
+.nudge.ok{display:flex;align-items:center;gap:6px}

@@ -8,6 +8,7 @@ import { colorName, productL } from '@/i18n';
 import { useT } from '@/i18n/client';
 import { Garment } from './Garment';
 import { CutoutChoice, useLogo } from './LogoCutout';
+import { I } from './Icons';
 
 type Item = { slug: string; color: string; back: boolean };
 
@@ -53,13 +54,13 @@ export function ShopEditor() {
       <h1>{t('Créer une boutique')}</h1>
       <p className="muted small">{t('Vos membres commandent et paient eux-mêmes. Vous recevez 10 % des ventes en bons d\'achat.')}</p>
       <input className="team-title" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('Nom du club ou de l\'entreprise')} aria-label={t('Nom du club ou de l\'entreprise')} maxLength={60} />
-      <label className="asst-drop small-drop"><strong>{logo?.busy ? t('Préparation du logo…') : logo?.id ? `✓ ${logo.name}` : t('Envoyer mon logo')}</strong>
+      <label className="asst-drop small-drop"><strong>{logo?.busy ? t('Préparation du logo…') : logo?.id ? logo.name : t('Envoyer mon logo')}</strong>
         <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onChange={(e) => e.target.files?.[0] && pick(e.target.files[0])} /></label>
       <CutoutChoice logo={logo} choose={choose} />
 
       <h2>{t('Articles de la boutique')}</h2>
       <div className="zones">{PRODUCTS.map((p) => { const on = items.some((i) => i.slug === p.slug); return (
-        <button key={p.slug} className="ztile" aria-pressed={on} onClick={() => toggle(p.slug)}>{on && <span className="tick">✓</span>}
+        <button key={p.slug} className="ztile" aria-pressed={on} onClick={() => toggle(p.slug)}>{on && <span className="tick"><I name="check" size={12} strokeWidth={3} /></span>}
           <Garment slug={p.slug} color={defaultColor(p)} zones={[defaultZone(p)]} logo={logo?.preview} /><b>{productL(lang, p).name}</b><small>{CATEGORIES.find((c) => c.slug === p.category)?.name}</small></button>
       ); })}</div>
 
