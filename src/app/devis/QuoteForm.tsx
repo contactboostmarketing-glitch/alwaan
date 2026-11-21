@@ -13,7 +13,7 @@ export function QuoteForm() {
     const r = await fetch('/api/devis', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).catch(() => null);
     setState(r?.ok ? 'ok' : 'error');
   };
-  if (state === 'ok') return <p className="nudge ok mt">{t('Demande envoyée. Nous vous répondons sous 2 h ouvrées.')}</p>;
+  if (state === 'ok') return <p className="nudge ok mt">{t('Demande envoyée. Nous vous répondons sous 24 h ouvrées.')}</p>;
   return (
     <form className="form" onSubmit={onSubmit}>
       <input type="text" name="company" placeholder={t('Société ou association')} aria-label={t('Société')} required />

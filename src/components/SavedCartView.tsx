@@ -9,7 +9,7 @@ import { qtyOf, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
 
-type Saved = { kind: 'commande' | 'devis' | 'relance'; promo?: string | null; lines: LineConfig[]; quote?: { number: string; validUntil: string } };
+type Saved = { kind: 'commande' | 'devis' | 'relance' | 'partage'; promo?: string | null; lines: LineConfig[]; quote?: { number: string; validUntil: string } };
 
 export function SavedCartView({ id }: { id: string }) {
   const [c, setC] = useState<Saved | null>(null);
@@ -47,12 +47,12 @@ export function SavedCartView({ id }: { id: string }) {
   };
   return (
     <section className="wrap bat-page">
-      <h1>{c.kind === 'devis' ? `Devis ${c.quote?.number}` : c.kind === 'relance' ? 'Votre panier vous attend' : 'Recommander'}</h1>
-      <p className="muted">{c.kind === 'devis' ? 'Votre devis, prêt à commander.' : c.kind === 'relance' ? (relanceCode ? `Code ${relanceCode.toUpperCase()} : -10 % appliqué au panier.` : 'Votre logo et votre maquette validée sont gardés.') : 'Même logo, même maquette. Ajustez les tailles dans le panier.'}</p>
+      <h1>{c.kind === 'devis' ? `Devis ${c.quote?.number}` : c.kind === 'relance' ? 'Votre panier vous attend' : c.kind === 'partage' ? 'Maquette à valider' : 'Recommander'}</h1>
+      <p className="muted">{c.kind === 'devis' ? 'Votre devis, prêt à commander.' : c.kind === 'relance' ? (relanceCode ? `Code ${relanceCode.toUpperCase()} : -10 % appliqué au panier.` : 'Votre logo et votre maquette validée sont gardés.') : c.kind === 'partage' ? 'On vous a partagé cette tenue. Si elle vous convient, ajoutez-la au panier pour la commander.' : 'Même logo, même maquette. Ajustez les tailles dans le panier.'}</p>
       <div className="atl-items">{c.lines.map((l, i) => {
         const p = getProduct(l.slug);
         return p && (
-          <figure key={i}><Garment slug={l.slug} color={l.color} zones={l.zones} logo={l.logoId ? previews[l.logoId] : undefined} text={l.text} />
+          <figure key={i}><Garment slug={l.slug} color={l.color} zones={l.zones} logo={l.logoId ? previews[l.logoId] : undefined} text={l.text} text2={l.text2} textFont={l.textFont} textColor={l.textColor} zoneText={l.zoneText} />
             <figcaption><b>{qtyOf(l)} × {p.name}</b><small>{COLOR_NAMES[l.color]} · {zonesFor(p).filter((z) => l.zones.includes(z.id)).map((z) => z.name).join(' + ')}</small></figcaption></figure>
         );
       })}</div>

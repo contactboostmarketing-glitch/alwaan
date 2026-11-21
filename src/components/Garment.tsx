@@ -1,4 +1,4 @@
-import { getProduct, zonesFor, type Shape } from '@/lib/catalog';
+import { fontCss, getProduct, zonesFor, type Shape } from '@/lib/catalog';
 
 const PATHS: Record<Shape, string> = {
   tee: 'M70 40 L112 25 Q130 45 148 25 L190 40 L235 80 L210 115 L185 100 L185 230 L75 230 L75 100 L50 115 L25 80 Z',
@@ -23,13 +23,17 @@ type Props = {
   zones?: string[];
   logo?: string;
   text?: string;
+  text2?: string;
+  textFont?: string;
+  textColor?: string;
+  zoneText?: Record<string, string>;
   className?: string;
   width?: number; // taille en pixels (export PNG)
   height?: number;
 };
 
 /** Dessin vectoriel du vêtement avec les marquages. À remplacer par les photos détourées de chaque coloris. */
-export function Garment({ slug, color, view = 'front', zones = [], logo, text, className, width, height }: Props) {
+export function Garment({ slug, color, view = 'front', zones = [], logo, text, text2, textFont, textColor, zoneText, className, width, height }: Props) {
   const prod = getProduct(slug);
   if (!prod) return null;
   const s = prod.shape;
@@ -47,6 +51,10 @@ export function Garment({ slug, color, view = 'front', zones = [], logo, text, c
       {s === 'shirt' && view === 'front' && <path d="M130 48 L130 232" stroke={shade} strokeWidth="2" />}
       {marks.map((z) => {
         const cx = z.x * 2.6, cy = z.y * 2.5, w = z.w * 2.6;
+        const zt = zoneText?.[z.id];
+        if (zt) return (
+          <text key={z.id} x={cx} y={cy + w * 0.06} textAnchor="middle" fontFamily={fontCss(textFont)} fontWeight={700} fontSize={Math.max(7, Math.min(w * 0.22, (w * 1.6) / Math.max(4, zt.length)))} fill={textColor || ink}>{zt}</text>
+        );
         return (
           <g key={z.id}>
             {logo ? (
@@ -55,7 +63,10 @@ export function Garment({ slug, color, view = 'front', zones = [], logo, text, c
               <path d={`M${cx} ${cy - w * 0.32} L${cx + w * 0.22} ${cy + w * 0.08} L${cx + w * 0.08} ${cy + w * 0.08} L${cx} ${cy - w * 0.08} L${cx - w * 0.08} ${cy + w * 0.08} L${cx - w * 0.22} ${cy + w * 0.08} Z`} fill={ink} />
             )}
             {text && (
-              <text x={cx} y={cy + w * 0.3} textAnchor="middle" fontFamily="Oswald, sans-serif" fontWeight={600} fontSize={Math.max(6, w * 0.13)} fill={ink}>{text}</text>
+              <text x={cx} y={cy + w * 0.3} textAnchor="middle" fontFamily={fontCss(textFont)} fontWeight={600} fontSize={Math.max(6, w * 0.13)} fill={textColor || ink}>{text}</text>
+            )}
+            {text2 && (
+              <text x={cx} y={cy + w * 0.3 + Math.max(6, w * 0.13) * 1.15} textAnchor="middle" fontFamily={fontCss(textFont)} fontWeight={600} fontSize={Math.max(5, w * 0.11)} fill={textColor || ink}>{text2}</text>
             )}
           </g>
         );

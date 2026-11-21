@@ -2,8 +2,8 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CATEGORIES, CLASH, COLOR_NAMES, MAX_DISCOUNT, PRODUCTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor, defaultZone } from '@/lib/catalog';
-import { lineTotal, logoKey, qtyOf, unitAt, type LineConfig } from '@/lib/pricing';
+import { CATEGORIES, CLASH, COLOR_NAMES, MAX_DISCOUNT, PRODUCTS, TEXT_COLORS, TEXT_FONTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor, defaultZone } from '@/lib/catalog';
+import { cartTotals, lineTotal, logoKey, qtyOf, unitAt, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
 import { Price } from './Price';
@@ -11,7 +11,7 @@ import { CutoutChoice, ReworkOption, useLogo } from './LogoCutout';
 import { Perks } from './ui';
 import { useT } from '@/i18n/client';
 import { categoryL, colorName, productL, zonesL } from '@/i18n';
-import { snapshot, uploadMockup } from '@/lib/mockup';
+import { snapshot, toDataUrl, uploadMockup } from '@/lib/mockup';
 import { track } from '@/lib/track';
 import { deliveryDate, fmtDay } from '@/lib/delivery';
 import { ON_ORDER_DAYS, available, colorStocked, shortSizes } from '@/lib/stockTypes';
@@ -59,11 +59,22 @@ export function Configurator({ slug }: { slug: string }) {
   const pL = productL(lang, p);
   const zones = zonesL(lang, p);
   const pcs = (n: number) => t(n > 1 ? '{n} pièces' : '{n} pièce', { n });
-  const { add, update, lines } = useCart();
+  const { add, update, lines, connected } = useCart();
   const router = useRouter();
   const params = useSearchParams();
   const edit = params.get('modifier');
   const sameLogo = params.get('meme-logo') !== null;
+  // « Mes logos » de l'espace client : réutilisés tels quels (déjà préparés pour l'impression).
+  const [myLogos, setMyLogos] = useState<{ id: string }[] | null>(null);
+  const pickMyLogo = async (id: string) => {
+    if (!/^[a-f0-9]{32}\.[a-z]{2,5}$/.test(id)) return;
+    const src = await toDataUrl(`/api/logo/${id}?apercu`);
+    if (!src) return;
+    setApproved(false);
+    setCfg((c) => ({ ...c, logo: src, logoName: 'logo', logoId: id, logoSourceId: id, logoStatus: 'uploaded', logoLowRes: false, zones: c.zones.length ? c.zones : [defaultZone(p)] }));
+  };
+  useEffect(() => { const id = params.get('logo'); if (id) pickMyLogo(id); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const openMyLogos = () => fetch('/api/compte/me').then((r) => r.json()).then((d) => setMyLogos(Array.isArray(d?.logos) ? d.logos : [])).catch(() => setMyLogos([]));
   const [added, setAdded] = useState(false);
   const editIndex = edit !== null && lines[Number(edit)]?.slug === slug ? Number(edit) : null;
 
@@ -100,6 +111,22 @@ export function Configurator({ slug }: { slug: string }) {
   }, [sameLogo, lines.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const q = qtyOf(cfg);
+  // Plusieurs couleurs dans la même configuration : même logo, mêmes emplacements, une ligne de panier par couleur.
+  const [extra, setExtra] = useState<{ color: string; qty: Record<string, number> }[]>([]);
+  const extraQ = extra.reduce((a, e) => a + qtyOf({ qty: e.qty }), 0);
+  const variants = [...extra.filter((e) => e.color !== cfg.color), ...(q ? [{ color: cfg.color, qty: cfg.qty }] : [])];
+  const zeroQty = () => Object.fromEntries(Object.keys(cfg.qty).map((k) => [k, 0]));
+  const addColor = () => {
+    const next = p.colors.find((c) => c !== cfg.color && !extra.some((e) => e.color === c));
+    if (!next) return;
+    setExtra([...extra.filter((e) => e.color !== cfg.color), { color: cfg.color, qty: cfg.qty }]);
+    set({ color: next, qty: zeroQty() }); setApproved(false);
+  };
+  const editColor = (c: string) => {
+    const e = extra.find((x) => x.color === c); if (!e) return;
+    setExtra([...extra.filter((x) => x.color !== c && x.color !== cfg.color), ...(q ? [{ color: cfg.color, qty: cfg.qty }] : [])]);
+    set({ color: e.color, qty: e.qty });
+  };
   const blank = cfg.logoStatus === 'blank';
   const short = shortSizes(stock, { slug, color: cfg.color, qty: cfg.qty });
   const stockHint = (size: string) => {
@@ -111,7 +138,7 @@ export function Configurator({ slug }: { slug: string }) {
   // Pièces du panier qui portent déjà ce logo : elles comptent pour la remise marquage.
   const others = cfg.logoId || cfg.logoStatus === 'text'
     ? lines.reduce((a, l, i) => a + (i !== editIndex && logoKey(l) === logoKey(cfg) ? qtyOf(l) : 0), 0) : 0;
-  const pool = q + others;
+  const pool = q + others + extraQ;
   const cur = tierFor(pool);
   const nt = nextTier(pool);
   const at = (n: number) => unitAt(cfg, n);
@@ -150,7 +177,7 @@ export function Configurator({ slug }: { slug: string }) {
   };
   // forTeam : la liste d'équipe fixe les quantités ensuite, elles ne sont pas exigées ici.
   const submit = async (forTeam = false) => {
-    if (!q && !forTeam) { fail('qty', t('Indiquez au moins une pièce')); return; }
+    if (!q && !extraQ && !forTeam) { fail('qty', t('Indiquez au moins une pièce')); return; }
     if (blank) {
       // Textile vierge : pas de maquette ni de validation, on ajoute directement.
       const item: LineConfig = { slug, color: cfg.color, zones: [], qty: cfg.qty, logoStatus: 'blank' };
@@ -164,10 +191,11 @@ export function Configurator({ slug }: { slug: string }) {
         return;
       }
       if (editIndex !== null) { update(editIndex, item); router.push(l('/panier')); return; }
-      add(item);
-      track('add_to_cart', { value: lineTotal(item, pool), items: [{ item_id: p.slug, item_name: p.name, quantity: q }] });
+      for (const v of variants) add({ ...item, ...v });
+      track('add_to_cart', { value: variants.reduce((a, v) => a + lineTotal({ ...item, ...v }, pool), 0), items: [{ item_id: p.slug, item_name: p.name, quantity: q + extraQ }] });
+      setExtra([]);
       setAdded(true); setJustAdded(true);
-      flash(t('Ajouté au panier : {q} × {name}', { q, name: pL.name }));
+      flash(t('Ajouté au panier : {q} × {name}', { q: q + extraQ, name: pL.name }));
       return;
     }
     if (!cfg.zones.length) { fail('zones', t('Choisissez au moins un emplacement')); return; }
@@ -175,12 +203,23 @@ export function Configurator({ slug }: { slug: string }) {
     if (cfg.logoStatus === 'uploaded' && lg?.hasBg && !lg.decided && !cfg.logoRework) { fail('logo', t('Votre logo a un fond : choisissez avec ou sans fond.')); return; }
     if (cfg.logoStatus === 'uploaded' && !cfg.logoId) { fail('logo', t('Ajoutez votre logo, ou choisissez « Texte seul ».')); return; }
     if (cfg.logoStatus === 'text' && !cfg.text?.trim()) { fail('logo', t('Écrivez le texte à imprimer.')); return; }
+    if (cfg.zoneText && Object.values(cfg.zoneText).some((v) => !v.trim())) { fail('zones', t('Écrivez le texte de chaque emplacement, ou choisissez « Logo ».')); return; }
     if (!approved) { fail('bat', t('Cochez la validation de votre maquette.')); return; }
     // La maquette validée est figée en image et jointe à la commande (BAT).
     setSaving(true);
-    const svgs = Array.from(shots.current?.querySelectorAll('svg') ?? []) as SVGSVGElement[];
-    const png = await snapshot(svgs, `${p.name} · ${COLOR_NAMES[cfg.color]} · ${zonesFor(p).filter((z) => cfg.zones.includes(z.id)).map((z) => z.name).join(' + ')}`).catch(() => null);
-    const mockupId = png ? await uploadMockup(png) : null;
+    // Une maquette (BAT) par couleur commandée.
+    const shot = async (color: string) => {
+      const svgs = Array.from(shots.current?.querySelectorAll(`[data-c="${color}"] svg`) ?? []) as SVGSVGElement[];
+      const png = await snapshot(svgs, `${p.name} · ${COLOR_NAMES[color]} · ${zonesFor(p).filter((z) => cfg.zones.includes(z.id)).map((z) => z.name).join(' + ')}`).catch(() => null);
+      return png ? uploadMockup(png) : null;
+    };
+    const mockupId = await shot(cfg.color);
+    const extraItems: LineConfig[] = [];
+    if (!forTeam && editIndex === null) for (const v of variants.filter((v) => v.color !== cfg.color)) {
+      const id = await shot(v.color);
+      if (!id) { setSaving(false); flash(t('Enregistrement de la maquette impossible. Réessayez.')); return; }
+      extraItems.push({ ...cfg, ...v, mockupId: id, approvedAt: new Date().toISOString() });
+    }
     setSaving(false);
     if (!mockupId) { flash(t('Enregistrement de la maquette impossible. Réessayez.')); return; }
     const item = { ...cfg, mockupId, approvedAt: new Date().toISOString() };
@@ -196,11 +235,29 @@ export function Configurator({ slug }: { slug: string }) {
       return;
     }
     if (editIndex !== null) { update(editIndex, item); router.push(l('/panier')); return; }
-    add(item);
-    track('add_to_cart', { value: lineTotal(item, pool), items: [{ item_id: p.slug, item_name: p.name, quantity: qtyOf(item) }] });
+    const all = [...extraItems, ...(q ? [item] : [])];
+    for (const it of all) add(it);
+    track('add_to_cart', { value: all.reduce((a, it) => a + lineTotal(it, pool), 0), items: [{ item_id: p.slug, item_name: p.name, quantity: q + extraQ }] });
+    setExtra([]);
     setApproved(false);
     setAdded(true); setJustAdded(true);
-    flash(t('Ajouté au panier : {q} × {name}', { q, name: pL.name }));
+    flash(t('Ajouté au panier : {q} × {name}', { q: q + extraQ, name: pL.name }));
+  };
+  // Lien à envoyer au responsable : il ouvre la même tenue et peut la commander.
+  const share = async () => {
+    if (!q) { fail('qty', t('Indiquez au moins une pièce')); return; }
+    if (cfg.logoStatus === 'uploaded' && !cfg.logoId) { fail('logo', t('Ajoutez votre logo, ou choisissez « Texte seul ».')); return; }
+    setSaving(true);
+    const svgs = Array.from(shots.current?.querySelectorAll(`[data-c="${cfg.color}"] svg`) ?? []) as SVGSVGElement[];
+    const png = await snapshot(svgs, `${p.name} · ${COLOR_NAMES[cfg.color]}`).catch(() => null);
+    const mockupId = png ? await uploadMockup(png) : null;
+    const r = await fetch('/api/panier', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lines: [{ ...cfg, logo: undefined, mockupId }] }) }).catch(() => null);
+    const d = r?.ok ? await r.json() : null;
+    setSaving(false);
+    if (!d?.url) { flash(t('Partage impossible. Réessayez.')); return; }
+    const text = t('Peux-tu valider cette tenue ?');
+    if (navigator.share) { navigator.share({ title: 'alwaan', text, url: d.url }).catch(() => {}); return; }
+    try { await navigator.clipboard.writeText(d.url); flash(t('Lien copié : collez-le dans un email ou un message.')); } catch { window.prompt(t('Lien à partager'), d.url); }
   };
   const hasBack = zones.some((z) => z.view === 'back');
   const err = (at: 'logo' | 'zones' | 'qty' | 'bat') => (fieldErr?.at === at ? <p className="err small field-err" role="alert">{fieldErr.msg}</p> : null);
@@ -209,7 +266,7 @@ export function Configurator({ slug }: { slug: string }) {
   return (
     <div className="pdp">
       <div className="gallery">
-        <div className="stage"><Garment slug={slug} color={cfg.color} view={view} zones={cfg.zones} logo={cfg.logo} text={cfg.text} /></div>
+        <div className="stage"><Garment slug={slug} color={cfg.color} view={view} zones={cfg.zones} logo={cfg.logo} text={cfg.text} text2={cfg.text2} textFont={cfg.textFont} textColor={cfg.textColor} zoneText={cfg.zoneText} /></div>
         {hasBack && (
           <div className="seg" role="group" aria-label="Vue">
             <button aria-pressed={view === 'front'} onClick={() => setView('front')}>{t('Face')}</button>
@@ -217,8 +274,10 @@ export function Configurator({ slug }: { slug: string }) {
           </div>
         )}
         <div ref={shots} className="offscreen" aria-hidden="true">
-          <Garment slug={slug} color={cfg.color} view="front" zones={cfg.zones} logo={cfg.logo} text={cfg.text} />
-          {zones.some((z) => z.view === 'back' && cfg.zones.includes(z.id)) ? <Garment slug={slug} color={cfg.color} view="back" zones={cfg.zones} logo={cfg.logo} text={cfg.text} /> : null}
+          {[cfg.color, ...extra.map((e) => e.color).filter((c) => c !== cfg.color)].map((color) => (<div key={color} data-c={color}>
+          <Garment slug={slug} color={color} view="front" zones={cfg.zones} logo={cfg.logo} text={cfg.text} text2={cfg.text2} textFont={cfg.textFont} textColor={cfg.textColor} zoneText={cfg.zoneText} />
+          {zones.some((z) => z.view === 'back' && cfg.zones.includes(z.id)) ? <Garment slug={slug} color={color} view="back" zones={cfg.zones} logo={cfg.logo} text={cfg.text} text2={cfg.text2} textFont={cfg.textFont} textColor={cfg.textColor} zoneText={cfg.zoneText} /> : null}
+        </div>))}
         </div>
       </div>
 
@@ -234,6 +293,15 @@ export function Configurator({ slug }: { slug: string }) {
           <div className="swatches">
             {p.colors.map((c) => <button key={c} className={`sw ${colorStocked(stock, slug, c) ? '' : 'on-order'}`} style={{ background: c }} aria-label={`${colorName(lang, c)}${colorStocked(stock, slug, c) ? '' : ` · ${t('sur commande')}`}`} title={colorStocked(stock, slug, c) ? undefined : t('Sur commande')} aria-pressed={c === cfg.color} onClick={() => set({ color: c })} />)}
           </div>
+          {editIndex === null && (extra.length > 0 || q > 0) && (
+            <div className="multi-c">
+              {extra.filter((e) => e.color !== cfg.color).map((e) => (
+                <span key={e.color} className="mc-chip"><i style={{ background: e.color }} /><button className="link small" onClick={() => editColor(e.color)}>{colorName(lang, e.color)} · {pcs(qtyOf({ qty: e.qty }))}</button><button aria-label={t('Retirer {s}', { s: colorName(lang, e.color) })} onClick={() => setExtra(extra.filter((x) => x.color !== e.color))}>×</button></span>
+              ))}
+              {q > 0 && p.colors.length > extra.length + 1 && <button className="btn line small" onClick={addColor}>{t('+ Ajouter une autre couleur')}</button>}
+              {extra.length > 0 && <small className="muted">{t('En cours : {c}. Toutes les couleurs comptent pour la remise.', { c: colorName(lang, cfg.color) })}</small>}
+            </div>
+          )}
           {!colorStocked(stock, slug, cfg.color) && <p className="order-note"><I name="clock" size={15} /> {t('Couleur sur commande : +{n} jours ouvrés', { n: ON_ORDER_DAYS })}</p>}
         </div>
 
@@ -249,6 +317,10 @@ export function Configurator({ slug }: { slug: string }) {
             <small>{t(uploading ? 'Préparation du logo…' : cfg.logoStatus === 'uploaded' && cfg.logo ? 'Touchez pour remplacer' : 'PNG, JPG ou SVG')}</small>
             <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden onChange={(e) => onFile(e.target.files?.[0])} />
           </label>
+          {connected && cfg.logoStatus !== 'text' && (myLogos === null
+            ? <button className="link small" onClick={openMyLogos}><I name="palette" size={16} /> {t('Choisir un de mes logos')}</button>
+            : myLogos.length ? <div className="mylogos" role="group" aria-label={t('Mes logos')}>{myLogos.slice(0, 8).map((g) => <button key={g.id} aria-pressed={cfg.logoId === g.id} onClick={() => pickMyLogo(g.id)}><img src={`/api/logo/${g.id}?apercu`} alt={t('Mon logo')} /></button>)}</div>
+            : <p className="muted small">{t('Aucun logo enregistré pour l\'instant.')}</p>)}
           <div className="opts">
             <CutoutChoice logo={cfg.logoStatus === 'uploaded' ? lg : null} choose={choose} />
             <ReworkOption logo={cfg.logoStatus === 'uploaded' ? lg : null} on={!!cfg.logoRework} set={(v) => set({ logoRework: v })} />
@@ -256,6 +328,14 @@ export function Configurator({ slug }: { slug: string }) {
             {cfg.logoLowRes && <p className="warnline">{t('Logo peu net : envoyez une version plus grande, ou confiez-le au graphiste.')}</p>}
           </div>
           <input type="text" value={cfg.text} maxLength={24} placeholder={t(cfg.logoStatus === 'text' ? 'Texte à imprimer (nom, slogan…)' : 'Texte facultatif sous le logo')} aria-label={t('Texte sous le logo')} onChange={(e) => set({ text: e.target.value })} />
+          {!!cfg.text?.trim() && (<div className="txt-opts">
+            <input type="text" value={cfg.text2 || ''} maxLength={24} placeholder={t('2e ligne (facultatif)')} aria-label={t('2e ligne de texte')} onChange={(e) => set({ text2: e.target.value })} />
+            <div className="seg" role="group" aria-label={t('Police')}>{TEXT_FONTS.map(([k, css]) => <button key={k} aria-pressed={(cfg.textFont || 'oswald') === k} style={{ fontFamily: css }} onClick={() => set({ textFont: k })}>Abc</button>)}</div>
+            <div className="swatches small-sw" role="group" aria-label={t('Couleur du texte')}>
+              <button className="sw auto" aria-pressed={!cfg.textColor} aria-label={t('Automatique')} onClick={() => set({ textColor: undefined })}>A</button>
+              {TEXT_COLORS.map((c) => <button key={c} className="sw" style={{ background: c }} aria-pressed={cfg.textColor === c} aria-label={c} onClick={() => set({ textColor: c })} />)}
+            </div>
+          </div>)}
           {err('logo')}
           </>)}
         </div>
@@ -268,13 +348,32 @@ export function Configurator({ slug }: { slug: string }) {
               return (
                 <button key={z.id} className="ztile" aria-pressed={on} aria-label={`${z.name}, ${z.size}`} title={`${z.name} · ${z.size}`} onClick={() => toggleZone(z.id)}>
                   {on && <span className="tick"><I name="check" size={12} strokeWidth={3} /></span>}
-                  <Garment slug={slug} color={cfg.color} view={z.view} zones={[z.id]} logo={cfg.logo} text={cfg.logoStatus === 'text' ? cfg.text : undefined} />
+                  <Garment slug={slug} color={cfg.color} view={z.view} zones={[z.id]} logo={cfg.logo} text={cfg.logoStatus === 'text' ? cfg.text : undefined} textFont={cfg.textFont} textColor={cfg.textColor} zoneText={cfg.zoneText} />
                   <b>{z.name}</b><small>+<Price ht={z.price} suffix={false} /></small>
                 </button>
               );
             })}
           </div>
           {err('zones')}
+          {cfg.logoStatus === 'uploaded' && cfg.zones.length > 1 && (
+            <div className="zone-content">
+              <small className="muted">{t('Contenu de chaque emplacement')}</small>
+              {zones.filter((z) => cfg.zones.includes(z.id)).map((z) => {
+                const txt = cfg.zoneText?.[z.id];
+                const setZt = (v: string | undefined) => { const zt = { ...(cfg.zoneText || {}) }; if (v === undefined) delete zt[z.id]; else zt[z.id] = v; set({ zoneText: Object.keys(zt).length ? zt : undefined }); setView(z.view); };
+                return (
+                  <div key={z.id} className="zc-row">
+                    <b>{z.name}</b>
+                    <div className="seg" role="group" aria-label={z.name}>
+                      <button aria-pressed={txt === undefined} onClick={() => setZt(undefined)}>{t('Logo')}</button>
+                      <button aria-pressed={txt !== undefined} onClick={() => setZt(txt ?? '')}>{t('Texte')}</button>
+                    </div>
+                    {txt !== undefined && <input type="text" value={txt} maxLength={30} placeholder={t('Ex. www.votresite.fr')} aria-label={t('Texte : {z}', { z: z.name })} onChange={(e) => setZt(e.target.value)} />}
+                  </div>
+                );
+              })}
+            </div>
+          )}
           {hasBack && !cfg.zones.includes('back') && (
             <div className="nudge"><span>{t('Visible de loin ?')}</span><button className="btn line small" onClick={() => toggleZone('back')}>{t('+ Logo au dos')}</button></div>
           )}
@@ -312,9 +411,9 @@ export function Configurator({ slug }: { slug: string }) {
         </div>}
         <div className="addrow">
           <div>
-            {q ? (<>
-              <small className="muted">{pcs(q)} · <Price ht={at(pool)} /> / {t('pièce')}</small>
-              <div className="tot"><Price ht={lineTotal(cfg, pool)} /></div>
+            {q || extraQ ? (<>
+              <small className="muted">{pcs(q + extraQ)}{variants.length > 1 ? ` · ${t('{n} couleurs', { n: variants.length })}` : ''} · <Price ht={at(pool)} /> / {t('pièce')}</small>
+              <div className="tot"><Price ht={variants.reduce((a, v) => a + lineTotal({ ...cfg, ...v }, pool), 0)} /></div>
             </>) : (<>
               <div className="tot"><Price ht={at(pool)} /> <small className="muted">/ {t('pièce')}</small></div>
               <small className="muted">{t('Choisissez vos tailles')}</small>
@@ -330,12 +429,21 @@ export function Configurator({ slug }: { slug: string }) {
         <div className="addrow-extra">
           <p className="eta"><I name="truck" size={16} /> {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), false, short.length > 0, blank), lang) })}{!blank && <> · <span className="muted">{t('express possible')}</span></>}</p>
           {editIndex === null && <button className="link small team-link" onClick={() => submit(true)} disabled={saving}><I name="users" size={18} /> {t('Récupérer les noms et tailles de l\'équipe par un lien')}</button>}
+          {!blank && editIndex === null && <button className="link small" onClick={share} disabled={saving}><I name="users" size={18} /> {t('Partager ma maquette pour la faire valider')}</button>}
           <button className="link small" onClick={() => window.dispatchEvent(new Event('alwaan:chat'))}><I name="sparkles" size={18} /> {t('Une question ? Le conseiller vous répond')}</button>
         </div>
         <Perks items={[['eye', t('Imprimé comme la maquette')], ['lock', t('Paiement sécurisé')], ['redo', t('Défaut refait')], ['truck', t('Expédié en 7 jours ouvrés')], ['home', t('Imprimé dans le Nord')]]} />
       </div>
       {added && <SameLogo current={p.category} logo={cfg.logo} />}
-      {toast && <div className="toast" role="status">{toast} {added && <Link href={l('/panier')}>{t('Voir le panier')}</Link>}</div>}
+      {toast && !justAdded && <div className="toast" role="status">{toast}</div>}
+      {justAdded && (() => { const ct = cartTotals(lines); return (
+        <div className="minicart" role="status">
+          <button className="chat-x" aria-label={t('Fermer')} onClick={() => setJustAdded(false)}><I name="x" size={16} /></button>
+          <b className="with-ic"><I name="check" size={18} strokeWidth={3} /> {toast}</b>
+          <p className="muted small">{t('Panier : {n} pcs', { n: ct.pieces })} · <Price raw ht={ct.goods - ct.discount} /></p>
+          {ct.remainingForFree > 0 && <p className="small">{t('Plus que {a} pour la livraison offerte', { a: `${Math.ceil(ct.remainingForFree)} € HT` })}</p>}
+          <div className="ctas"><Link className="btn cta small" href={l('/panier')}>{t('Commander')}</Link><button className="btn line small" onClick={() => setJustAdded(false)}>{t('Continuer')}</button></div>
+        </div>); })()}
     </div>
   );
 }

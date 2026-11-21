@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { uploadFile } from '@/lib/cutout';
 import { eur } from '@/lib/pricing';
+import { deliveryDate, fmtDay } from '@/lib/delivery';
 import { useT } from '@/i18n/client';
 import { I } from './Icons';
 import { ProfileTab } from './ProfileTab';
@@ -105,6 +106,7 @@ export function AccountView() {
             <article key={o.id} className="acct-card">
               <header><b>{o.name}</b><small className="muted">{day(o.date)}</small>{o.express && <span className="st st-modif with-ic"><I name="zap" size={13} /> Express</span>}<b className="acct-total">{eur(o.total, lang)}</b></header>
               {!!o.photos?.length && <div className="qc">{o.photos.map((p) => <a key={p} href={`/api/logo/${p}?apercu`} target="_blank" rel="noopener" title={t('Photo de contrôle')}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={`/api/logo/${p}?apercu`} alt={t('Photo de contrôle')} /></a>)}</div>}
+              <OrderSteps o={o} />
               <p className="small muted">{o.items.slice(0, 4).map((i) => `${i.quantity} × ${i.title}`).join(' · ')}{o.items.length > 4 ? ' …' : ''}</p>
               <div className="atl-files">
                 {o.statusUrl && <a className="btn line small" href={o.statusUrl} target="_blank" rel="noopener">{t('Suivi')}</a>}
@@ -212,5 +214,19 @@ function ResellerBox({ status, onDone }: { status?: 'en_attente' | 'valide' | 'r
         {msg && <p className="err">{msg}</p>}
       </div>
     </>
+  );
+}
+
+/** Étapes de la commande vues par le client : reçue → en production → contrôlée (photo) → expédition prévue. */
+function OrderSteps({ o }: { o: { date: string; status?: string; express?: boolean; photos?: string[] } }) {
+  const { t, lang } = useT();
+  const paid = !o.status || /paid|payé/i.test(o.status);
+  const checked = !!o.photos?.length;
+  const steps: [string, boolean][] = [[t('Commande reçue'), true], [t('En production'), paid], [t('Contrôle qualité'), checked]];
+  return (
+    <div className="steps-o">
+      <ol>{steps.map(([label, done]) => <li key={label} className={done ? 'on' : ''}>{label}</li>)}</ol>
+      {!checked && <small className="muted">{t('Réception prévue vers le {d}', { d: fmtDay(deliveryDate(new Date(o.date), !!o.express), lang) })}</small>}
+    </div>
   );
 }

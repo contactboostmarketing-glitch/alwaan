@@ -13,6 +13,10 @@ export type LineConfig = {
   zones: string[];
   qty: Record<string, number>;
   text?: string;
+  text2?: string; // 2e ligne de texte
+  textFont?: string; // police du texte (TEXT_FONTS)
+  textColor?: string; // couleur du texte (#rrggbb), sinon automatique selon le textile
+  zoneText?: Record<string, string>; // emplacement → texte imprimé À LA PLACE du logo (ex. le dos : adresse du site)
   logo?: string; // aperçu (data URL) côté navigateur ; le fichier d'origine est stocké côté serveur (logoId)
   logoName?: string;
   logoId?: string; // fichier à imprimer (détouré si demandé), stocké côté serveur (/api/logo/<id>)

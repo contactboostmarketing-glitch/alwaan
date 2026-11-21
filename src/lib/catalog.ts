@@ -195,6 +195,10 @@ const DETAILS: Record<string, string[]> = {
 for (const c of CATEGORIES) c.details = DETAILS[c.slug];
 
 export const getProduct = (slug: string) => PRODUCTS.find((x) => x.slug === slug);
+/** Polices du texte imprimé (rendu identique sur la maquette validée). */
+export const TEXT_FONTS: [string, string][] = [['oswald', 'Oswald, Impact, sans-serif'], ['inter', 'Inter, Arial, sans-serif'], ['serif', 'Georgia, "Times New Roman", serif'], ['mono', '"Courier New", monospace']];
+export const TEXT_COLORS = ['#ffffff', '#14213f', '#000000', '#c8302f', '#d4a017', '#2b63d9'];
+export const fontCss = (id?: string) => (TEXT_FONTS.find(([k]) => k === id) ?? TEXT_FONTS[0])[1];
 export const getCategory = (slug: string) => CATEGORIES.find((x) => x.slug === slug);
 /** « Polos personnalisés », « Casquettes personnalisées », « Haute visibilité personnalisée » : accord tiré du slug. */
 export const customName = (c: { slug: string; name: string }) => `${c.name} ${c.slug.endsWith('-personnalisees') ? 'personnalisées' : c.slug.endsWith('-personnalisee') ? 'personnalisée' : 'personnalisés'}`;

@@ -194,12 +194,16 @@ export function CartView() {
 
 function CartLine({ l, i, pool, stock, onRemove }: { l: LineConfig; i: number; pool: number; onRemove: () => void ; stock: Stock | null }) {
   const { t: tx, l: lk, lang } = useT();
+  const { update } = useCart();
+  const [showAll, setShowAll] = useState(false);
   const p0 = getProduct(l.slug);
   if (!p0) return null;
   const p = productL(lang, p0);
   const q = qtyOf(l);
   const blank = l.logoStatus === 'blank';
   const logo = blank ? tx('Textile vierge, sans marquage') : l.logoStatus === 'text' ? `${tx('Texte')} : « ${l.text} »` : tx(l.logoLowRes ? 'Logo fourni (petite définition)' : 'Logo fourni');
+  // Quantités modifiables sur place (la maquette validée reste valable) ; à 0 pièce, la ligne est retirée.
+  const setQ = (s: string, v: number) => { const qty = { ...l.qty, [s]: Math.max(0, v) }; if (Object.values(qty).some((x) => x > 0)) update(i, { ...l, qty }); else onRemove(); };
   const bat = tx(l.logoRework ? 'Retouche graphiste' : l.mockupId ? 'Maquette validée' : 'Maquette à valider');
   return (
     <div className="line">
@@ -207,11 +211,15 @@ function CartLine({ l, i, pool, stock, onRemove }: { l: LineConfig; i: number; p
       <div>
         <Link href={lk(`/produits/${p.slug}`)}><strong>{p.name}</strong></Link>
         <small>{colorName(lang, l.color)}{!blank && <> · {zonesL(lang, p0).filter((z) => l.zones.includes(z.id)).map((z) => z.name).join(' + ')}{pool > q ? ` · ${tx('{n} pièces au même logo', { n: pool })}` : ''}</>}</small>
-        <small>{Object.entries(l.qty).filter(([, v]) => v).map(([s, v]) => `${s} ×${v}`).join(', ')}</small>
+        {l.teamId ? <small>{Object.entries(l.qty).filter(([, v]) => v).map(([s, v]) => `${s} ×${v}`).join(', ')}</small> : (
+          <div className="cq" role="group" aria-label={tx('Quantités')}>{Object.entries(l.qty).filter(([s, v]) => v || showAll).map(([s, v]) => (
+            <span key={s}><b>{s}</b><button aria-label={tx('Retirer {s}', { s })} onClick={() => setQ(s, v - 1)}>−</button><i>{v}</i><button aria-label={tx('Ajouter {s}', { s })} onClick={() => setQ(s, v + 1)}>+</button></span>
+          ))}{!showAll && Object.values(l.qty).some((v) => !v) && <button className="link small" onClick={() => setShowAll(true)}>{tx('+ taille')}</button>}</div>
+        )}
         <small>{blank ? logo : `${logo} · ${bat}`}</small>
         {shortSizes(stock, l).length > 0 && <small className="order-note"><I name="clock" size={14} /> {tx('Sur commande ({s}) : +{n} jours ouvrés', { s: shortSizes(stock, l).join(', '), n: ON_ORDER_DAYS })}</small>}
         {l.teamId && <small className="with-ic"><I name="users" size={14} /> {tx('Liste d\'équipe')}{l.printNames && namesAllowed(l) ? ` · ${tx('prénoms imprimés')}` : ''}</small>}
-        <div className="acts"><Link className="link" href={`${lk(`/produits/${p.slug}`)}?modifier=${i}`}>{tx('Modifier')}</Link><button className="link mutedl" onClick={onRemove}>{tx('Supprimer')}</button></div>
+        <div className="acts"><Link className="link" href={`${lk(`/produits/${p.slug}`)}?modifier=${i}`}>{tx('Modifier')}</Link>{!blank && <Link className="link" href={`${lk(`/produits/${p.slug}`)}?meme-logo`}>{tx('Autre couleur')}</Link>}<button className="link mutedl" onClick={onRemove}>{tx('Supprimer')}</button></div>
       </div>
       <div className="pr"><Price raw ht={lineTotal(l, pool)} /><small>{q} pcs · <Price raw ht={unitPrice(l, pool)} suffix={false} />/pc</small></div>
     </div>
