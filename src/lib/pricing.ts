@@ -30,6 +30,7 @@ export type LineConfig = {
   designText?: string; // textes saisis dans le design (pour l'atelier)
   design?: string; // design particulier prêt à personnaliser (supplément DESIGN_FEE par pièce)
   logoStatus: LogoStatus;
+  logoRatio?: number; // largeur / hauteur du logo, pour ses dimensions réelles d'impression
   logoMono?: string; // logo passé en une couleur (#ffffff…) pour ressortir sur le textile
   logoLowRes?: boolean; // logo de faible définition, accepté en connaissance de cause
   mockupId?: string; // maquette validée par le client (BAT), image stockée côté serveur

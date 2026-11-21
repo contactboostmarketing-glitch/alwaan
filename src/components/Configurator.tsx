@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CATEGORIES, CLASH, COLOR_NAMES, MAX_DISCOUNT, PRODUCTS, TEXT_COLORS, TEXT_FONTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor, defaultZone } from '@/lib/catalog';
+import { CATEGORIES, CLASH, COLOR_NAMES, MAX_DISCOUNT, PRODUCTS, TEXT_COLORS, printDims, TEXT_FONTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor, defaultZone } from '@/lib/catalog';
 import { cartTotals, lineTotal, logoKey, qtyOf, unitAt, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
@@ -206,13 +206,14 @@ export function Configurator({ slug }: { slug: string }) {
     if (cfg.logoStatus === 'uploaded' && !cfg.logoId) { fail('logo', t('Ajoutez votre logo, ou choisissez « Texte seul ».')); return; }
     if (cfg.logoStatus === 'text' && !cfg.text?.trim()) { fail('logo', t('Écrivez le texte à imprimer.')); return; }
     if (cfg.zoneText && Object.values(cfg.zoneText).some((v) => !v.trim())) { fail('zones', t('Écrivez le texte de chaque emplacement, ou choisissez « Logo ».')); return; }
+    if (lowContrast && !lowAck.current) { lowAck.current = true; fail('logo', t('Attention : votre logo se verra mal sur ce textile. Choisissez une version en une couleur ci-dessus, ou cliquez à nouveau pour le garder tel quel.')); return; }
     if (!approved) { fail('bat', t('Cochez la validation de votre maquette.')); return; }
     // La maquette validée est figée en image et jointe à la commande (BAT).
     setSaving(true);
     // Une maquette (BAT) par couleur commandée.
     const shot = async (color: string) => {
       const svgs = Array.from(shots.current?.querySelectorAll(`[data-c="${color}"] svg`) ?? []) as SVGSVGElement[];
-      const png = await snapshot(svgs, `${p.name} · ${COLOR_NAMES[color]} · ${zonesFor(p).filter((z) => cfg.zones.includes(z.id)).map((z) => z.name).join(' + ')}`).catch(() => null);
+      const png = await snapshot(svgs, `${p.name} · ${COLOR_NAMES[color]} · ${dims.map(([n, d]) => `${n} ${d}`).join(' + ')}`).catch(() => null);
       return png ? uploadMockup(png) : null;
     };
     const mockupId = await shot(cfg.color);
@@ -265,10 +266,11 @@ export function Configurator({ slug }: { slug: string }) {
   const orig = useRef<{ logo?: string; logoId?: string } | null>(null);
   const [ink, setInk] = useState<{ avg: string; cover: number } | null>(null);
   const [monoBusy, setMonoBusy] = useState(false);
+  const lowAck = useRef(false);
   useEffect(() => {
     if (cfg.logoMono || !cfg.logo || cfg.logoStatus !== 'uploaded') { if (!cfg.logo) setInk(null); return; }
     orig.current = { logo: cfg.logo, logoId: cfg.logoId };
-    logoAverage(cfg.logo).then(setInk);
+    logoAverage(cfg.logo).then((r) => { setInk(r); if (r) setCfg((c) => ({ ...c, logoRatio: Math.round(r.ratio * 1000) / 1000 })); });
   }, [cfg.logo]); // eslint-disable-line react-hooks/exhaustive-deps
   const lowContrast = !blank && cfg.logoStatus === 'uploaded' && !!cfg.logo && !!ink && contrast(cfg.logoMono || ink.avg, cfg.color) < 1.8;
   const monoChoices = ['#ffffff', '#000000', ...TEXT_COLORS.filter((c) => c !== '#ffffff' && c !== '#000000')].filter((c) => contrast(c, cfg.color) >= 3).slice(0, 4);
@@ -285,7 +287,9 @@ export function Configurator({ slug }: { slug: string }) {
     setCfg((c) => ({ ...c, logo: m.url, logoId: up.id, logoMono: hex }));
   };
   const undoMono = () => { const o = orig.current; if (!o) return; setApproved(false); setCfg((c) => ({ ...c, logo: o.logo, logoId: o.logoId, logoMono: undefined })); };
-  const monoName = (h: string) => (h === '#ffffff' ? t('blanc') : h === '#000000' ? t('noir') : t('couleur'));
+  const monoName = (h: string) => t(({ '#ffffff': 'blanc', '#000000': 'noir', '#c8302f': 'rouge', '#d4a017': 'or', '#2b63d9': 'bleu', '#14213f': 'marine' } as Record<string, string>)[h] || 'couleur');
+  // Dimensions réelles d'impression de chaque emplacement (validées avec la maquette).
+  const dims: [string, string][] = blank ? [] : zones.filter((z) => cfg.zones.includes(z.id)).map((z) => [z.name, cfg.zoneText?.[z.id] !== undefined || cfg.logoStatus === 'text' ? t('texte, largeur {d}', { d: printDims(z) }) : printDims(z, cfg.logoRatio)]);
   const hasBack = zones.some((z) => z.view === 'back');
   const err = (at: 'logo' | 'zones' | 'qty' | 'bat') => (fieldErr?.at === at ? <p className="err small field-err" role="alert">{fieldErr.msg}</p> : null);
   const logoLabel = t(cfg.logoStatus === 'text' ? 'Texte seul (sans logo)' : cfg.logo ? 'Logo ajouté' : 'Déposez votre logo');
@@ -293,7 +297,7 @@ export function Configurator({ slug }: { slug: string }) {
   return (
     <div className="pdp">
       <div className="gallery">
-        <div className="stage"><Garment slug={slug} color={cfg.color} view={view} zones={cfg.zones} logo={cfg.logo} text={cfg.text} text2={cfg.text2} textFont={cfg.textFont} textColor={cfg.textColor} zoneText={cfg.zoneText} /></div>
+        <div className="stage"><Garment slug={slug} color={cfg.color} view={view} zones={cfg.zones} logo={cfg.logo} text={cfg.text} text2={cfg.text2} textFont={cfg.textFont} textColor={cfg.textColor} zoneText={cfg.zoneText} />{lowContrast && <button className="stage-alert" onClick={() => document.getElementById('mono-warn')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" /><path d="M12 9v4M12 17h.01" /></svg> {t('Attention : logo peu visible')}</button>}</div>
         {hasBack && (
           <div className="seg" role="group" aria-label="Vue">
             <button aria-pressed={view === 'front'} onClick={() => setView('front')}>{t('Face')}</button>
@@ -353,12 +357,13 @@ export function Configurator({ slug }: { slug: string }) {
             <ReworkOption logo={cfg.logoStatus === 'uploaded' ? lg : null} on={!!cfg.logoRework} set={(v) => set({ logoRework: v })} />
             <button className="link" onClick={() => { setApproved(false); set({ logo: undefined, logoName: undefined, logoId: undefined, logoLowRes: false, logoStatus: 'text' }); }}>{t('Je n\'ai pas de logo : imprimer seulement un texte')}</button>
             {lowContrast && (
-              <div className="mono-warn" role="status">
+              <div className="mono-warn" id="mono-warn" role="alert">
+                <b className="mono-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" /><path d="M12 9v4M12 17h.01" /></svg> {t('Attention')}</b>
                 <b>{t('Votre logo risque de ne pas se voir sur ce textile.')}</b>
                 {ink!.cover > 0.9
                   ? <small>{t('Retirez le fond (« Sans fond ») pour pouvoir l\'imprimer d\'une seule couleur, ou choisissez un textile plus contrasté.')}</small>
                   : <><small>{t('Imprimez-le d\'une seule couleur :')}</small>
-                    <div className="mono-opts">{monoChoices.map((c) => <button key={c} className="btn line small" disabled={monoBusy} onClick={() => applyMono(c)}><i style={{ background: c }} /> {c === '#ffffff' ? t('Logo en blanc') : c === '#000000' ? t('Logo en noir') : t('Logo en couleur')}</button>)}</div></>}
+                    <div className="mono-opts">{monoChoices.map((c) => <button key={c} className="btn line small" disabled={monoBusy} onClick={() => applyMono(c)}><i style={{ background: c }} /> {t('Logo en {c}', { c: monoName(c) })}</button>)}</div></>}
               </div>
             )}
             {cfg.logoMono && <p className="muted small">{t('Logo imprimé en {c}.', { c: monoName(cfg.logoMono) })} <button className="link small" onClick={undoMono}>{t('Revenir aux couleurs d\'origine')}</button></p>}
@@ -386,7 +391,7 @@ export function Configurator({ slug }: { slug: string }) {
                 <button key={z.id} className="ztile" aria-pressed={on} aria-label={`${z.name}, ${z.size}`} title={`${z.name} · ${z.size}`} onClick={() => toggleZone(z.id)}>
                   {on && <span className="tick"><I name="check" size={12} strokeWidth={3} /></span>}
                   <Garment slug={slug} color={cfg.color} view={z.view} zones={[z.id]} logo={cfg.logo} text={cfg.logoStatus === 'text' ? cfg.text : undefined} textFont={cfg.textFont} textColor={cfg.textColor} zoneText={cfg.zoneText} />
-                  <b>{z.name}</b><small>+<Price ht={z.price} suffix={false} /></small>
+                  <b>{z.name}</b><small>+<Price ht={z.price} suffix={false} /></small><small className="zdim">{z.size}</small>
                 </button>
               );
             })}
@@ -443,7 +448,14 @@ export function Configurator({ slug }: { slug: string }) {
         </div>
 
         {!blank && <div className={`bat-blk ${fieldErr?.at === 'bat' ? 'invalid' : ''}`} id="cfg-bat">
-          <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} aria-invalid={fieldErr?.at === 'bat' || undefined} /><span>{t('Je valide ma maquette')} <b>{t('(bon à tirer)')}</b> {t('et je détiens les droits sur ce logo')}</span></label>
+          {dims.length > 0 && (
+            <div className="dims">
+              <b>{t('Dimensions d\'impression')}</b>
+              <ul>{dims.map(([n, d]) => <li key={n}><span>{n}</span><b>{d}</b></li>)}</ul>
+              <small className="muted">{t('Tolérance : taille ±5 %, placement ±1 cm.')} <Link className="link" href="/retours">{t('Détails')}</Link></small>
+            </div>
+          )}
+          <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} aria-invalid={fieldErr?.at === 'bat' || undefined} /><span>{t('Je valide ma maquette')} <b>{t('(bon à tirer)')}</b>{dims.length ? ` ${t('et ses dimensions,')}` : ''} {t('et je détiens les droits sur ce logo')}</span></label>
           {err('bat')}
         </div>}
         <div className="addrow">

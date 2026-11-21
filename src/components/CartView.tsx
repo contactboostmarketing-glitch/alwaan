@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor, defaultZone, expressFee, SAMPLE_EXTRA_DAYS, SAMPLE_MIN } from '@/lib/catalog';
+import { printDims, CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor, defaultZone, expressFee, SAMPLE_EXTRA_DAYS, SAMPLE_MIN } from '@/lib/catalog';
 import { attributionForCheckout, track } from '@/lib/track';
 import { deliveryDate, fmtDay } from '@/lib/delivery';
 import { ON_ORDER_DAYS, onOrder, shortSizes } from '@/lib/stockTypes';
@@ -210,7 +210,7 @@ function CartLine({ l, i, pool, stock, onRemove }: { l: LineConfig; i: number; p
       <div className="img"><Garment slug={l.slug} color={l.color} zones={l.zones} logo={l.logo} /></div>
       <div>
         <Link href={lk(`/produits/${p.slug}`)}><strong>{p.name}</strong></Link>
-        <small>{colorName(lang, l.color)}{!blank && <> · {zonesL(lang, p0).filter((z) => l.zones.includes(z.id)).map((z) => z.name).join(' + ')}{pool > q ? ` · ${tx('{n} pièces au même logo', { n: pool })}` : ''}</>}</small>
+        <small>{colorName(lang, l.color)}{!blank && <> · {zonesL(lang, p0).filter((z) => l.zones.includes(z.id)).map((z) => `${z.name} ${l.zoneText?.[z.id] !== undefined || l.logoStatus === 'text' ? `(${tx('texte')})` : `(${printDims(z, l.logoRatio)})`}`).join(' + ')}{pool > q ? ` · ${tx('{n} pièces au même logo', { n: pool })}` : ''}</>}</small>
         {l.teamId ? <small>{Object.entries(l.qty).filter(([, v]) => v).map(([s, v]) => `${s} ×${v}`).join(', ')}</small> : (
           <div className="cq" role="group" aria-label={tx('Quantités')}>{Object.entries(l.qty).filter(([s, v]) => v || showAll).map(([s, v]) => (
             <span key={s}><b>{s}</b><button aria-label={tx('Retirer {s}', { s })} onClick={() => setQ(s, v - 1)}>−</button><i>{v}</i><button aria-label={tx('Ajouter {s}', { s })} onClick={() => setQ(s, v + 1)}>+</button></span>

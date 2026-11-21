@@ -4,7 +4,7 @@
 // Variables d'environnement :
 //   SHOPIFY_STORE_DOMAIN       ex. alwaan.myshopify.com
 //   SHOPIFY_STOREFRONT_TOKEN   jeton public Storefront (Back office → Applications → Headless)
-import { COLOR_NAMES, ZONES, getProduct, zonesFor, type Zone } from './catalog';
+import { COLOR_NAMES, ZONES, getProduct, printDims, zonesFor, type Zone } from './catalog';
 import { sign } from './secure';
 import { getStock } from './stock';
 import { ON_ORDER_DAYS, shortSizes, skey } from './stockTypes';
@@ -71,6 +71,7 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL, exp
       ...(l.logoCut && l.logoCut !== 'none' ? [{ key: 'Détourage', value: l.logoCut === 'all' ? 'Fond retiré, intérieur compris (validé sur la maquette)' : 'Fond retiré automatiquement (validé sur la maquette)' }] : []),
       ...(l.logoSourceId && l.logoSourceId !== l.logoId ? [{ key: 'Fichier d\'origine du client', value: `${origin}/api/logo/${l.logoSourceId}` }] : []),
       ...(l.text ? [{ key: 'Texte', value: `${l.text}${l.text2 ? ` / 2e ligne : ${l.text2}` : ''} · police ${l.textFont || 'oswald'}${l.textColor ? ` · couleur ${l.textColor}` : ''}` }] : []),
+      ...(l.zones.length ? [{ key: 'Dimensions d\'impression (validées sur la maquette, ±5 %)', value: zonesFor(getProduct(l.slug)!).filter((z) => l.zones.includes(z.id)).map((z) => `${z.name} : ${l.zoneText?.[z.id] || l.logoStatus === 'text' ? `texte, largeur ${printDims(z).replace(' cm max.', ' cm max.')}` : printDims(z, l.logoRatio)}`).join(' · ') }] : []),
       ...(l.logoMono ? [{ key: 'Logo monochrome', value: `Logo imprimé en une seule couleur (${l.logoMono === '#ffffff' ? 'blanc' : l.logoMono === '#000000' ? 'noir' : l.logoMono}) à la demande du client` }] : []),
       ...(l.zoneText && Object.keys(l.zoneText).length ? [{ key: 'Texte à la place du logo', value: Object.entries(l.zoneText).map(([z, v]) => `${zonesFor(getProduct(l.slug)!).find((x) => x.id === z)?.name || z} : « ${v} »`).join(' · ') }] : []),
       ...(l.design ? [{ key: 'Design particulier', value: `${l.design}${l.designText ? ` · ${l.designText}` : ''}` }] : []),

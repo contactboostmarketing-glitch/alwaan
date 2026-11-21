@@ -115,6 +115,17 @@ export const PRODUCTS: Product[] = [
 
 /** Zones de marquage DTF. size = gabarit maximal (le logo y est inscrit) ; fixed = prix fixe, sans remise de quantité. */
 export type Zone = { id: string; name: string; view: 'front' | 'back'; x: number; y: number; w: number; size: string; price: number; fixed?: boolean };
+/**
+ * Dimensions réelles d'impression : le logo est agrandi au maximum dans le cadre de l'emplacement en gardant ses proportions.
+ * ratio = largeur / hauteur du logo (inconnu : cadre maximal). Texte seul : largeur maximale.
+ */
+export function printDims(z: Zone, ratio?: number): string {
+  const [W, H] = z.size.match(/[\d.,]+/g)!.map((n) => Number(n.replace(',', '.')));
+  if (!ratio || !isFinite(ratio)) return `${W} × ${H} cm max.`;
+  const [w, h] = ratio >= W / H ? [W, W / ratio] : [H * ratio, H];
+  const f = (n: number) => (Math.round(n * 10) / 10).toLocaleString('fr-FR');
+  return `${f(w)} × ${f(h)} cm`;
+}
 export const ZONES: Zone[] = [
   { id: 'heart', name: 'Cœur', view: 'front', x: 62, y: 36, w: 16, size: '10 × 10 cm', price: 4 },
   { id: 'antiheart', name: 'Anti-cœur', view: 'front', x: 38, y: 36, w: 16, size: '10 × 10 cm', price: 4 },
