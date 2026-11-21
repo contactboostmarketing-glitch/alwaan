@@ -55,18 +55,22 @@ export function Garment({ slug, color, view = 'front', zones = [], logo, text, t
         if (zt) return (
           <text key={z.id} x={cx} y={cy + w * 0.06} textAnchor="middle" fontFamily={fontCss(textFont)} fontWeight={700} fontSize={Math.max(7, Math.min(w * 0.22, (w * 1.6) / Math.max(4, zt.length)))} fill={textColor || ink}>{zt}</text>
         );
+        // Cadre du logo aux proportions réelles du gabarit (ex. 10 × 10 cm : carré) : la maquette montre la taille imprimée.
+        const [GW, GH] = (z.size.match(/[\d.,]+/g) || ['1', '1']).map((n) => Number(n.replace(',', '.')));
+        const fs = Math.max(6, w * 0.13), bh = w * (GH / GW) * (text ? 0.78 : 1), bw = w * (text ? 0.78 : 1);
+        const by = cy - bh / 2 - (text ? fs * 0.6 : 0);
         return (
           <g key={z.id}>
             {logo ? (
-              <image href={logo} x={cx - w / 2} y={cy - w * 0.35} width={w} height={w * 0.6} preserveAspectRatio="xMidYMid meet" />
+              <image href={logo} x={cx - bw / 2} y={by} width={bw} height={bh} preserveAspectRatio="xMidYMid meet" />
             ) : (
               <path d={`M${cx} ${cy - w * 0.32} L${cx + w * 0.22} ${cy + w * 0.08} L${cx + w * 0.08} ${cy + w * 0.08} L${cx} ${cy - w * 0.08} L${cx - w * 0.08} ${cy + w * 0.08} L${cx - w * 0.22} ${cy + w * 0.08} Z`} fill={ink} />
             )}
             {text && (
-              <text x={cx} y={cy + w * 0.3} textAnchor="middle" fontFamily={fontCss(textFont)} fontWeight={600} fontSize={Math.max(6, w * 0.13)} fill={textColor || ink}>{text}</text>
+              <text x={cx} y={logo ? by + bh + fs : cy + w * 0.3} textAnchor="middle" fontFamily={fontCss(textFont)} fontWeight={600} fontSize={fs} fill={textColor || ink}>{text}</text>
             )}
             {text2 && (
-              <text x={cx} y={cy + w * 0.3 + Math.max(6, w * 0.13) * 1.15} textAnchor="middle" fontFamily={fontCss(textFont)} fontWeight={600} fontSize={Math.max(5, w * 0.11)} fill={textColor || ink}>{text2}</text>
+              <text x={cx} y={(logo ? by + bh + fs : cy + w * 0.3) + fs * 1.15} textAnchor="middle" fontFamily={fontCss(textFont)} fontWeight={600} fontSize={Math.max(5, w * 0.11)} fill={textColor || ink}>{text2}</text>
             )}
           </g>
         );
