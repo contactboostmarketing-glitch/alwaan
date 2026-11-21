@@ -129,12 +129,12 @@ export function printDims(z: Zone, ratio?: number): string {
 export const ZONES: Zone[] = [
   { id: 'heart', name: 'Cœur', view: 'front', x: 62, y: 36, w: 16, size: '10 × 10 cm', price: 4 },
   { id: 'antiheart', name: 'Anti-cœur', view: 'front', x: 38, y: 36, w: 16, size: '10 × 10 cm', price: 4 },
-  { id: 'chest', name: 'Grand devant', view: 'front', x: 50, y: 50, w: 42, size: '28 × 30 cm', price: 8, fixed: true },
-  { id: 'shoulder-right', name: 'Épaule droite', view: 'front', x: 19, y: 32, w: 9, size: '8 × 8 cm', price: 2.5 },
-  { id: 'shoulder-left', name: 'Épaule gauche', view: 'front', x: 81, y: 32, w: 9, size: '8 × 8 cm', price: 2.5 },
-  { id: 'back', name: 'Dos', view: 'back', x: 50, y: 44, w: 46, size: '26 × 26 cm', price: 6 },
+  { id: 'chest', name: 'Grand devant', view: 'front', x: 50, y: 50, w: 42, size: '27 × 27 cm', price: 8, fixed: true },
+  { id: 'shoulder-right', name: 'Épaule droite', view: 'front', x: 19, y: 32, w: 9, size: '5 × 5 cm', price: 2.5 },
+  { id: 'shoulder-left', name: 'Épaule gauche', view: 'front', x: 81, y: 32, w: 9, size: '5 × 5 cm', price: 2.5 },
+  { id: 'back', name: 'Dos', view: 'back', x: 50, y: 44, w: 46, size: '27 × 27 cm', price: 6 },
   { id: 'neck', name: 'Nuque', view: 'back', x: 50, y: 22, w: 14, size: '8 × 4 cm', price: 2.5 },
-  // Tabliers uniquement : logo sur la poche (même gabarit et même prix que le cœur, à confirmer).
+  // Tabliers uniquement : logo sur la poche, 10 × 10 cm comme le cœur.
   { id: 'pocket', name: 'Poche', view: 'front', x: 50, y: 74, w: 22, size: '10 × 10 cm', price: 4 },
 ];
 /** Au-delà de ce prix de vente HT du textile, le marquage cœur et le marquage dos passent à un prix unique. */
@@ -223,7 +223,7 @@ export function zonesFor(prod: Product): Zone[] {
   const shoulders = ['shoulder-right', 'shoulder-left'];
   let list: Zone[];
   const notApron = ZONES.filter((z) => z.id !== 'pocket');
-  if (prod.shape === 'cap') list = [{ ...ZONES[0], name: 'Face', x: 50, y: 45, w: 30 }];
+  if (prod.shape === 'cap') list = [{ ...ZONES[0], name: 'Face', x: 50, y: 45, w: 30, size: '6 × 6 cm' }]; // casquette (et bonnet) : 6 × 6 cm
   // Tablier : poche ou grand devant, l'un ou l'autre (la poche en premier : c'est le prix « dès »).
   else if (prod.shape === 'apron') list = ['pocket', 'chest'].map((id) => ZONES.find((z) => z.id === id)!);
   else if (prod.shape === 'hv') list = notApron.filter((z) => !shoulders.includes(z.id)); // gilet sans manches

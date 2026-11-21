@@ -391,7 +391,7 @@ export function Configurator({ slug }: { slug: string }) {
                 <button key={z.id} className="ztile" aria-pressed={on} aria-label={`${z.name}, ${z.size}`} title={`${z.name} · ${z.size}`} onClick={() => toggleZone(z.id)}>
                   {on && <span className="tick"><I name="check" size={12} strokeWidth={3} /></span>}
                   <Garment slug={slug} color={cfg.color} view={z.view} zones={[z.id]} logo={cfg.logo} text={cfg.logoStatus === 'text' ? cfg.text : undefined} textFont={cfg.textFont} textColor={cfg.textColor} zoneText={cfg.zoneText} />
-                  <b>{z.name}</b><small>+<Price ht={z.price} suffix={false} /></small><small className="zdim">{z.size}</small>
+                  <b>{z.name}</b><small>+<Price ht={z.price} suffix={false} /></small>
                 </button>
               );
             })}
@@ -448,13 +448,7 @@ export function Configurator({ slug }: { slug: string }) {
         </div>
 
         {!blank && <div className={`bat-blk ${fieldErr?.at === 'bat' ? 'invalid' : ''}`} id="cfg-bat">
-          {dims.length > 0 && (
-            <div className="dims">
-              <b>{t('Dimensions d\'impression')}</b>
-              <ul>{dims.map(([n, d]) => <li key={n}><span>{n}</span><b>{d}</b></li>)}</ul>
-              <small className="muted">{t('Tolérance : taille ±5 %, placement ±1 cm.')} <Link className="link" href="/retours">{t('Détails')}</Link></small>
-            </div>
-          )}
+          {dims.length > 0 && <p className="dims">{t('Impression')} : {dims.map(([n, d]) => `${n} ${d}`).join(' · ')} <span>({t('±5 %').replace(' ', '\u00a0')}, <Link href="/retours">{t('détails')}</Link>)</span></p>}
           <label className="consent bat"><input type="checkbox" checked={approved} onChange={(e) => setApproved(e.target.checked)} aria-invalid={fieldErr?.at === 'bat' || undefined} /><span>{t('Je valide ma maquette')} <b>{t('(bon à tirer)')}</b>{dims.length ? ` ${t('et ses dimensions,')}` : ''} {t('et je détiens les droits sur ce logo')}</span></label>
           {err('bat')}
         </div>}

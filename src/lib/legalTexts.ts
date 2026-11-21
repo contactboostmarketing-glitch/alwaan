@@ -19,7 +19,7 @@ export const CGV: string[] = [
   '## Article 2 · Produits et personnalisation',
   'Les caractéristiques essentielles des produits (matière, grammage, tailles, coloris) sont présentées sur chaque fiche produit. Les visuels des vêtements sont des représentations : de légères différences de teinte peuvent exister entre l\'écran et le textile.',
   'Personnalisation : le Client fournit son logo, son texte ou choisit un design, l\'emplacement et la couleur du vêtement. Le Site affiche une maquette en direct. Lorsque le logo comporte un fond, le Client choisit de le conserver ou de le retirer. Un logo de faible définition fait l\'objet d\'un avertissement ; le Client qui le valide malgré tout accepte le rendu correspondant.',
-  'Gabarits d\'impression : cœur, anti-cœur et poche jusqu\'à 10 × 10 cm ; dos jusqu\'à 26 × 26 cm ; grand devant jusqu\'à 28 × 30 cm ; nuque et épaules selon le gabarit indiqué. Le logo est inscrit dans le gabarit en conservant ses proportions.',
+  'Gabarits d\'impression : cœur, anti-cœur et poche jusqu\'à 10 × 10 cm ; dos et grand devant jusqu\'à 27 × 27 cm ; épaules jusqu\'à 5 × 5 cm ; casquettes et bonnets jusqu\'à 6 × 6 cm ; nuque selon le gabarit indiqué. Le logo est inscrit dans le gabarit en conservant ses proportions.',
   '## Article 3 · Bon à tirer (maquette validée)',
   'Avant l\'ajout au panier, le Client valide sa maquette en cochant la case prévue. Cette maquette vaut bon à tirer : alwaan imprime ce que le Client a validé (emplacement, couleurs, textes, orthographe). Une image de la maquette validée est jointe à la commande et conservée comme preuve.',
   'Tolérances de fabrication acceptées par le Client : placement à ±1 cm, taille du logo à ±5 %, légère variation de teinte entre l\'écran, le film et le textile.',

@@ -189,7 +189,7 @@ export const GUIDES: Guide[] = [
     intro: 'Le prix d\'un vêtement personnalisé dépend de trois éléments : le vêtement, le marquage et la quantité commandée.',
     sections: [
       { h2: 'Le vêtement', p: ['Le grammage, la matière et la coupe font varier le prix de base : un t-shirt 150 g/m² coûte moins cher qu\'une veste softshell.'] },
-      { h2: 'Le marquage', p: ['Chaque emplacement imprimé s\'ajoute au prix du vêtement : cœur ou anti-cœur (logo jusqu\'à 10 × 10 cm) 4 € HT, dos (jusqu\'à 26 × 26 cm) 6 € HT, grand devant (jusqu\'à 28 × 30 cm) 8 € HT à prix fixe, nuque ou épaule 2,50 € HT. Sur les textiles vendus plus de 25 € HT, le cœur et le dos sont à 5 € HT. Un logo au cœur et un grand logo au dos est la combinaison la plus courante pour une équipe.'] },
+      { h2: 'Le marquage', p: ['Chaque emplacement imprimé s\'ajoute au prix du vêtement : cœur ou anti-cœur (logo jusqu\'à 10 × 10 cm) 4 € HT, dos (jusqu\'à 27 × 27 cm) 6 € HT, grand devant (jusqu\'à 27 × 27 cm) 8 € HT à prix fixe, nuque ou épaule 2,50 € HT. Sur les textiles vendus plus de 25 € HT, le cœur et le dos sont à 5 € HT. Un logo au cœur et un grand logo au dos est la combinaison la plus courante pour une équipe.'] },
       { h2: 'La quantité', p: [`Plus vous commandez, plus le marquage baisse : ${tiersText}. Le site vous indique combien de pièces il manque pour atteindre le palier suivant.`] },
     ],
     faq: [['Y a-t-il des frais de préparation ?', 'Non. Avec l\'impression DTF, il n\'y a ni frais de création d\'écran ni frais de programme.']],
