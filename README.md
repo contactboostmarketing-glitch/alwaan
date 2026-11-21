@@ -53,3 +53,9 @@ npm run dev
 - Envoi des demandes de devis (email ou CRM) : `src/app/api/devis/route.ts`
 - Balises Google Ads / Meta Pixel chargées seulement après consentement
 - Flux produits Google Merchant Center
+
+### Espace client (connexion Shopify)
+
+- Shopify → Canaux de vente → Headless → Customer Account API : client public, rappel `https://alwaan.fr/api/compte/callback`, origine `https://alwaan.fr`, déconnexion `https://alwaan.fr/compte`.
+- Netlify : `SHOPIFY_CUSTOMER_CLIENT_ID` (identifiant client de cette page).
+- Virement réservé aux pros connectés : droits `read_draft_orders` / `write_draft_orders` sur l'application.
