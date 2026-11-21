@@ -36,7 +36,8 @@ export function CartView() {
     </section>
   );
   if (!lines.length) return (
-    <section className="wrap empty"><h1>{tx('Votre panier est vide')}</h1><p className="muted">{tx('Choisissez un vêtement pour commencer.')}</p><Link className="btn cta" href={lk('/')}>{tx('Voir les vêtements')}</Link></section>
+    <section className="wrap empty"><span className="empty-ic"><I name="cart" size={34} /></span><h1>{tx('Votre panier est vide')}</h1><p className="muted">{tx('Choisissez un vêtement pour commencer.')}</p>
+      <div className="empty-ctas"><Link className="btn cta" href={lk('/assistant')}>{tx('Créer ma tenue en 1 minute')}</Link><Link className="btn line" href={lk('/')}>{tx('Voir les vêtements')}</Link></div></section>
   );
 
   const t = cartTotals(lines, promo, express, reseller, voucher);

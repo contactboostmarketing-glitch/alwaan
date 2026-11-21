@@ -5,7 +5,7 @@ import { I } from '@/components/Icons';
 
 const T = {
   fr: {
-    crumb: 'Lien d\'équipe', h1: 'Fini les tableaux de tailles : chacun donne la sienne',
+    crumb: 'Lien d\'équipe', h1: 'Fini les tableaux de tailles\u00a0: chacun donne la sienne',
     lead: 'Vous partagez un lien. Chaque personne entre son nom, son prénom et sa taille. Votre panier se remplit tout seul.',
     steps: [['palette', 'Vous créez la tenue', 'Logo, vêtements, couleur : la maquette est validée.'], ['link', 'Vous partagez le lien', 'Par WhatsApp, email ou affichage en salle de pause.'], ['shirt', 'Chacun donne sa taille', '30 secondes par personne, sans compte.'], ['cart', 'Vous commandez', 'Les quantités par taille sont calculées pour vous.']],
     perks: ['Zéro erreur de taille', 'Prénom imprimé possible au-delà de 20 pièces', 'Liste nominative pour la remise des tenues', 'Plusieurs vêtements dans la même liste'],
@@ -26,9 +26,16 @@ export function TeamLinkView({ lang }: { lang: Lang }) {
     <>
       <Breadcrumbs lang={lang} items={[[t.crumb]]} />
       <section className="wrap page-narrow teamlp">
-        <span className="season-kicker"><I name="users" size={16} /> {t.crumb}</span>
-        <h1>{t.h1}</h1>
-        <p className="lead">{t.lead}</p>
+        <div className="tl-hero">
+          <div>
+            <span className="season-kicker"><I name="users" size={16} /> {t.crumb}</span>
+            <h1>{t.h1}</h1>
+            <p className="lead">{t.lead}</p>
+          </div>
+          <div className="tf-phone" aria-hidden="true">
+            <div className="tf-row"><b>Julie M.</b><span>M</span></div><div className="tf-row"><b>Karim B.</b><span>L</span></div><div className="tf-row"><b>Sophie D.</b><span>S</span></div><div className="tf-row"><b>Léa P.</b><span>M</span></div><div className="tf-row new"><b>Marco R.</b><span>XL</span></div>
+          </div>
+        </div>
         <ol className="steps-ic">{t.steps.map(([e, b, s]) => <li key={b}><span className="step-ic"><I name={e} size={26} /></span><b>{b}</b><small>{s}</small></li>)}</ol>
         <ul className="perks acct-perks">{t.perks.map((p) => <li key={p}><I name="check" size={16} className="ico" /> {p}</li>)}</ul>
         <Link className="btn cta block" href={href(lang, '/assistant')}>{t.cta}</Link>

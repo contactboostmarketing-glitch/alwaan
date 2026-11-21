@@ -66,7 +66,7 @@ export function HomeView({ lang }: { lang: Lang }) {
             <Link className="btn cta" href={href(lang, '/assistant')}>{sc.cta}</Link>
           </div>
         </div>
-        <div className="grid mt">{season.featured.map((slug) => PRODUCTS.find((x) => x.slug === slug)).filter(Boolean).map((p) => <ProductCard key={p!.slug} p={p!} lang={lang} />)}</div>
+        <div className="grid g4 mt">{season.featured.map((slug) => PRODUCTS.find((x) => x.slug === slug)).filter(Boolean).map((p) => <ProductCard key={p!.slug} p={p!} lang={lang} />)}</div>
       </div></section>
 
       <section className="section"><div className="wrap">
@@ -98,7 +98,7 @@ export function HomeView({ lang }: { lang: Lang }) {
 
       <section className="section soft"><div className="wrap">
         <div className="sec-head"><h2>{t('Les plus commandés')}</h2></div>
-        <div className="grid">{PRODUCTS.filter((p) => p.bestseller).map((p) => <ProductCard key={p.slug} p={p} lang={lang} />)}</div>
+        <div className="grid g6">{PRODUCTS.filter((p) => p.bestseller).map((p) => <ProductCard key={p.slug} p={p} lang={lang} />)}</div>
       </div></section>
 
       <section className="section"><div className="wrap">

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { I } from '@/components/Icons';
 import { CATEGORIES, GENERAL_FAQ, SECTORS, getCategory, productsIn } from '@/lib/catalog';
 import { Breadcrumbs, Faq, LinkChips, MoreInfo, Perks, ProductCard } from '@/components/ui';
 import { guidesFor } from '@/lib/guides';
@@ -27,7 +29,21 @@ export function CategoryView({ lang, slug }: { lang: Lang; slug: string }) {
           <div><h1>{lang === 'en' ? `Custom ${c.name.toLowerCase()}` : `${c.name} personnalisés`}</h1><p className="mt8">{c.intro}</p></div>
           <Perks items={[['one', t('Dès 1 pièce')], ['eye', t('Maquette en direct')], ['truck', t('7 jours')]]} />
         </div>
-        <div className="grid">{list.map((p) => <ProductCard key={p.slug} p={p} lang={lang} />)}</div>
+        <div className="grid cat-grid">
+          {list.map((p) => <ProductCard key={p.slug} p={p} lang={lang} />)}
+          <Link className="cat-cta" href={href(lang, '/assistant')}>
+            <span className="cat-cta-ic"><I name="sparkles" size={26} /></span>
+            <b>{tr(lang, 'Créer ma tenue en 1 minute')}</b>
+            <small>{tr(lang, 'Votre logo sur le vêtement, en direct')}</small>
+            <span className="btn cta small">{tr(lang, 'Commencer')} <I name="arrow" size={16} /></span>
+          </Link>
+          <Link className="cat-cta alt" href={href(lang, '/lien-equipe')}>
+            <span className="cat-cta-ic"><I name="users" size={26} /></span>
+            <b>{tr(lang, 'Lien d\'équipe')}</b>
+            <small>{tr(lang, 'Chacun donne sa taille, votre panier se remplit seul')}</small>
+            <span className="btn line small">{tr(lang, 'Découvrir')} <I name="arrow" size={16} /></span>
+          </Link>
+        </div>
         <div className="seo1">
           <LinkChips title={t('Par métier')} links={sectors.map((s) => [`${c.name} · ${s.name.toLowerCase()}`, href(lang, `/metiers/${s.slug}`)])} />
           <LinkChips title={t('Autres vêtements')} links={CATEGORIES.filter((o) => o.slug !== c.slug).map((o) => { const x = categoryL(lang, o); return [lang === 'en' ? `Custom ${x.name.toLowerCase()}` : `${x.name} personnalisés`, href(lang, `/vetements/${o.slug}`)]; })} />

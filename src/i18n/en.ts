@@ -468,4 +468,8 @@ export const EN: Record<string, string> = {
   'Adresse, code postal et ville obligatoires.': 'Address, postcode and city are required.',
   'Action inconnue.': 'Unknown action.',
   'Mes informations et adresses': 'My details and addresses',
+  'Commencer': 'Start',
+  'Découvrir': 'Discover',
+  'Votre logo sur le vêtement, en direct': 'Your logo on the garment, live',
+  'Chacun donne sa taille, votre panier se remplit seul': 'Everyone enters their size, your cart fills itself',
 };

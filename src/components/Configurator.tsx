@@ -264,6 +264,11 @@ export function Configurator({ slug }: { slug: string }) {
           <button className="btn cta" onClick={() => submit()} disabled={saving}>{t(saving ? 'Enregistrement de la maquette…' : editIndex !== null ? 'Mettre à jour' : 'Ajouter au panier')}</button>
           {editIndex === null && <button className="link small team-link" onClick={() => submit(true)} disabled={saving}><I name="users" size={18} /> {t('Récupérer les noms et tailles de l\'équipe par un lien')}</button>}
         </div>
+        {/* Mobile : la barre d'achat reste compacte, délai et lien d'équipe juste en dessous. */}
+        <div className="addrow-extra">
+          <p className="eta"><I name="truck" size={16} /> {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(), lang) })} · <span className="muted">{t('express possible')}</span></p>
+          {editIndex === null && <button className="link small team-link" onClick={() => submit(true)} disabled={saving}><I name="users" size={18} /> {t('Récupérer les noms et tailles de l\'équipe par un lien')}</button>}
+        </div>
         <Perks items={[['eye', t('Imprimé comme la maquette')], ['lock', t('Paiement sécurisé')], ['redo', t('Défaut refait')], ['truck', t('7 jours')]]} />
       </div>
       {added && <SameLogo current={p.category} logo={cfg.logo} />}

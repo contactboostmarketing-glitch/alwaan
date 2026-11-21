@@ -51,7 +51,7 @@ export function GiftsView({ lang, occasion }: { lang: Lang; occasion?: string })
         <div className="occasions">{OCCASIONS.map((x) => (
           <Link key={x.id} className="occasion" aria-current={x.id === occasion ? 'page' : undefined} href={`${href(lang, '/idees-cadeaux')}/${x.id}`}><span className="occ-ic"><I name={x.icon} size={22} /></span><b>{x[lang].name}</b><small>{x[lang].sub}</small></Link>
         ))}</div>
-        <div className="grid mt">{list.map((d) => <DesignCard key={d.id} d={d} lang={lang} />)}</div>
+        <div className="grid g6 mt">{list.map((d) => <DesignCard key={d.id} d={d} lang={lang} />)}</div>
         <p className="muted small mt">{t('Votre propre logo ou une commande d\'équipe ?')} <Link className="link" href={href(lang, '/assistant')}>{t('Créer ma tenue en 1 minute')}</Link></p>
       </section>
     </>
