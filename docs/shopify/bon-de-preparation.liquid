@@ -1,0 +1,118 @@
+{%- comment -%}
+  Bon de préparation atelier alwaan, pour l'application Shopify « Order Printer » (gratuite).
+  Installation : Order Printer → Modèles → Créer un modèle → coller ce fichier.
+  Regroupe chaque article personnalisé (vêtement + tailles + marquages + logo) d'après
+  les propriétés envoyées par le site : Groupe, Emplacements, Logo, Fichier logo à imprimer, Détourage, Fichier d'origine du client, Maquette validée (BAT), Texte, Tailles.
+{%- endcomment -%}
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #111; }
+  .head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #111; padding-bottom: 8px; margin-bottom: 10px; }
+  .head h1 { font-size: 22px; margin: 0; }
+  .big { font-size: 28px; font-weight: bold; }
+  .meta { text-align: right; line-height: 1.5; }
+  .box { border: 1.5px solid #111; border-radius: 6px; padding: 8px; margin-bottom: 10px; page-break-inside: avoid; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .art { display: grid; grid-template-columns: 110px 1fr; gap: 10px; }
+  .bat img { width: 100%; max-height: 260px; object-fit: contain; border: 1px solid #ccc; margin-top: 6px; }
+  .logo { width: 110px; height: 110px; border: 1px dashed #999; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 10px; }
+  .logo img { max-width: 100%; max-height: 100%; }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  th, td { border: 1px solid #999; padding: 4px 6px; text-align: left; }
+  th { background: #eee; }
+  .check { width: 34px; text-align: center; }
+  .tag { display: inline-block; border: 1px solid #111; border-radius: 4px; padding: 1px 6px; margin-right: 4px; font-weight: bold; }
+  .steps td { height: 26px; }
+  .warn { background: #fff3cd; }
+</style>
+
+<div class="head">
+  <div>
+    <h1>BON DE PRÉPARATION</h1>
+    <div class="big">{{ order.name }}</div>
+    <div>Commandé le {{ order.created_at | date: "%d/%m/%Y à %Hh%M" }}</div>
+  </div>
+  <div class="meta">
+    <strong>{{ order.billing_address.company | default: order.customer.name }}</strong><br>
+    {{ order.customer.name }}<br>
+    {{ order.email }}{% if order.phone or order.billing_address.phone %}<br>{{ order.phone | default: order.billing_address.phone }}{% endif %}<br>
+    {% if order.note contains 'professionnel' %}<span class="tag">PRO</span>{% else %}<span class="tag">PARTICULIER</span>{% endif %}
+    {% for line in order.shipping_lines %}<span class="tag">{{ line.title }}</span>{% endfor %}
+  </div>
+</div>
+
+{%- assign groups = "" -%}
+{%- for item in order.line_items -%}
+  {%- assign g = item.properties["Groupe"] | default: item.title -%}
+  {%- unless groups contains g -%}{%- assign groups = groups | append: g | append: "|" -%}{%- endunless -%}
+{%- endfor -%}
+{%- assign group_list = groups | split: "|" -%}
+
+{%- for g in group_list -%}
+{%- if g == "" -%}{%- continue -%}{%- endif -%}
+<div class="box">
+  {%- assign garment = nil -%}{%- assign bat = nil -%}{%- assign batdate = nil -%}{%- assign file = nil -%}{%- assign zones = nil -%}{%- assign logo = nil -%}{%- assign text = nil -%}{%- assign later = nil -%}
+  {%- for item in order.line_items -%}
+    {%- assign ig = item.properties["Groupe"] | default: item.title -%}
+    {%- if ig == g and item.product.type != "Marquage" -%}
+      {%- assign garment = item -%}
+      {%- assign file = item.properties["Fichier logo à imprimer"] | default: item.properties["Fichier logo"] -%}{%- assign bat = item.properties["Maquette validée (BAT)"] -%}{%- assign batdate = item.properties["BAT validé le"] -%}{%- assign zones = item.properties["Emplacements"] -%}
+      {%- assign logo = item.properties["Logo"] -%}{%- assign text = item.properties["Texte"] -%}{%- assign later = item.properties["Tailles"] -%}
+    {%- endif -%}
+  {%- endfor -%}
+  <div class="art">
+    <div class="logo">
+      {%- if file and file contains ".png" or file contains ".jpg" or file contains ".webp" -%}<img src="{{ file }}?apercu" alt="logo">
+      {%- elsif file -%}Fichier vectoriel<br>(voir lien)
+      {%- else -%}{{ logo | default: "Logo à recevoir" }}{%- endif -%}
+    </div>
+    <div>
+      <div class="big" style="font-size:18px">{{ g }}</div>
+      <div><strong>Couleur :</strong> {{ garment.variant.option1 | default: garment.variant_title }}</div>
+      <div><strong>Emplacements :</strong> {{ zones | default: "—" }}</div>
+      <div><strong>Logo :</strong> {{ logo | default: "—" }}</div>
+      {%- if text -%}<div><strong>Texte :</strong> « {{ text }} »</div>{%- endif -%}
+      {%- if file -%}<div style="word-break:break-all"><strong>Fichier :</strong> {{ file }}</div>{%- endif -%}
+      {%- if later -%}<div class="warn"><strong>⚠ Tailles :</strong> {{ later }}</div>{%- endif -%}
+      {%- if logo contains "PETITE" -%}<div class="warn"><strong>⚠ Logo en petite définition</strong> (accepté par le client)</div>{%- endif -%}
+      {%- if batdate -%}<div><strong>BAT validé par le client le</strong> {{ batdate }}</div>{%- endif -%}
+    </div>
+  </div>
+  {%- if bat -%}<div class="bat"><strong>Maquette validée (à reproduire à l'identique)</strong><img src="{{ bat }}?apercu" alt="maquette validée"></div>{%- endif -%}
+  <table>
+    <tr><th>Taille</th><th>Quantité</th><th>Référence</th><th class="check">Prélevé</th><th class="check">Imprimé</th><th class="check">Contrôlé</th></tr>
+    {%- assign total = 0 -%}
+    {%- for item in order.line_items -%}
+      {%- assign ig = item.properties["Groupe"] | default: item.title -%}
+      {%- if ig == g and item.product.type != "Marquage" -%}
+        {%- assign total = total | plus: item.quantity -%}
+        <tr><td><strong>{{ item.variant.option2 | default: item.variant_title }}</strong></td><td><strong>{{ item.quantity }}</strong></td><td>{{ item.sku }}</td><td class="check">☐</td><td class="check">☐</td><td class="check">☐</td></tr>
+      {%- endif -%}
+    {%- endfor -%}
+    <tr><th>Total</th><th>{{ total }} pièces</th><th colspan="4">
+      {%- for item in order.line_items -%}{%- assign ig = item.properties["Groupe"] | default: item.title -%}{%- if ig == g and item.product.type == "Marquage" -%}<span class="tag">{{ item.title }} × {{ item.quantity }}</span>{%- endif -%}{%- endfor -%}
+    </th></tr>
+  </table>
+</div>
+{%- endfor -%}
+
+<div class="grid">
+  <div class="box">
+    <strong>Livraison</strong><br>
+    {{ order.shipping_address.name }}<br>
+    {% if order.shipping_address.company %}{{ order.shipping_address.company }}<br>{% endif %}
+    {{ order.shipping_address.address1 }}{% if order.shipping_address.address2 %}, {{ order.shipping_address.address2 }}{% endif %}<br>
+    {{ order.shipping_address.zip }} {{ order.shipping_address.city }}<br>
+    {{ order.shipping_address.country }}
+    {% if order.note %}<p><strong>Note client :</strong> {{ order.note }}</p>{% endif %}
+  </div>
+  <div class="box">
+    <strong>Suivi de production</strong>
+    <table class="steps">
+      <tr><td>Articles prélevés</td><td style="width:40%"></td></tr>
+      <tr><td>Impression DTF</td><td></td></tr>
+      <tr><td>Pressage / contrôle qualité</td><td></td></tr>
+      <tr><td>Colis prêt / étiquette</td><td></td></tr>
+    </table>
+  </div>
+</div>
