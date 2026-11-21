@@ -6,7 +6,7 @@ import type { LineConfig } from './pricing';
 
 export type SavedCart = {
   id: string;
-  kind: 'commande' | 'devis';
+  kind: 'commande' | 'devis' | 'relance';
   createdAt: string;
   lines: LineConfig[];
   promo?: string | null;

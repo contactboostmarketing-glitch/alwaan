@@ -1,7 +1,9 @@
+import { limited, tooMany } from '@/lib/rateLimit';
 import { NextResponse } from 'next/server';
 import { PROMO_CODES } from '@/lib/catalog';
 import { sanitize } from '@/lib/cartSanitize';
 import { quotePdf } from '@/lib/quotePdf';
+import { validRelanceCode } from '@/lib/relance';
 import { saveCart } from '@/lib/savedCart';
 import { publicOrigin } from '@/lib/site';
 import { sessionEmail } from '@/lib/customer';
@@ -10,10 +12,12 @@ import { addQuoteToEmail, isReseller } from '@/lib/reseller';
 
 /** Devis PDF du panier, enregistré pour être repris et payé en ligne (/devis/<id>). */
 export async function POST(req: Request) {
+  if (await limited(req, 'devis', 20, 600)) return tooMany();
   const b = await req.json().catch(() => null);
   const lines = sanitize(b?.lines);
   if (!lines) return NextResponse.json({ error: 'Validez la maquette de chaque article avant de demander le devis.' }, { status: 400 });
-  const promo = b?.promo && PROMO_CODES[String(b.promo).toUpperCase()] ? String(b.promo).toUpperCase() : null;
+  const rawPromo = typeof b?.promo === 'string' ? b.promo.trim().toUpperCase() : '';
+  const promo = rawPromo && (PROMO_CODES[rawPromo] || (await validRelanceCode(rawPromo))) ? rawPromo : null;
   const email = typeof b?.email === 'string' && /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(b.email.trim()) ? b.email.trim().slice(0, 120) : '';
   const express = b?.express === true;
   const customerEmail = await sessionEmail(req, publicOrigin(req));

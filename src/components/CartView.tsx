@@ -89,7 +89,7 @@ export function CartView() {
     setBusy(true); setMsg('');
     try {
       const r = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payment: 'virement', promo, pro, lang, express, voucher: voucher?.code, sample: sample && t.pieces >= SAMPLE_MIN, attribution: attributionForCheckout(), lines: lines.map(({ logo, ...l }) => ({ ...l, hasLogoPreview: !!logo })) }) });
+        body: JSON.stringify({ payment: 'virement', promo, pro, lang, express, voucher: voucher?.code, relance: relanceId(), sample: sample && t.pieces >= SAMPLE_MIN, attribution: attributionForCheckout(), lines: lines.map(({ logo, ...l }) => ({ ...l, hasLogoPreview: !!logo })) }) });
       const d = await r.json();
       if (d.transfer) { setTransfer(d.transfer); clear(); window.scrollTo(0, 0); } else setMsg(d.error || tx('Le paiement n\'est pas encore configuré.'));
     } catch { setMsg(tx('Connexion impossible. Réessayez dans un instant.')); }
@@ -101,7 +101,7 @@ export function CartView() {
     track('begin_checkout', { value: t.ht, items: lines.map((l) => ({ item_id: l.slug, item_name: getProduct(l.slug)?.name || l.slug, quantity: qtyOf(l) })) });
     try {
       const r = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ promo, pro, lang, express, voucher: voucher?.code, sample: sample && t.pieces >= SAMPLE_MIN, attribution: attributionForCheckout(), lines: lines.map(({ logo, ...l }) => ({ ...l, hasLogoPreview: !!logo })) }) });
+        body: JSON.stringify({ promo, pro, lang, express, voucher: voucher?.code, relance: relanceId(), sample: sample && t.pieces >= SAMPLE_MIN, attribution: attributionForCheckout(), lines: lines.map(({ logo, ...l }) => ({ ...l, hasLogoPreview: !!logo })) }) });
       const d = await r.json();
       if (d.url) window.location.href = d.url; else setMsg(d.error || tx('Le paiement n\'est pas encore configuré.'));
     } catch { setMsg(tx('Connexion impossible. Réessayez dans un instant.')); }
@@ -183,6 +183,7 @@ export function CartView() {
               <button className="btn line block" disabled={quoting} onClick={downloadQuote}>{tx(quoting ? 'Préparation…' : 'Télécharger le devis')}</button>
             </div>
           )}
+          <SendCart />
         </aside>
       </div>
     </section>
@@ -247,6 +248,32 @@ function SampleOffer({ eligible, onAccept, hint }: { eligible: boolean; onAccept
         <button className="btn cta block" onClick={() => { onAccept(); setOpen(false); }}>{tx('Oui, je veux mon échantillon')}</button>
         <button className="link small" onClick={() => setOpen(false)}>{tx('Non merci, je commande directement')}</button>
       </div>
+    </div>
+  );
+}
+
+const relanceId = () => { try { return localStorage.getItem('alwaan-relance') || undefined; } catch { return undefined; } };
+
+/** « Pas prêt ? Recevez ce panier par email » : enregistre le panier et lance la relance (offre -10 % après 24 h sans activité). */
+function SendCart() {
+  const { lines, promo, express } = useCart();
+  const { t: tx, lang } = useT();
+  const [open, setOpen] = useState(false), [email, setEmail] = useState(''), [state, setState] = useState<'' | 'busy' | 'ok'>(''), [err, setErr] = useState('');
+  if (state === 'ok') return <p className="okline with-ic small"><I name="check" size={16} /> {tx('Panier envoyé à {e}', { e: email })}</p>;
+  if (!open) return <button className="link small send-cart" onClick={() => setOpen(true)}><I name="mail" size={16} /> {tx('Pas prêt ? Recevez ce panier par email')}</button>;
+  const send = async () => {
+    setState('busy'); setErr('');
+    const r = await fetch('/api/relance', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, promo, express, lang, lines: lines.map(({ logo, ...l }) => l) }) }).catch(() => null);
+    const d = r ? await r.json().catch(() => ({})) : {};
+    if (!r?.ok) { setState(''); setErr(tx(d.error || 'Envoi impossible.')); return; }
+    try { localStorage.setItem('alwaan-relance', d.id); } catch {}
+    setState('ok');
+  };
+  return (
+    <div className="quote-box">
+      <input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={tx('Votre email')} aria-label={tx('Votre email')} />
+      <button className="btn line block" disabled={state === 'busy' || !email} onClick={send}>{tx(state === 'busy' ? 'Envoi…' : 'Recevoir mon panier')}</button>
+      {err && <p className="err">{err}</p>}
     </div>
   );
 }

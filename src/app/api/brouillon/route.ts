@@ -1,3 +1,4 @@
+import { limited, tooMany } from '@/lib/rateLimit';
 import { randomBytes } from 'crypto';
 import { NextResponse } from 'next/server';
 import { getProduct } from '@/lib/catalog';
@@ -17,6 +18,7 @@ const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,190}\.[a-z]{2,24}$/i;
 
 /** Sauvegarde la demande de l'assistant avec l'email du client (reprise + relances). */
 export async function POST(req: Request) {
+  if (await limited(req, 'brouillon', 10, 600)) return tooMany();
   const b = await req.json().catch(() => null);
   const email = String(b?.email || '').trim().toLowerCase();
   if (!EMAIL.test(email)) return NextResponse.json({ error: 'Adresse email invalide.' }, { status: 400 });

@@ -1,9 +1,11 @@
+import { limited, tooMany } from '@/lib/rateLimit';
 import { randomBytes } from 'crypto';
 import { NextResponse } from 'next/server';
 import { LOGO_TYPES, MAX_LOGO_BYTES, saveLogo } from '@/lib/logoStore';
 
 /** Reçoit le fichier logo d'origine et renvoie son identifiant (joint ensuite à la commande). */
 export async function POST(req: Request) {
+  if (await limited(req, 'logo', 60, 600)) return tooMany("Trop d'envois de fichiers. Réessayez dans quelques minutes.");
   const form = await req.formData().catch(() => null);
   const file = form?.get('file');
   if (!(file instanceof File)) return NextResponse.json({ error: 'Aucun fichier reçu.' }, { status: 400 });

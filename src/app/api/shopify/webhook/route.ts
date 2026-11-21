@@ -10,6 +10,7 @@ import { REFERRAL_REWARD, issueBon, lookupCode, markBonUsed } from '@/lib/vouche
 import { getShop, saveShop } from '@/lib/shops';
 import { SHOP_COMMISSION } from '@/lib/catalog';
 import { decrementStock } from '@/lib/stock';
+import { closeRelance, useRelanceCode } from '@/lib/relance';
 
 /**
  * Webhook Shopify « commande payée » (enregistré par /api/shopify/setup).
@@ -62,6 +63,12 @@ export async function POST(req: Request) {
       await saveRework(r); await tagOrder(r);
     }
   }
+
+  // Relance panier : code -10 % utilisé, relance arrêtée.
+  try {
+    if (attr.promo?.startsWith('RETOUR-')) await useRelanceCode(attr.promo, o.name);
+    if (attr.relance) await closeRelance(attr.relance, 'commande');
+  } catch (e) { console.error('[relance]', e); }
 
   // Stock atelier : déduction des pièces prises en stock.
   let stock = '';

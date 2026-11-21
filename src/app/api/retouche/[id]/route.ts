@@ -10,7 +10,7 @@ type Ctx = { params: Promise<{ id: string }> };
 export async function GET(req: Request, { params }: Ctx) {
   const r = await getRework((await params).id);
   if (!r) return NextResponse.json({ error: 'Lien introuvable.' }, { status: 404 });
-  if (isStaff(req)) { await attachOrders([r]); return NextResponse.json(r); }
+  if (await isStaff(req)) { await attachOrders([r]); return NextResponse.json(r); }
   // Le client ne voit que ce qui le concerne, sans l'historique interne.
   const { decision, ...rest } = r;
   return NextResponse.json({ id: rest.id, status: rest.status, items: rest.items, proof: rest.proof, decision: decision && { at: decision.at, ok: decision.ok, comment: decision.comment } });
@@ -24,7 +24,7 @@ export async function POST(req: Request, { params }: Ctx) {
 
   // Atelier : dépôt du logo retravaillé et des nouvelles maquettes.
   if (b?.action === 'proof') {
-    if (!isStaff(req)) return NextResponse.json({ error: 'Clé atelier incorrecte.' }, { status: 401 });
+    if (!(await isStaff(req))) return NextResponse.json({ error: 'Clé atelier incorrecte.' }, { status: 401 });
     if (r.status === 'valide') return NextResponse.json({ error: 'Déjà validé par le client.' }, { status: 409 });
     const mockups = (Array.isArray(b.mockups) ? b.mockups : [])
       .filter((m: { slug?: string; mockupId?: string }) => getProduct(m?.slug || '') && LOGO_ID.test(m?.mockupId || ''))

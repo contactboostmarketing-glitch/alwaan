@@ -1,6 +1,8 @@
+import { limited, tooMany } from '@/lib/rateLimit';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { COLOR_NAMES, PROMO_CODES, getProduct, sizesFor, zonesFor, SAMPLE_MIN } from '@/lib/catalog';
+import { COLOR_NAMES, PROMO_CODES, getProduct, sizesFor, zonesFor, SAMPLE_MIN, promoRate } from '@/lib/catalog';
+import { validRelanceCode } from '@/lib/relance';
 import { cartTotals, logoKey, pools, qtyOf, unitPrice, type LineConfig } from '@/lib/pricing';
 import { createRework } from '@/lib/rework';
 import { saveCart } from '@/lib/savedCart';
@@ -12,6 +14,7 @@ import { sanitize } from '@/lib/cartSanitize';
 import { createShopifyCheckout, createTransferOrder, shopifyEnabled } from '@/lib/shopify';
 
 export async function POST(req: Request) {
+  if (await limited(req, 'paiement', 30, 600)) return tooMany();
   const body = await req.json().catch(() => null);
   const lines = sanitize(body?.lines);
   if (!lines) return NextResponse.json({ error: 'Un article n\'a pas de maquette validée. Ouvrez-le avec « Modifier », vérifiez le logo et validez la maquette.' }, { status: 400 });
@@ -30,7 +33,9 @@ export async function POST(req: Request) {
   const code = typeof body?.voucher === 'string' ? await lookupCode(body.voucher) : null;
   const voucherOk = code && !(code.kind === 'parrain' && customerEmail && code.email === customerEmail.toLowerCase()) ? code : null;
   const voucher = voucherOk ? { amount: voucherOk.amount, min: voucherOk.min } : null;
-  const promo = body?.promo && PROMO_CODES[String(body.promo).toUpperCase()] ? String(body.promo).toUpperCase() : null;
+  // Code promo : codes fixes, ou code de relance RETOUR-XXXXXX à usage unique (vérifié ici).
+  const rawPromo = typeof body?.promo === 'string' ? body.promo.trim().toUpperCase() : '';
+  const promo = rawPromo && (PROMO_CODES[rawPromo] || (await validRelanceCode(rawPromo))) ? rawPromo : null;
 
   // Shopify en priorité : panier, paiement et commandes gérés dans le back office.
   if (shopifyEnabled()) {
@@ -48,6 +53,8 @@ export async function POST(req: Request) {
       const lang = body?.lang === 'en' ? 'en' : 'fr';
       if (lang === 'en') attr._langue = 'en';
       if (express) attr._express = 'oui';
+      if (promo) attr._promo = promo;
+      if (typeof body?.relance === 'string' && /^[a-f0-9]{24}$/.test(body.relance)) attr._relance = body.relance;
       // Échantillon avant série (dès 150 pièces) : l'atelier envoie 1 pièce et attend la validation du client.
       if (body?.sample === true && lines.reduce((a, l) => a + qtyOf(l), 0) >= SAMPLE_MIN) attr._echantillon = 'oui';
       if (reseller) attr._revendeur = 'oui';
@@ -123,7 +130,7 @@ export async function POST(req: Request) {
 async function coupon(stripe: Stripe, code: string) {
   const id = `alwaan-${code.toLowerCase()}`;
   try { await stripe.coupons.retrieve(id); } catch {
-    await stripe.coupons.create({ id, percent_off: PROMO_CODES[code] * 100, duration: 'once', name: code });
+    await stripe.coupons.create({ id, percent_off: promoRate(code) * 100, duration: 'once', name: code });
   }
   return id;
 }

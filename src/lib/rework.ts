@@ -3,6 +3,7 @@
 // le client les valide (ou demande une modification) en un clic sur /bat/<id>. Rien n'est imprimé avant.
 import { randomBytes } from 'crypto';
 import { safeEqual } from './secure';
+import { blocked, hit } from './rateLimit';
 import { getJSON, listKeys, putJSON } from './blobStore';
 import type { Rework, ReworkItem } from './reworkTypes';
 export * from './reworkTypes';
@@ -28,4 +29,14 @@ export async function listReworks(): Promise<Rework[]> {
 
 /** Clé de l'atelier (pages /atelier) : STAFF_KEY, sinon la clé de synchronisation. */
 export const staffKey = () => process.env.STAFF_KEY || process.env.SYNC_KEY || process.env.ROLY_SYNC_KEY || '';
-export const isStaff = (req: Request) => safeEqual(req.headers.get('x-staff-key'), staffKey());
+/**
+ * Accès atelier : clé correcte, et adresse non bloquée.
+ * Après 8 clés fausses en 15 minutes, l'adresse est bloquée 15 minutes (même avec la bonne clé).
+ */
+export async function isStaff(req: Request): Promise<boolean> {
+  if (!req.headers.get('x-staff-key')) return false;
+  if (await blocked(req, 'atelier', 8, 900)) return false;
+  if (safeEqual(req.headers.get('x-staff-key'), staffKey())) return true;
+  await hit(req, 'atelier', 8, 900);
+  return false;
+}

@@ -1,3 +1,4 @@
+import { limited, tooMany } from '@/lib/rateLimit';
 import { safeEqual } from '@/lib/secure';
 import { randomBytes } from 'crypto';
 import { NextResponse } from 'next/server';
@@ -21,6 +22,7 @@ export async function GET(req: Request, { params }: Ctx) {
 
 /** Ajout d'une personne (lien partagé), ou actions de l'acheteur (clôturer, retirer, renommer). */
 export async function POST(req: Request, { params }: Ctx) {
+  if (await limited(req, 'equipe-reponse', 60, 600)) return tooMany();
   const t = await getTeam((await params).id);
   if (!t) return NextResponse.json({ error: 'Lien introuvable.' }, { status: 404 });
   const b = await req.json().catch(() => null);

@@ -138,6 +138,10 @@ export const FREE_SHIPPING_HT = 150;
 export const SHIPPING_HT = 9.9;
 export const VAT = 0.2;
 export const PROMO_CODES: Record<string, number> = { BIENVENUE: 0.1 };
+/** Relance panier abandonné : code à usage unique RETOUR-XXXXXX (vérifié côté serveur), -10 %. */
+export const RELANCE_RATE = 0.1;
+export const RELANCE_CODE = /^RETOUR-[A-Z0-9]{6}$/;
+export const promoRate = (code?: string | null) => { const c = (code || '').trim().toUpperCase(); return PROMO_CODES[c] ?? (RELANCE_CODE.test(c) ? RELANCE_RATE : 0); };
 /** Logo retravaillé par notre graphiste (fond, netteté, vectorisation) : forfait HT, une fois par logo. */
 export const REWORK_FEE = 4;
 /** Remise des revendeurs validés (Kbis vérifié) : sur tout, hors livraison. */

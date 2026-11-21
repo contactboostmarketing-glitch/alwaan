@@ -1,6 +1,12 @@
 // Stock atelier côté serveur (Netlify Blobs) : lecture, saisie par l'atelier, déduction à chaque commande payée.
 import { getJSON, putJSON } from './blobStore';
+import { getProduct, COLOR_NAMES } from './catalog';
+import { atelierEmail, esc, layout, sendMail } from './mail';
+import { SITE_URL } from './site';
 import { skey, type Stock } from './stockTypes';
+
+/** Seuil d'alerte de réassort (pièces restantes par référence). */
+export const STOCK_ALERT = Number(process.env.STOCK_ALERT || 5);
 
 const STORE = 'stock', KEY = 'atelier';
 type Saved = { q: Record<string, number>; updatedAt?: string };
@@ -33,6 +39,17 @@ export async function decrementStock(items: { key: string; quantity: number }[])
     s.q[key] = Math.max(0, s.q[key] - quantity); done.push(`${key} -${quantity}`);
   }
   if (done.length) await putJSON(STORE, KEY, { q: s.q, updatedAt: new Date().toISOString() });
-  return done.join(', ') || 'rien à déduire';
+  // Alerte réassort : références qui viennent de passer sous le seuil avec cette commande.
+  const low = items.filter(({ key, quantity }) => key in s.q && s.q[key] <= STOCK_ALERT && s.q[key] + quantity > STOCK_ALERT);
+  let alert = '';
+  if (low.length) alert = await sendMail({
+    to: atelierEmail(),
+    subject: `Réassort : ${low.length} référence${low.length > 1 ? 's' : ''} sous ${STOCK_ALERT} pièces`,
+    html: layout({ title: 'Stock bas à l\'atelier', intro: `Ces références sont passées sous ${STOCK_ALERT} pièces. Au-delà du stock, le site les affiche « sur commande » (+5 jours ouvrés).`,
+      rows: low.map(({ key }) => esc(`${label(key)} : ${s.q[key]} restante${s.q[key] > 1 ? 's' : ''}`)), cta: ['Mettre à jour le stock', `${SITE_URL}/atelier/stock`] }),
+  }).catch((e) => `erreur ${(e as Error).message}`);
+  return (done.join(', ') || 'rien à déduire') + (alert ? ` · alerte ${alert}` : '');
 }
 export { skey };
+
+const label = (key: string) => { const [slug, color, size] = key.split('|'); return `${getProduct(slug)?.name || slug} ${COLOR_NAMES[color] || color} ${size}`; };

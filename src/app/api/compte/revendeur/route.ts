@@ -1,3 +1,4 @@
+import { limited, tooMany } from '@/lib/rateLimit';
 import { NextResponse } from 'next/server';
 import { customerQuery, getSession } from '@/lib/customer';
 import { LOGO_ID } from '@/lib/logoStore';
@@ -6,6 +7,7 @@ import { publicOrigin } from '@/lib/site';
 
 /** Demande du statut revendeur (Kbis joint), validée ensuite par l'équipe. */
 export async function POST(req: Request) {
+  if (await limited(req, 'revendeur', 5, 3600)) return tooMany();
   const { s } = await getSession(req, publicOrigin(req));
   if (!s) return NextResponse.json({ error: 'Connectez-vous d\'abord.' }, { status: 401 });
   const b = await req.json().catch(() => null);

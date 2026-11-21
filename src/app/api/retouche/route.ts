@@ -4,7 +4,7 @@ import { attachOrders, isAbandoned, lastOrdersError } from '@/lib/reworkOrders';
 
 /** Dossiers de retouche des commandes payées ; les paniers abandonnés sont seulement comptés. */
 export async function GET(req: Request) {
-  if (!isStaff(req)) return NextResponse.json({ error: 'Clé atelier incorrecte.' }, { status: 401 });
+  if (!(await isStaff(req))) return NextResponse.json({ error: 'Clé atelier incorrecte.' }, { status: 401 });
   const all = await attachOrders(await listReworks());
   const items = all.filter((r) => r.order && !r.order.cancelled);
   const pending = all.filter((r) => !r.order && !isAbandoned(r)).length;

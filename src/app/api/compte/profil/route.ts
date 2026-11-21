@@ -1,3 +1,4 @@
+import { limited, tooMany } from '@/lib/rateLimit';
 import { NextResponse } from 'next/server';
 import { customerQuery, discovery, getSession } from '@/lib/customer';
 import { getCompanyInfo, setCompanyInfo } from '@/lib/profile';
@@ -30,6 +31,7 @@ const clean = (v: unknown, n = 80) => (typeof v === 'string' ? v.trim().slice(0,
 type UE = { userErrors: { message: string }[] };
 
 export async function POST(req: Request) {
+  if (await limited(req, 'profil', 30, 600)) return tooMany();
   const { s } = await getSession(req, publicOrigin(req));
   if (!s) return NextResponse.json({ error: 'Connectez-vous d\'abord.' }, { status: 401 });
   const b = await req.json().catch(() => null);

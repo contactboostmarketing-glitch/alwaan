@@ -1,7 +1,7 @@
 // Calcul des prix. Le même code tourne dans le navigateur (affichage) et sur le serveur (paiement),
 // le serveur ne fait jamais confiance aux montants envoyés par le client.
 import {
-  DESIGN_FEE, FREE_SHIPPING_HT, NAME_FEE, NAMES_MIN, PROMO_CODES, RESELLER_RATE, REWORK_FEE, SHIPPING_HT, expressFee, VAT, getProduct, tierFor, zonesFor,
+  DESIGN_FEE, FREE_SHIPPING_HT, NAME_FEE, NAMES_MIN, promoRate, RESELLER_RATE, REWORK_FEE, SHIPPING_HT, expressFee, VAT, getProduct, tierFor, zonesFor,
 } from './catalog';
 
 /** uploaded = logo fourni ; text = pas de logo, seulement un texte imprimé. */
@@ -90,7 +90,7 @@ export function cartTotals(lines: LineConfig[], promo?: string | null, withExpre
   const express = withExpress && pieces ? expressFee(pieces) : 0;
   const rework = round(reworkLogos(lines).length * REWORK_FEE);
   const goods = round(lines.reduce((a, l, i) => a + lineTotal(l, pool[i]), 0) + rework);
-  const rate = promo ? PROMO_CODES[promo.toUpperCase()] ?? 0 : 0;
+  const rate = promoRate(promo);
   const discount = round(goods * rate);
   const net = goods - discount;
   const shipping = !lines.length || net >= FREE_SHIPPING_HT ? 0 : SHIPPING_HT;

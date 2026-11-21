@@ -1,3 +1,4 @@
+import { limited, tooMany } from '@/lib/rateLimit';
 import { NextResponse } from 'next/server';
 import { getProduct, zonesFor } from '@/lib/catalog';
 import { sessionEmail } from '@/lib/customer';
@@ -7,6 +8,7 @@ import { publicOrigin } from '@/lib/site';
 
 /** Création d'une boutique par un client connecté. */
 export async function POST(req: Request) {
+  if (await limited(req, 'boutique', 20, 600)) return tooMany();
   const email = await sessionEmail(req, publicOrigin(req));
   if (!email) return NextResponse.json({ error: 'Connectez-vous d\'abord.' }, { status: 401 });
   const b = await req.json().catch(() => null);

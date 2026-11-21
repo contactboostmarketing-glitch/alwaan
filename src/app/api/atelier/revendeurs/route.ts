@@ -4,11 +4,11 @@ import { getReseller, listResellers, saveReseller } from '@/lib/reseller';
 
 /** Demandes revendeur : liste et décision (atelier). */
 export async function GET(req: Request) {
-  if (!isStaff(req)) return NextResponse.json({ error: 'Clé atelier incorrecte.' }, { status: 401 });
+  if (!(await isStaff(req))) return NextResponse.json({ error: 'Clé atelier incorrecte.' }, { status: 401 });
   return NextResponse.json({ items: await listResellers() });
 }
 export async function POST(req: Request) {
-  if (!isStaff(req)) return NextResponse.json({ error: 'Clé atelier incorrecte.' }, { status: 401 });
+  if (!(await isStaff(req))) return NextResponse.json({ error: 'Clé atelier incorrecte.' }, { status: 401 });
   const b = await req.json().catch(() => null);
   const r = b?.email && await getReseller(String(b.email));
   if (!r || !['valide', 'refuse'].includes(b.decision)) return NextResponse.json({ error: 'Demande introuvable.' }, { status: 400 });
