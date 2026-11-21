@@ -18,6 +18,14 @@ Liste des actions en attente (à faire par l'équipe alwaan, ou des informations
 - [ ] Merchant Center : flux planifié quotidien `https://alwaan.fr/feeds/google.xml`.
 - [ ] Remplacer les illustrations par les vraies photos produits dès qu'elles sont prêtes.
 
+## Marketing
+- [ ] Créer la fiche Google Business Profile de l'atelier (Haubourdin) et demander les premiers avis Google.
+- [ ] Vidéo de l'atelier (impression DTF) : la mettre sur YouTube puis renseigner `NEXT_PUBLIC_ATELIER_VIDEO` (lien d'intégration youtube-nocookie.com/embed/…).
+- [ ] Relire et publier les avis clients dans /atelier/avis (publier aussi les avis négatifs authentiques).
+- [ ] Campagnes saisonnières : Shopify Email vers les clients inscrits aux offres (tag `inscrit-site`).
+- [ ] Logos de clients pour « Ils nous font confiance » (avec leur accord).
+- [ ] Mis de côté : kit nuancier / échantillons de tissus pour les pros.
+
 ## Comptabilité
 - [ ] Pennylane : Paramètres > Connexions > Shopify.
 

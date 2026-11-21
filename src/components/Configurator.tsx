@@ -311,7 +311,7 @@ export function Configurator({ slug }: { slug: string }) {
           <p className="eta"><I name="truck" size={16} /> {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), false, short.length > 0, blank), lang) })}{!blank && <> · <span className="muted">{t('express possible')}</span></>}</p>
           {editIndex === null && <button className="link small team-link" onClick={() => submit(true)} disabled={saving}><I name="users" size={18} /> {t('Récupérer les noms et tailles de l\'équipe par un lien')}</button>}
         </div>
-        <Perks items={[['eye', t('Imprimé comme la maquette')], ['lock', t('Paiement sécurisé')], ['redo', t('Défaut refait')], ['truck', t('7 jours')]]} />
+        <Perks items={[['eye', t('Imprimé comme la maquette')], ['lock', t('Paiement sécurisé')], ['redo', t('Défaut refait')], ['truck', t('7 jours')], ['home', t('Imprimé dans le Nord')]]} />
       </div>
       {added && <SameLogo current={p.category} logo={cfg.logo} />}
       {toast && <div className="toast" role="status">{toast} {added && <Link href={l('/panier')}>{t('Voir le panier')}</Link>}</div>}

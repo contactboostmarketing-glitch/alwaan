@@ -12,7 +12,7 @@ import { sign } from './secure';
 import { SITE_URL } from './site';
 
 export type Relance = { id: string; email: string; lang: 'fr' | 'en'; createdAt: string; lastActivity: string; step: 1 | 2; code?: string; done?: 'commande' | 'desinscrit'; log: string[] };
-export type RelanceCode = { code: string; rate: number; email: string; relance: string; expiresAt: string; usedBy?: string };
+export type RelanceCode = { code: string; rate: number; email: string; relance?: string; avis?: string; expiresAt: string; usedBy?: string };
 const DAY = 864e5;
 
 const link = (r: Relance, code?: string) => `${SITE_URL}/recommander/${r.id}?relance=1${code ? `&code=${code}` : ''}`;
@@ -73,5 +73,5 @@ export async function validRelanceCode(code: string): Promise<RelanceCode | null
 }
 export async function useRelanceCode(code: string, order: string) {
   const c = RELANCE_CODE.test(code) ? await getJSON<RelanceCode>('codes', code) : null;
-  if (c && !c.usedBy) { c.usedBy = order; await putJSON('codes', code, c); await closeRelance(c.relance, 'commande'); }
+  if (c && !c.usedBy) { c.usedBy = order; await putJSON('codes', code, c); if (c.relance) await closeRelance(c.relance, 'commande'); }
 }

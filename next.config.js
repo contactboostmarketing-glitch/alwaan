@@ -12,5 +12,6 @@ const SECURITY_HEADERS = [
 module.exports = {
   reactStrictMode: true,
   poweredByHeader: false,
+  async redirects() { return [{ source: '/a-propos', destination: '/notre-atelier', permanent: true }]; },
   async headers() { return [{ source: '/:path*', headers: SECURITY_HEADERS }]; },
 };

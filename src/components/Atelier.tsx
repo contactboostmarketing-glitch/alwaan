@@ -168,7 +168,7 @@ export function AtelierRework({ id }: { id: string }) {
 }
 
 function AtelierNav() {
-  return <nav className="atl-nav no-print"><Link href="/atelier/production">Production</Link><Link href="/atelier">Retouches</Link><Link href="/atelier/revendeurs">Revendeurs</Link><Link href="/atelier/stock">Stock</Link></nav>;
+  return <nav className="atl-nav no-print"><Link href="/atelier/production">Production</Link><Link href="/atelier">Retouches</Link><Link href="/atelier/revendeurs">Revendeurs</Link><Link href="/atelier/stock">Stock</Link><Link href="/atelier/avis">Avis</Link><Link href="/atelier/tableau">Tableau de bord</Link></nav>;
 }
 
 const day = (s: string) => new Date(s).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -346,6 +346,88 @@ export function AtelierStock() {
         {dirty && <button className="btn line" onClick={() => setDraft({})}>Annuler</button>}
         {ok && !dirty && <span className="okline">{ok}</span>}
         {err && <span className="warnline">{err}</span>}
+      </div>
+    </section>
+  );
+}
+
+type ReviewRow = { id: string; orderName: string; email: string; createdAt: string; name: string; company?: string; city?: string; rating: number; text: string; slugs: string[]; photoId?: string; showInGallery: boolean; status: 'en_attente' | 'publie' | 'refuse'; reply?: string };
+
+/** Avis clients : relire, répondre, publier ou refuser. */
+export function AtelierReviews() {
+  const { key, save } = useStaffKey();
+  const [items, setItems] = useState<ReviewRow[] | null>(null);
+  const [err, setErr] = useState('');
+  const [replies, setReplies] = useState<Record<string, string>>({});
+  const load = () => fetch('/api/atelier/avis', { headers: { 'x-staff-key': key } }).then(async (r) => {
+    const d = await r.json(); if (r.status === 401) { setErr(d.error); save(''); return; } setItems(d.items);
+  }).catch(() => setErr('Connexion impossible.'));
+  useEffect(() => { if (key) load(); }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!key) return <KeyGate onKey={save} error={err} />;
+  const decide = async (id: string, status: 'publie' | 'refuse') => {
+    await fetch('/api/atelier/avis', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-staff-key': key }, body: JSON.stringify({ id, status, reply: replies[id] }) });
+    load();
+  };
+  const pending = items?.filter((r) => r.status === 'en_attente').length || 0;
+  return (
+    <section className="wrap atelier"><AtelierNav /><h1>Avis clients</h1>
+      <p className="muted small">{pending} à relire. Publiez tous les avis authentiques, même négatifs (c&apos;est la loi, et ça rassure). Refusez seulement les propos injurieux, hors sujet ou contenant des données personnelles.</p>
+      {!items ? <p className="muted">Chargement…</p> : !items.length ? <p className="muted">Aucun avis pour l&apos;instant.</p> : items.map((r) => (
+        <article key={r.id} className="prod-card">
+          <header><b>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</b><b>{r.name}</b>{r.company && <span>{r.company}</span>}<span className={`st ${r.status === 'publie' ? 'st-valide' : r.status === 'refuse' ? 'st-modif' : 'st-a_retoucher'}`}>{r.status === 'publie' ? 'Publié' : r.status === 'refuse' ? 'Refusé' : 'À relire'}</span><small className="muted">{r.orderName} · {when(r.createdAt)}</small></header>
+          <p>{r.text}</p>
+          {r.photoId && <a href={`/api/logo/${r.photoId}?apercu`} target="_blank" rel="noopener">{/* eslint-disable-next-line @next/next/no-img-element */}<img className="team-shot" src={`/api/logo/${r.photoId}?apercu`} alt="Photo du client" /></a>}
+          <p className="small muted">{r.slugs.map((s) => getProduct(s)?.name || s).join(', ')}{r.photoId ? (r.showInGallery ? ' · photo autorisée dans les réalisations' : ' · photo non publiable') : ''}</p>
+          <input value={replies[r.id] ?? r.reply ?? ''} onChange={(e) => setReplies({ ...replies, [r.id]: e.target.value })} placeholder="Réponse publique d'alwaan (facultatif)" aria-label="Réponse" />
+          <div className="atl-files">
+            {r.status !== 'publie' && <button className="btn cta small" onClick={() => decide(r.id, 'publie')}>Publier</button>}
+            {r.status === 'publie' && <button className="btn line small" onClick={() => decide(r.id, 'publie')}>Mettre à jour la réponse</button>}
+            {r.status !== 'refuse' && <button className="btn line small" onClick={() => decide(r.id, 'refuse')}>Refuser</button>}
+          </div>
+        </article>
+      ))}
+    </section>
+  );
+}
+
+type Dash = {
+  total: { ht: number; n: number; aov: number }; last30: { ht: number; n: number }; prev30: { ht: number; n: number }; repeatRate: number;
+  months: { m: string; ht: number; n: number }[]; sources: { s: string; ht: number; n: number }[]; products: { name: string; n: number }[];
+  relances: { total: number; offres: number; commandes: number }; reviews: { count: number; avg: number }; lowStock: number;
+};
+const euro = (n: number) => n.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+
+/** Tableau de bord des ventes (commandes payées, montants HT hors livraison). */
+export function AtelierDashboard() {
+  const { key, save } = useStaffKey();
+  const [d, setD] = useState<Dash | null>(null);
+  const [err, setErr] = useState('');
+  useEffect(() => {
+    if (!key) return;
+    fetch('/api/atelier/tableau', { headers: { 'x-staff-key': key } }).then(async (r) => { const x = await r.json(); if (r.status === 401) { setErr(x.error); save(''); return; } setD(x); }).catch(() => setErr('Connexion impossible.'));
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!key) return <KeyGate onKey={save} error={err} />;
+  if (!d) return <section className="wrap atelier"><AtelierNav /><p className="muted">Chargement…</p></section>;
+  const evo = d.prev30.ht ? Math.round(((d.last30.ht - d.prev30.ht) / d.prev30.ht) * 100) : null;
+  const goal = 1_000_000, year = new Date().getFullYear().toString();
+  const ytd = d.months.filter((m) => m.m.startsWith(year)).reduce((a, m) => a + m.ht, 0);
+  return (
+    <section className="wrap atelier"><AtelierNav /><h1>Tableau de bord</h1>
+      <p className="muted small">Commandes payées, montants HT hors livraison. Taux de conversion du site : dans Google Analytics.</p>
+      <div className="acct-kpis dash-kpis">
+        <div><b>{euro(d.last30.ht)}</b><small>30 derniers jours{evo !== null ? ` · ${evo >= 0 ? '+' : ''}${evo} %` : ''}</small></div>
+        <div><b>{d.last30.n}</b><small>commandes (30 j)</small></div>
+        <div><b>{euro(d.total.aov)}</b><small>panier moyen</small></div>
+        <div><b>{d.repeatRate} %</b><small>clients qui recommandent</small></div>
+        <div><b>{euro(ytd)}</b><small>CA {year} · objectif 1 M€ : {Math.round((ytd / goal) * 1000) / 10} %</small></div>
+        <div><b>{d.reviews.count ? `${d.reviews.avg}/5` : '–'}</b><small>{d.reviews.count} avis publiés</small></div>
+        <div><b>{d.relances.commandes}/{d.relances.total}</b><small>paniers relancés convertis</small></div>
+        <div><b>{d.lowStock}</b><small>références en stock bas</small></div>
+      </div>
+      <div className="dash-cols">
+        <div><h2>Par mois</h2><table className="stk"><thead><tr><th>Mois</th><th>CA HT</th><th>Commandes</th></tr></thead><tbody>{d.months.map((m) => <tr key={m.m}><td>{m.m}</td><td>{euro(m.ht)}</td><td>{m.n}</td></tr>)}</tbody></table></div>
+        <div><h2>Sources</h2><table className="stk"><thead><tr><th>Source</th><th>CA HT</th><th>Commandes</th></tr></thead><tbody>{d.sources.map((x) => <tr key={x.s}><td>{x.s}</td><td>{euro(x.ht)}</td><td>{x.n}</td></tr>)}</tbody></table></div>
+        <div><h2>Produits les plus commandés</h2><table className="stk"><thead><tr><th>Produit</th><th>Commandes</th></tr></thead><tbody>{d.products.map((x) => <tr key={x.name}><td>{x.name}</td><td>{x.n}</td></tr>)}</tbody></table></div>
       </div>
     </section>
   );

@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { CATEGORIES, GENERAL_FAQ, PRODUCTS, SECTORS, fromPrice, getCategory, getProduct, topPrice } from '@/lib/catalog';
 import { Configurator } from '@/components/Configurator';
+import { ReviewList } from '@/components/ReviewList';
+import { publishedReviews, stats } from '@/lib/reviews';
 import { Breadcrumbs, Faq, Icon, JsonLd, LinkChips, MoreInfo, ProductCard } from '@/components/ui';
 import { SITE_URL } from '@/lib/site';
 import { categoryL, colorName, generalFaq, href, productL, sectorL, tr, type Lang } from '@/i18n';
@@ -22,7 +24,7 @@ export function productMeta(lang: Lang, slug: string): Metadata {
   };
 }
 
-export function ProductView({ lang, slug }: { lang: Lang; slug: string }) {
+export async function ProductView({ lang, slug }: { lang: Lang; slug: string }) {
   const p0 = getProduct(slug);
   if (!p0) notFound();
   const p = productL(lang, p0);
@@ -30,6 +32,9 @@ export function ProductView({ lang, slug }: { lang: Lang; slug: string }) {
   const t = (s: string, v?: Record<string, string | number>) => tr(lang, s, v);
   const related = [...PRODUCTS.filter((x) => x.category === p.category && x.slug !== p.slug), ...PRODUCTS.filter((x) => x.bestseller && x.category !== p.category)].slice(0, 4);
   const [mat, weight] = p.composition.split('·').map((x) => x.trim());
+  // Avis publiés : ceux du produit, sinon ceux de la boutique (affichés comme tels).
+  const reviews = await publishedReviews();
+  const rs = stats(reviews, p.slug);
   return (
     <>
       <Breadcrumbs lang={lang} items={[[c.name, href(lang, `/vetements/${c.slug}`)], [p.name]]} />
@@ -60,12 +65,17 @@ export function ProductView({ lang, slug }: { lang: Lang; slug: string }) {
             ...CATEGORIES.filter((o) => o.slug !== c.slug).slice(0, 3).map((o): [string, string] => { const x = categoryL(lang, o); return [lang === 'en' ? `Custom ${x.name.toLowerCase()}` : `${x.name} personnalisés`, href(lang, `/vetements/${o.slug}`)]; }),
           ]} />
         </div>
+        <ReviewList reviews={reviews} slug={p.slug} lang={lang} />
         <div className="sec-head mt"><h2>{t('Souvent commandés ensemble')}</h2></div>
         <div className="grid">{related.map((x) => <ProductCard key={x.slug} p={x} lang={lang} />)}</div>
       </section>
       <JsonLd data={{
         '@context': 'https://schema.org', '@type': 'Product', name: p.name, description: `${p.type}. ${p.composition}.`, inLanguage: lang,
         brand: { '@type': 'Brand', name: 'alwaan' }, category: c.name, color: p.colors.map((x) => colorName(lang, x)).join(', '), material: p.composition,
+        ...(rs.count ? {
+          aggregateRating: { '@type': 'AggregateRating', ratingValue: rs.avg, reviewCount: rs.count, bestRating: 5, worstRating: 1 },
+          review: rs.list.slice(0, 5).map((r) => ({ '@type': 'Review', author: { '@type': 'Person', name: r.name }, datePublished: r.createdAt.slice(0, 10), reviewBody: r.text, reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5 } })),
+        } : {}),
         offers: { '@type': 'AggregateOffer', priceCurrency: 'EUR', lowPrice: (fromPrice(p) * 1.2).toFixed(2), highPrice: (topPrice(p) * 1.2).toFixed(2), availability: 'https://schema.org/InStock', url: `${SITE_URL}${href(lang, `/produits/${p.slug}`)}` },
       }} />
     </>

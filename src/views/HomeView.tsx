@@ -29,7 +29,7 @@ export function HomeView({ lang }: { lang: Lang }) {
           <h1>{lang === 'en' ? <>Your workwear with <span>your logo</span>, delivered in 7 days</> : <>Vos tenues à <span>votre logo</span>, livrées en 7 jours</>}</h1>
           <p className="lead">{t('Votre logo, votre tenue en direct. Dès 1 pièce.')}</p>
           <div className="ctas"><Link className="btn cta" href={href(lang, '/assistant')}>{t('Créer ma tenue en 1 minute')}</Link><Link className="btn line" href={href(lang, '/lien-equipe')}><I name="users" size={18} /> {t('Lien d\'équipe')}</Link></div>
-          <Perks items={[['eye', t('Maquette en direct')], ['one', t('Dès 1 pièce')], ['tag', t('-40 % dès 30 pièces')]]} />
+          <Perks items={[['eye', t('Maquette en direct')], ['one', t('Dès 1 pièce')], ['tag', t('-40 % dès 30 pièces')], ['home', <Link key="at" href={href(lang, '/notre-atelier')}>{t('Imprimé dans notre atelier du Nord')}</Link>]]} />
         </div>
         <div className="hero-vis">
           {hero.map((p) => <div key={p.slug}><Garment slug={p.slug} color={defaultColor(p)} zones={[defaultZone(p)]} /></div>)}

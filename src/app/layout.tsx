@@ -4,6 +4,7 @@ import { CartProvider } from '@/components/CartProvider';
 import { CookieBanner } from '@/components/CookieBanner';
 import { Tracking } from '@/components/Tracking';
 import { ContactFloat } from '@/components/Contact';
+import { SignupNudge } from '@/components/SignupNudge';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { JsonLd } from '@/components/ui';
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <CookieBanner />
           <Tracking />
           <ContactFloat />
+          <SignupNudge />
         </CartProvider>
         <JsonLd data={{ '@context': 'https://schema.org', '@type': 'Organization', name: SITE_NAME, url: SITE_URL, description: TAGLINE, areaServed: [{ '@type': 'Country', name: 'France' }, { '@type': 'Country', name: 'Belgique' }], knowsAbout: ['vêtements personnalisés', 'impression DTF', 'vêtements de travail', 'haute visibilité EN ISO 20471'] }} />
       </body>

@@ -8,7 +8,7 @@ import { SITE_URL } from '@/lib/site';
 import { admin } from '@/lib/shopifyAdmin';
 import { REFERRAL_REWARD, issueBon, lookupCode, markBonUsed } from '@/lib/vouchers';
 import { getShop, saveShop } from '@/lib/shops';
-import { SHOP_COMMISSION } from '@/lib/catalog';
+import { RELANCE_CODE, SHOP_COMMISSION } from '@/lib/catalog';
 import { decrementStock } from '@/lib/stock';
 import { closeRelance, useRelanceCode } from '@/lib/relance';
 
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
 
   // Relance panier : code -10 % utilisé, relance arrêtée.
   try {
-    if (attr.promo?.startsWith('RETOUR-')) await useRelanceCode(attr.promo, o.name);
+    if (attr.promo && RELANCE_CODE.test(attr.promo)) await useRelanceCode(attr.promo, o.name);
     if (attr.relance) await closeRelance(attr.relance, 'commande');
   } catch (e) { console.error('[relance]', e); }
 
@@ -107,6 +107,9 @@ export async function POST(req: Request) {
     id: key, gid: o.admin_graphql_api_id, name: o.name, createdAt: o.created_at, value: sale.value, email: sale.email,
     panier: attr.panier, source: attr.utm_source, campaign: attr.utm_campaign, gclid: !!attr.gclid, fbclid: !!attr.fbclid,
     retouches: [...reworkIds], conversions: [ga, meta], parrainage, boutique, stock,
+    // Pour les emails après achat (bienvenue, avis, renouvellement) : produits commandés et langue.
+    slugs: [...new Set(o.line_items.flatMap((l) => (l.properties || []).filter((p) => p.name === '_stock').map((p) => String(p.value).split('|')[0])))],
+    lang: attr.langue === 'en' ? 'en' : 'fr', recommander: attr.recommander,
   });
   return NextResponse.json({ ok: true });
 }
