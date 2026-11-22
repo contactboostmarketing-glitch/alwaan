@@ -99,6 +99,9 @@ export const sellPrice = (cost: number) => Math.round(cost * COEF * 100) / 100;
 const p = (slug: string, category: string, name: string, type: string, sizes: string, cost: number, shape: Shape, colors: string[], composition: string, bestseller = false): Product =>
   ({ slug, category, name, type, sizes, cost, price: sellPrice(cost), shape, colors, composition, bestseller });
 
+/** Référence du modèle chez Roly (photos, stock, tarifs). */
+export const ROLY_MODEL: Record<string, string> = {"polo-pegaso": "6609", "polo-montreal": "6629", "polo-estrella": "6635", "t-shirt-dogo": "6502", "t-shirt-atomic-150": "6424", "t-shirt-fox": "6660", "chemise-moscu-homme": "5506", "chemise-moscu-femme": "5505", "tablier-benoit": "9125", "tablier-mini": "9124", "tablier-batali": "9126", "casquette-mercury": "7020", "gilet-hv-beta": "9323", "veste-hv-persei": "9313", "sweat-clasica": "1070", "sweat-capuche-urban": "1067", "sweat-zippe-montblanc": "6421", "polaire-himalaya": "1095", "softshell-nebraska": "6436", "veste-oslo": "5092"};
+
 export const PRODUCTS: Product[] = [
   p('polo-pegaso', 'polos-personnalises', 'Polo Pegaso', 'Polo piqué premium', 'S–5XL', 4.8, 'polo', ALL, '65 % polyester, 35 % coton · 210 g/m²', true),
   p('polo-montreal', 'polos-personnalises', 'Polo Montreal', 'Polo bords contrastés', 'S–XXL', 6.25, 'polo', ['#151a2d', '#1d2a5c', '#ffffff', '#c8302f'], '100 % coton piqué · 220 g/m²'),
