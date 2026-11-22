@@ -5,7 +5,9 @@ import { useEffect } from 'react';
 import { captureAttribution } from '@/lib/track';
 
 const GA4 = process.env.NEXT_PUBLIC_GA4_ID; // G-XXXXXXX
-const GADS = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID; // AW-XXXXXXXXX
+// Compte Google Ads alwaan (251-489-2270) et action de conversion « Achat » : identifiants publics (visibles dans la balise).
+const GADS = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || 'AW-18590441820';
+export const GADS_PURCHASE = `${GADS}/${process.env.NEXT_PUBLIC_GOOGLE_ADS_PURCHASE_LABEL || 'wv8oCPSexL0dENzCzqBF'}`;
 const PIXEL = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
 function loadMeta() {
