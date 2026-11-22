@@ -176,7 +176,7 @@ export const GUIDES: Guide[] = [
     sections: [
       { h2: 'Usage unique ou durable ?', p: ['Pour un événement d\'un jour, un 150 g/m² suffit et reste le plus économique. Pour un club qui portera ses t-shirts toute la saison, préférez 180 g/m² ou plus.'] },
       { h2: 'Le budget par personne', p: [`Le marquage baisse automatiquement avec la quantité : ${tiersText}. Commander toutes les tailles ensemble permet d\'atteindre plus vite un palier.`] },
-      { h2: 'Le délai', p: ['Comptez 7 jours ouvrés de production et de livraison, 4 en express : anticipez d\'au moins deux semaines avant votre événement.'] },
+      { h2: 'Le délai', p: ['Comptez 7 jours ouvrés de production (4 en express) après validation de la maquette, puis 1 à 3 jours ouvrés de transport : anticipez d\'au moins deux semaines avant votre événement.'] },
     ],
     faq: [['Peut-on mélanger les tailles ?', 'Oui, toutes les tailles d\'un même modèle comptent ensemble pour le prix dégressif.']],
   },

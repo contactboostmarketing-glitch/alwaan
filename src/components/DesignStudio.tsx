@@ -30,6 +30,10 @@ export function DesignStudio({ id }: { id: string }) {
   const d = getDesign(id)!;
   const { add } = useCart();
   const [vals, setVals] = useState<Record<string, string>>(() => designValues(d));
+  // Les valeurs préremplies sont des exemples (A09) : le client doit les modifier ou confirmer qu'il les garde.
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [keepEx, setKeepEx] = useState(false);
+  const untouched = d.fields.filter((f) => !touched[f.key] && vals[f.key] === f.def);
   const [slug, setSlug] = useState(d.products[0]);
   const p = getProduct(slug)!;
   const [color, setColor] = useState(() => d.colors?.find((c) => p.colors.includes(c)) ?? p.colors[0]);
@@ -44,6 +48,8 @@ export function DesignStudio({ id }: { id: string }) {
 
   const submit = async () => {
     if (!pieces) { setMsg(t('Choisissez une taille.')); return; }
+    if (d.fields.some((f) => !vals[f.key]?.trim())) { setMsg(t('Remplissez chaque champ du design.')); return; }
+    if (untouched.length && !keepEx) { setMsg(t('Vérifiez {f} : ce sont des exemples. Modifiez-les, ou confirmez que vous les gardez.', { f: untouched.map((f) => `« ${f[lang]} »`).join(', ') })); return; }
     if (!ok) { setMsg(t('Cochez la validation de votre maquette.')); return; }
     setBusy(true); setMsg('');
     try {
@@ -72,8 +78,9 @@ export function DesignStudio({ id }: { id: string }) {
           <h1>{d[lang]}</h1>
           {d.fields.map((f) => (
             <label key={f.key} className="studio-field"><span>{f[lang]}</span>
-              <input value={vals[f.key]} maxLength={f.max} onChange={(e) => { setVals({ ...vals, [f.key]: e.target.value }); setOk(false); }} /></label>
+              <input value={vals[f.key]} maxLength={f.max} onChange={(e) => { setVals({ ...vals, [f.key]: e.target.value }); setTouched({ ...touched, [f.key]: true }); setOk(false); }} />{!touched[f.key] && vals[f.key] === f.def && <small className="muted">{t('Exemple : remplacez par votre texte')}</small>}</label>
           ))}
+          {untouched.length > 0 && <label className="consent small"><input type="checkbox" checked={keepEx} onChange={(e) => setKeepEx(e.target.checked)} /><span>{t('Je garde les valeurs d\'exemple')}</span></label>}
           <div className="lbl">{t('Vêtement')}</div>
           <div className="chips">{d.products.map((s) => <button key={s} className="chip" aria-pressed={s === slug} onClick={() => { setSlug(s); setQty({}); setOk(false); }}>{productL(lang, getProduct(s)!).name}</button>)}</div>
           <div className="lbl">{t('Couleur')} <span>{colorName(lang, color)}</span></div>

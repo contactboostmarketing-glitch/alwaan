@@ -34,7 +34,7 @@ const flake = (x: number, y: number, r: number, c: string) => `<g transform="tra
 
 export const DESIGNS: Design[] = [
   { id: 'team-bride', occasion: 'evjf-evg', fr: 'Team Bride', en: 'Team Bride', products: ['t-shirt-dogo', 't-shirt-fox', 'casquette-mercury'], colors: ['#d43f8d', '#ffffff', '#151a2d'],
-    fields: [{ key: 'date', fr: 'Date', en: 'Date', def: '12.07.2026', max: 14 }],
+    fields: [{ key: 'date', fr: 'Date', en: 'Date', def: '12.07.2027', max: 14 }],
     svg: (v, ink, a) => svg(txt(500, 330, 120, D, ink, 'TEAM', 'letter-spacing="30"') + txt(500, 560, 250, S, a, 'Bride') + heart(500, 650, 2.2, a) + txt(500, 800, 80, D, ink, v.date, 'letter-spacing="10"')) },
   { id: 'bride', occasion: 'evjf-evg', fr: 'La mariée', en: 'The bride', products: ['t-shirt-dogo', 't-shirt-fox'], colors: ['#ffffff', '#d43f8d'],
     fields: [{ key: 'prenom', fr: 'Prénom de la mariée', en: 'Bride’s name', def: 'Julie', max: 14 }],

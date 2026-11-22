@@ -335,7 +335,7 @@ export function Assistant() {
               );
             })}
           </div>
-          <Link className="link small" href={lk('/vetements/polos-personnalises')}>{t('Voir tous les modèles')}</Link>
+          <Link className="link small" href={lk(`/vetements/${products[0]?.category || 'polos-personnalises'}`)}>{t('Voir tous les modèles')}{products[0] ? ` · ${categoryL(lang, CATEGORIES.find((c) => c.slug === products[0].category)!).name}` : ''}</Link>
         </>)}
 
         {step === 'color' && (<>

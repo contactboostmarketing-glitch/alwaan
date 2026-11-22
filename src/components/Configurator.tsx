@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CATEGORIES, CLASH, COLOR_NAMES, MAX_DISCOUNT, PRODUCTS, TEXT_COLORS, printDims, TEXT_FONTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor, defaultZone } from '@/lib/catalog';
-import { cartTotals, lineTotal, logoKey, qtyOf, unitAt, type LineConfig } from '@/lib/pricing';
+import { cartTotals, eur, lineTotal, logoKey, qtyOf, unitAt, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
 import { Price } from './Price';
@@ -117,6 +117,19 @@ export function Configurator({ slug }: { slug: string }) {
   const [extra, setExtra] = useState<{ color: string; qty: Record<string, number> }[]>([]);
   const extraQ = extra.reduce((a, e) => a + qtyOf({ qty: e.qty }), 0);
   const variants = [...extra.filter((e) => e.color !== cfg.color), ...(q ? [{ color: cfg.color, qty: cfg.qty }] : [])];
+  // Brouillon de la configuration (A01) : gardé dans l'onglet 24 h, restauré au retour sur la fiche (guide des tailles, retour arrière, actualisation).
+  // Le BAT n'est jamais restauré validé : il faut le revalider.
+  const DRAFT = `alwaan-cfg-${slug}`;
+  const restored = useRef(false);
+  useEffect(() => {
+    const forced = editIndex !== null || sameLogo || ['couleur', 'vierge', 'logo'].some((k) => params.get(k) !== null);
+    if (!forced) try {
+      const d = JSON.parse(sessionStorage.getItem(DRAFT) || 'null');
+      if (d && Date.now() - d.at < 864e5 && d.cfg?.slug === slug) { setCfg(d.cfg); setExtra(Array.isArray(d.extra) ? d.extra : []); }
+    } catch {}
+    restored.current = true;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (restored.current) try { sessionStorage.setItem(DRAFT, JSON.stringify({ at: Date.now(), cfg, extra })); } catch {} }, [cfg, extra]); // eslint-disable-line react-hooks/exhaustive-deps
   const zeroQty = () => Object.fromEntries(Object.keys(cfg.qty).map((k) => [k, 0]));
   const addColor = () => {
     const next = p.colors.find((c) => c !== cfg.color && !extra.some((e) => e.color === c));
@@ -314,7 +327,7 @@ export function Configurator({ slug }: { slug: string }) {
         {photo && <div className="stage photo"><img src={photo} alt={pL.name} /><button className="btn line small back-mock" onClick={() => setPhoto(null)}>{t('Voir ma maquette')}</button></div>}
         <div className="stage" hidden={!!photo}><Garment slug={slug} color={cfg.color} view={view} zones={cfg.zones} logo={cfg.logo} text={cfg.text} text2={cfg.text2} textFont={cfg.textFont} textColor={cfg.textColor} zoneText={cfg.zoneText} />{lowContrast && <button className="stage-alert" onClick={() => document.getElementById('mono-warn')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" /><path d="M12 9v4M12 17h.01" /></svg> {t('Attention : logo peu visible')}</button>}</div>
         {hasBack && (
-          <div className="seg" role="group" aria-label="Vue">
+          <div className="seg" role="group" aria-label={t('Vue')}>
             <button aria-pressed={view === 'front'} onClick={() => setView('front')}>{t('Face')}</button>
             <button aria-pressed={view === 'back'} onClick={() => setView('back')}>{t('Dos')}</button>
           </div>
@@ -441,7 +454,7 @@ export function Configurator({ slug }: { slug: string }) {
           <div className="sizes">
             {Object.keys(cfg.qty).map((s) => (
               <div className={`sz ${short.includes(s) ? 'short' : ''}`} key={s}>
-                <b>{s}</b>
+                <b>{t(s)}</b>
                 {colorStocked(stock, slug, cfg.color) && stockHint(s)}
                 <div className="ctr">
                   <button aria-label={t('Retirer {s}', { s })} onClick={() => setQty(s, cfg.qty[s] - 1)}>−</button>
@@ -492,14 +505,14 @@ export function Configurator({ slug }: { slug: string }) {
         </div>
         <Perks items={[['eye', t('Imprimé comme la maquette')], ['lock', t('Paiement sécurisé')], ['redo', t('Défaut refait')], ['truck', t('Expédié en 7 jours ouvrés')], ['home', t('Imprimé dans le Nord')]]} />
       </div>
-      {added && <SameLogo current={p.category} logo={cfg.logo} />}
+      {added && !blank && <SameLogo current={p.category} logo={cfg.logo} />}
       {toast && !justAdded && <div className="toast" role="status">{toast}</div>}
       {justAdded && (() => { const ct = cartTotals(lines); return (
         <div className="minicart" role="status">
           <button className="chat-x" aria-label={t('Fermer')} onClick={() => setJustAdded(false)}><I name="x" size={16} /></button>
           <b className="with-ic"><I name="check" size={18} strokeWidth={3} /> {toast}</b>
           <p className="muted small">{t('Panier : {n} pcs', { n: ct.pieces })} · <Price raw ht={ct.goods - ct.discount} /></p>
-          {ct.remainingForFree > 0 && <p className="small">{t('Plus que {a} pour la livraison offerte', { a: `${Math.ceil(ct.remainingForFree)} € HT` })}</p>}
+          {ct.remainingForFree > 0 && <p className="small">{t('Plus que {a} pour la livraison offerte', { a: eur(ct.remainingForFree, lang) + ' HT' })}</p>}
           <div className="ctas"><Link className="btn cta small" href={l('/panier')}>{t('Commander')}</Link><button className="btn line small" onClick={() => setJustAdded(false)}>{t('Continuer')}</button></div>
         </div>); })()}
     </div>

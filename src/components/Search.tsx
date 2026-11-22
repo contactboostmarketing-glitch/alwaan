@@ -3,13 +3,14 @@
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { CATEGORIES, PRODUCTS } from '@/lib/catalog';
-import { categoryL, productL, type Lang } from '@/i18n';
+import Link from 'next/link';
+import { categoryL, href, productL, type Lang } from '@/i18n';
 import { ProductCard } from './ui';
 
 const SYN: Record<string, string> = {
   gilet: 'haute visibilité', parka: 'parka', veste: 'veste', chantier: 'haute visibilité', jaune: 'haute visibilité', fluo: 'haute visibilité', securite: 'haute visibilité', vest: 'haute visibilité', jacket: 'veste', polaire: 'polaire', fleece: 'polaire', softshell: 'softshell', hoodie: 'capuche', capuche: 'capuche', pull: 'sweat', sweatshirt: 'sweat', hiver: 'sweat',
   cuisine: 'tablier', restaurant: 'tablier', serveur: 'tablier', apron: 'tablier', kitchen: 'tablier',
-  tshirt: 't-shirt', tee: 't-shirt', teeshirt: 't-shirt', maillot: 't-shirt', sport: 't-shirt', club: 't-shirt',
+  tshirt: 't-shirt', tshirts: 't-shirt', tee: 't-shirt', teeshirt: 't-shirt', maillot: 't-shirt', sport: 't-shirt', club: 't-shirt',
   casquette: 'casquette', cap: 'casquette', hat: 'casquette', chapeau: 'casquette',
   chemise: 'chemise', shirt: 'chemise', bureau: 'chemise', accueil: 'polo',
 };
@@ -17,11 +18,14 @@ const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,
 
 export function Search({ lang }: { lang: Lang }) {
   const [q, setQ] = useState(useSearchParams().get('q') || '');
-  const words = norm(q).split(' ').filter((w) => w.length > 1).map((w) => norm(SYN[w] || w));
+  // « tee shirt », « t-shirt », « tshirts »… ramenés à un seul mot avant la recherche.
+  const q2 = q.replace(/\b(t|tee)[\s-]*shirts?\b|\b(tee|t)shirts?\b/gi, ' tshirt ');
+  const words = norm(q2).split(' ').filter((w) => w.length > 1).map((w) => norm(SYN[w] || w));
   const hits = !words.length ? [] : PRODUCTS.filter((p0) => {
     const p = productL(lang, p0), c = CATEGORIES.find((x) => x.slug === p0.category)!;
     const hay = norm([p0.name, p.name, p0.type, p.type, p0.composition, c.name, categoryL(lang, c).name, p0.slug].join(' '));
-    return words.every((w) => w.split(' ').every((x) => hay.includes(x)));
+    // Expression de plusieurs mots (« t shirt », « haute visibilite ») : cherchée telle quelle ; mot seul : pluriel toléré.
+    return words.every((w) => (w.includes(' ') ? hay.includes(w) : hay.includes(w) || (w.length > 3 && w.endsWith('s') && hay.includes(w.slice(0, -1)))));
   });
   const en = lang === 'en';
   return (
@@ -31,6 +35,7 @@ export function Search({ lang }: { lang: Lang }) {
       {words.length > 0 && <p className="muted small" role="status">{en ? `${hits.length} result${hits.length > 1 ? 's' : ''}` : `${hits.length} résultat${hits.length > 1 ? 's' : ''}`}</p>}
       <div className="grid cat-grid mt">{hits.map((p) => <ProductCard key={p.slug} p={p} lang={lang} />)}</div>
       {words.length > 0 && !hits.length && <p className="mt">{en ? 'Nothing found. Ask us on WhatsApp or request a quote: we source other garments.' : 'Rien trouvé. Demandez-nous sur WhatsApp ou par devis : nous trouvons d\'autres vêtements.'}</p>}
+      {words.length > 0 && !hits.length && <div className="chips mt8">{CATEGORIES.map((c) => <Link key={c.slug} className="chip" href={href(lang, `/vetements/${c.slug}`)}>{categoryL(lang, c).name}</Link>)}</div>}
     </section>
   );
 }

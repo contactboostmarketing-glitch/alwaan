@@ -62,7 +62,7 @@ export function HomeView({ lang }: { lang: Lang }) {
           <div>
             <h2>{sc.title}</h2>
             <p className="muted">{sc.text}</p>
-            {until && <p className="season-deadline"><I name="clock" size={16} /> {lang === 'en' ? `Order by ${until.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} to receive it before Christmas` : `Commandez avant le ${until.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} pour être livré avant Noël`}</p>}
+            {until && <p className="season-deadline"><I name="clock" size={16} /> {lang === 'en' ? `Order by ${until.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} to receive it by 24 December` : `Commandez avant le ${until.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} pour être livré au plus tard le 24 décembre`}</p>}
             <Link className="btn cta" href={href(lang, '/assistant')}>{sc.cta}</Link>
           </div>
         </div>
