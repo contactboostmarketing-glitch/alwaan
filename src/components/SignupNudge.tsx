@@ -11,11 +11,14 @@ const HIDE = /^\/(en\/)?(panier|cart|compte|account|atelier|avis|recommander|dev
 export function SignupNudge() {
   const path = usePathname();
   const { t } = useT();
-  const [show, setShow] = useState(false), [email, setEmail] = useState(''), [state, setState] = useState<'' | 'busy' | 'ok'>(''), [err, setErr] = useState(''), [code, setCode] = useState('');
+  const [show, setShow] = useState(false), [email, setEmail] = useState(''), [state, setState] = useState<'' | 'busy' | 'ok'>(''), [err, setErr] = useState('');
   useEffect(() => {
     if (HIDE.test(path)) return;
     try { const v = localStorage.getItem(KEY); if (v && Date.now() - Number(v) < 30 * 864e5) return; } catch { return; }
-    const open = () => { if (!document.querySelector('.cookie')) setShow(true); };
+    let enabled = false;
+    // Offre affichée seulement si le code peut être envoyé par email.
+    fetch('/api/inscription').then((r) => r.json()).then((d) => { enabled = !!d.enabled; }).catch(() => {});
+    const open = () => { if (enabled && !document.querySelector('.cookie')) setShow(true); };
     const timer = setTimeout(open, 25000);
     const onScroll = () => { if (window.scrollY > document.body.scrollHeight * 0.45) open(); };
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -28,15 +31,13 @@ export function SignupNudge() {
     const r = await fetch('/api/inscription', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }).catch(() => null);
     const d = r ? await r.json().catch(() => ({})) : {};
     if (!r?.ok) { setState(''); setErr(t(d.error || 'Envoi impossible.')); return; }
-    setCode(d.code || ''); setState('ok'); try { localStorage.setItem(KEY, String(Date.now() + 3650 * 864e5)); } catch {}
+    setState('ok'); try { localStorage.setItem(KEY, String(Date.now() + 3650 * 864e5)); } catch {}
   };
   return (
     <aside className="signup" role="dialog" aria-label={t('-10 % sur votre 1re commande')}>
       <button className="chat-x" aria-label={t('Fermer')} onClick={close}><I name="x" size={16} /></button>
       {state === 'ok' ? (
-        code
-          ? <><b>{t('Votre code : {c}', { c: code })}</b><p className="muted small">{t('-10 % sur votre 1re commande, à saisir dans le panier. Personnel, valable 30 jours.')}</p></>
-          : <><b>{t('Code envoyé par email')}</b><p className="muted small">{t('Votre code -10 % personnel vient de partir : pensez à vérifier les indésirables. Valable 30 jours.')}</p></>
+        <><b>{t('Code envoyé par email')}</b><p className="muted small">{t('Votre code -10 % personnel vient de partir : pensez à vérifier les indésirables. Valable 30 jours.')}</p></>
       ) : (<>
         <b className="with-ic"><I name="gift" size={18} /> {t('-10 % sur votre 1re commande')}</b>
         <form onSubmit={(e) => { e.preventDefault(); send(); }}>

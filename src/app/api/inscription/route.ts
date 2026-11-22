@@ -9,18 +9,25 @@ import { adminEnabled, upsertProspect } from '@/lib/shopifyAdmin';
 import { SITE_URL } from '@/lib/site';
 
 const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,190}\.[a-z]{2,24}$/i;
+// Adresses jetables : refusées (le code -10 % ne doit pas s'obtenir à volonté).
+const DISPOSABLE = /@(yopmail|mailinator|guerrillamail|10minutemail|tempmail|temp-mail|trashmail|jetable|getnada|maildrop|sharklasers|dispostable|throwawaymail|mailnesia|fakeinbox|moakt|emailondeck|mohmal|tempail|minuteinbox)\./i;
+
+/** L'offre n'est proposée que si l'envoi d'emails est configuré (le code n'est jamais affiché à l'écran). */
+export function GET() { return NextResponse.json({ enabled: mailEnabled() }); }
 const DAY = 864e5;
 
 /**
  * Inscription aux offres (consentement explicite) : -10 % sur la 1re commande avec un code BIENV-XXXXXX
  * personnel, à usage unique, valable 30 jours. Une seule fois par adresse email.
- * Si l'envoi d'emails est configuré, le code part uniquement par email (adresse réelle obligatoire).
+ * Le code part uniquement par email (adresse réelle obligatoire), jamais affiché à l'écran ; adresses jetables refusées.
  */
 export async function POST(req: Request) {
-  if (await limited(req, 'inscription', 5, 3600)) return tooMany();
+  if (await limited(req, 'inscription', 3, 86400)) return tooMany();
+  if (!mailEnabled()) return NextResponse.json({ error: 'Offre momentanément indisponible.' }, { status: 503 });
   const b = await req.json().catch(() => null);
   const email = String(b?.email || '').trim().toLowerCase();
   if (!EMAIL.test(email)) return NextResponse.json({ error: 'Adresse email invalide.' }, { status: 400 });
+  if (DISPOSABLE.test(email)) return NextResponse.json({ error: 'Utilisez une adresse email permanente.' }, { status: 400 });
   const key = createHash('sha256').update(email).digest('hex').slice(0, 32);
   const prev = await getJSON<{ code: string }>('bienvenue', key);
   let code = prev?.code;
@@ -32,9 +39,11 @@ export async function POST(req: Request) {
     // Client marketing dans Shopify : les campagnes (Shopify Email) ne visent que les inscrits.
     if (adminEnabled()) await upsertProspect({ email, marketing: true, tags: ['inscrit-site', 'bienvenue-10'], note: `Inscrit aux offres depuis le site le ${new Date().toLocaleDateString('fr-FR')} (code ${code}).` }).catch((e) => console.error('[inscription]', e));
   }
-  await sendMail({
+  const sent = await sendMail({
     to: email, subject: `Votre code -10 % : ${code}`,
     html: layout({ title: 'Bienvenue chez alwaan', intro: `Voici votre code personnel <b>${code}</b> : -10 % sur votre première commande, à saisir dans le panier. Valable 30 jours, une seule fois. Votre logo, votre tenue en direct, dès 1 pièce.`, cta: ['Créer ma tenue en 1 minute', `${SITE_URL}/assistant`] }),
-  }).catch(() => {});
-  return NextResponse.json(mailEnabled() ? { ok: true, byEmail: true } : { ok: true, code });
+  }).catch((e) => { console.error('[inscription]', e); return 'erreur'; });
+  if (sent !== 'envoyé') return NextResponse.json({ error: 'Envoi impossible. Vérifiez votre adresse email.' }, { status: 502 });
+  // Le code n'est jamais renvoyé au navigateur : il faut une vraie boîte mail pour le recevoir.
+  return NextResponse.json({ ok: true, byEmail: true });
 }

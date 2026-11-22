@@ -67,8 +67,11 @@ export async function runRelances(): Promise<string[]> {
 }
 
 /** Code de relance encore valable (non utilisé, non expiré). */
+// Codes de bienvenue affichés à l'écran avant l'envoi obligatoire par email : invalidés (émis avant cette date).
+const BIENV_SINCE = Date.parse('2026-11-22T18:00:00Z');
 export async function validRelanceCode(code: string): Promise<RelanceCode | null> {
   const c = RELANCE_CODE.test(code) ? await getJSON<RelanceCode>('codes', code) : null;
+  if (c && code.startsWith('BIENV-') && Date.parse(c.expiresAt) - 30 * DAY < BIENV_SINCE) return null;
   return c && !c.usedBy && Date.parse(c.expiresAt) > Date.now() ? c : null;
 }
 export async function useRelanceCode(code: string, order: string) {
