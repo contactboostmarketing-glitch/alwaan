@@ -1,4 +1,4 @@
-import { COLOR_NAMES, PRODUCTS, defaultZone, SHIPPING_HT, VAT, getCategory } from '@/lib/catalog';
+import { COLOR_NAMES, PRODUCTS, defaultZone, VAT, getCategory } from '@/lib/catalog';
 import { unitAt } from '@/lib/pricing';
 import { SITE_URL } from '@/lib/site';
 
@@ -40,8 +40,7 @@ export function GET() {
 <g:age_group>adult</g:age_group>
 <g:is_bundle>no</g:is_bundle>
 <g:custom_label_0>${esc(c.name)}</g:custom_label_0>
-${p.bestseller ? '<g:custom_label_1>best-seller</g:custom_label_1>\n' : ''}<g:shipping><g:country>FR</g:country><g:price>${money(SHIPPING_HT * (1 + VAT))}</g:price></g:shipping>
-<g:shipping><g:country>BE</g:country><g:price>${money(SHIPPING_HT * (1 + VAT))}</g:price></g:shipping>
+${p.bestseller ? '<g:custom_label_1>best-seller</g:custom_label_1>\n' : ''}
 </item>`);
     }
   }
