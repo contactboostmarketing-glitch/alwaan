@@ -94,6 +94,7 @@ export function Configurator({ slug }: { slug: string }) {
   // Erreur affichée sous le champ concerné (et non dans un toast loin du bouton).
   const [fieldErr, setFieldErr] = useState<{ at: 'logo' | 'zones' | 'qty' | 'bat'; msg: string } | null>(null);
   const [justAdded, setJustAdded] = useState(false);
+  const [sizeGuide, setSizeGuide] = useState(false);
   useEffect(() => { setFieldErr(null); }, [cfg, approved]);
   useEffect(() => { if (!justAdded) return; const id = setTimeout(() => setJustAdded(false), 8000); return () => clearTimeout(id); }, [justAdded]);
   const prevZones = useRef<string[]>([]);
@@ -450,7 +451,7 @@ export function Configurator({ slug }: { slug: string }) {
         </div>}
 
         <div className={`blk ${fieldErr?.at === 'qty' ? 'invalid' : ''}`} id="cfg-qty">
-          <div className="lbl">{t('Quantités')} {sizesFor(p).length > 1 && <span><Link className="link" href={`${l('/faq')}#tailles`}>{t('Guide des tailles')}</Link></span>}</div>
+          <div className="lbl">{t('Quantités')} {sizesFor(p).length > 1 && <span><button className="link" onClick={() => setSizeGuide(true)}>{t('Guide des tailles')}</button></span>}</div>
           <div className="sizes">
             {Object.keys(cfg.qty).map((s) => (
               <div className={`sz ${short.includes(s) ? 'short' : ''}`} key={s}>
@@ -506,6 +507,7 @@ export function Configurator({ slug }: { slug: string }) {
         <Perks items={[['eye', t('Imprimé comme la maquette')], ['lock', t('Paiement sécurisé')], ['redo', t('Défaut refait')], ['truck', t('Expédié en 7 jours ouvrés')], ['home', t('Imprimé dans le Nord')]]} />
       </div>
       {added && !blank && <SameLogo current={p.category} logo={cfg.logo} />}
+      {sizeGuide && <SizeGuide sizes={sizesFor(p)} onClose={() => setSizeGuide(false)} />}
       {toast && !justAdded && <div className="toast" role="status">{toast}</div>}
       {justAdded && (() => { const ct = cartTotals(lines); return (
         <div className="minicart" role="status">
@@ -539,5 +541,27 @@ function SameLogo({ current, logo }: { current: string; logo?: string }) {
         ))}
       </div>
     </section>
+  );
+}
+
+/** Guide des tailles Roly (mesures du corps, tour de poitrine), ouvert par-dessus la fiche sans perdre la saisie (A02). */
+const CHEST: Record<string, string> = { XS: '87–90', S: '91–94', M: '95–98', L: '99–106', XL: '107–114', XXL: '115–122', '3XL': '123–130', '4XL': '131–138', '5XL': '139–146' };
+function SizeGuide({ sizes, onClose }: { sizes: string[]; onClose: () => void }) {
+  const { t } = useT();
+  useEffect(() => { const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose(); window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, [onClose]);
+  const rows = sizes.filter((s) => CHEST[s]);
+  return (
+    <div className="modal-bg" onClick={onClose}>
+      <div className="modal" role="dialog" aria-modal="true" aria-label={t('Guide des tailles')} onClick={(e) => e.stopPropagation()}>
+        <button className="chat-x" aria-label={t('Fermer')} onClick={onClose} autoFocus><I name="x" size={18} /></button>
+        <h2>{t('Guide des tailles')}</h2>
+        {rows.length ? (<>
+          <p className="muted small">{t('Mesurez votre tour de poitrine, à l\'horizontale, sous les bras, sans serrer. Ce sont des mesures du corps, pas du vêtement.')}</p>
+          <table className="size-tbl"><thead><tr><th>{t('Taille')}</th><th>{t('Tour de poitrine (cm)')}</th></tr></thead>
+            <tbody>{rows.map((s) => <tr key={s}><td>{s}</td><td>{CHEST[s]}</td></tr>)}</tbody></table>
+          <p className="muted small">{t('Source : guide des tailles du fabricant Roly. La coupe varie légèrement selon le modèle : entre deux tailles, prenez la plus grande.')}</p>
+        </>) : <p>{t('Taille unique, réglable : convient à toute l\'équipe.')}</p>}
+      </div>
+    </div>
   );
 }

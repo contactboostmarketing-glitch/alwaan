@@ -9,6 +9,7 @@ import { designDataUrl, designSvg, designValues, designZone } from '@/lib/design
 import { snapshot, uploadMockup } from '@/lib/mockup';
 import { uploadFile } from '@/lib/cutout';
 import { unitAt } from '@/lib/pricing';
+import { deliveryDate, fmtDay } from '@/lib/delivery';
 import { colorName, productL } from '@/i18n';
 import { useT } from '@/i18n/client';
 import { useCart } from './CartProvider';
@@ -85,6 +86,16 @@ export function DesignStudio({ id }: { id: string }) {
           <div className="chips">{d.products.map((s) => <button key={s} className="chip" aria-pressed={s === slug} onClick={() => { setSlug(s); setQty({}); setOk(false); }}>{productL(lang, getProduct(s)!).name}</button>)}</div>
           <div className="lbl">{t('Couleur')} <span>{colorName(lang, color)}</span></div>
           <div className="swatches">{p.colors.map((c) => <button key={c} className="sw" style={{ background: c }} aria-label={colorName(lang, c)} aria-pressed={c === color} onClick={() => { setColor(c); setOk(false); }} />)}</div>
+          {/* Infos du vêtement choisi (A10) : mises à jour à chaque changement de vêtement. */}
+          <details className="studio-info">
+            <summary>{t('Le vêtement : matière, tailles, délai')}</summary>
+            <ul>
+              <li>{productL(lang, p).type} · {productL(lang, p).composition}</li>
+              <li>{t('Tailles adultes')} : {sizes.join(', ')}{sizes.length > 1 ? ` · ${t('pas de taille enfant pour ce modèle')}` : ''}</li>
+              <li>{t('Impression DTF : lavage à l\'envers, 40 °C maximum, sans sèche-linge.')}</li>
+              <li>{t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(), lang) })}</li>
+            </ul>
+          </details>
           <div className="lbl">{t('Tailles')}</div>
           <div className="sizes">{sizes.map((s) => (
             <div className="sz" key={s}><b>{s}</b><div className="ctr">

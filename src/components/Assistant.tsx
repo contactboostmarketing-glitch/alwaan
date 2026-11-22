@@ -11,6 +11,7 @@ import { Garment, isDark } from './Garment';
 import { Price } from './Price';
 import { snapshot, toDataUrl, uploadMockup } from '@/lib/mockup';
 import { track } from '@/lib/track';
+import { deliveryDate, fmtDay } from '@/lib/delivery';
 import { CutoutChoice, ReworkOption, useLogo } from './LogoCutout';
 import { PACKS } from '@/lib/packs';
 import { useT } from '@/i18n/client';
@@ -30,6 +31,7 @@ const CHOICES: Product[] = CATEGORIES.map((c) => PRODUCTS.find((p) => p.category
 const SIZE_MIX: Record<string, number> = { S: 0.12, M: 0.28, L: 0.3, XL: 0.2, XXL: 0.1 };
 const STEPS = ['logo', 'place', 'garments', 'color', 'mockup', 'qty'] as const;
 type Step = (typeof STEPS)[number];
+const STEP_LABEL: Record<Step, string> = { logo: 'Logo', place: 'Emplacement', garments: 'Vêtements', color: 'Couleur', mockup: 'Validation', qty: 'Quantités' };
 
 function zonesOf(p: Product, place: Place | null): string[] {
   if (!place) return [];
@@ -269,6 +271,7 @@ export function Assistant() {
         <div className="asst-bar">
           <button className="asst-back" onClick={back} disabled={!hist.length} aria-label={t('Étape précédente')}>‹</button>
           <div className="asst-prog" aria-hidden="true">{STEPS.map((s, i) => <i key={s} className={i <= idx ? 'on' : ''} />)}</div>
+          <span className="asst-step">{t('Étape {i}/{n}', { i: idx + 1, n: STEPS.length })} · {t(STEP_LABEL[step])}</span>
           <span className="asst-ai">{t('Assistant IA')}</span>
         </div>
         {logo && (
@@ -354,6 +357,15 @@ export function Assistant() {
           <div ref={stage} className={`asst-stage ${products.length + (zonesOf(g0, place).includes('back') ? 1 : 0) > 1 ? 'two' : ''}`}>
             {products.map((p) => <figure key={p.slug} data-slug={p.slug}><Garment slug={p.slug} color={colorFor(p)} zones={zonesOf(p, place)} logo={logo?.preview} text={logo?.status === 'text' ? text : undefined} /><figcaption>{p.name}</figcaption></figure>)}
             {zonesOf(g0, place).includes('back') && <figure data-slug={g0.slug}><Garment slug={g0.slug} color={colorFor(g0)} view="back" zones={zonesOf(g0, place)} logo={logo?.preview} text={logo?.status === 'text' ? text : undefined} /><figcaption>{g0.name} · dos</figcaption></figure>}
+          </div>
+          {/* Récapitulatif avant validation du BAT (A07) : ce que le client valide exactement. */}
+          <div className="recap asst-sum">
+            <b>{t('Vous validez')}</b>
+            {products.map((p) => (
+              <div key={p.slug}><span>{productL(lang, p).name} · {colorName(lang, colorFor(p))}</span>
+                <small className="muted">{zonesFor(p).filter((z) => zonesOf(p, place).includes(z.id)).map((z) => `${z.name} (${t('max.')} ${z.size})`).join(' + ')} · {t('dès')} <Price ht={unitAt({ slug: p.slug, zones: zonesOf(p, place) }, 30)} />/pc</small></div>
+            ))}
+            <small className="muted">{t('Quantités et tailles à l\'étape suivante. Délai indicatif : reçu vers le {d}.', { d: fmtDay(deliveryDate(), lang) })}</small>
           </div>
           <p className="muted small">{t('Cette maquette sert de bon à tirer : ce que vous voyez est imprimé.')} {t('En validant, vous confirmez détenir les droits sur ce logo.')}</p>
           {saveBox}
