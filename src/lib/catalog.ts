@@ -1,7 +1,7 @@
 // Catalogue, zones de marquage et grille de prix.
 // Source unique : utilisée par les pages, le configurateur ET le calcul serveur du paiement.
 
-export type Shape = 'tee' | 'polo' | 'polols' | 'shirt' | 'hv' | 'hvjacket' | 'apron' | 'cap';
+export type Shape = 'tee' | 'polo' | 'polols' | 'shirt' | 'hv' | 'hvjacket' | 'apron' | 'cap' | 'sweat' | 'hoodie' | 'zipjacket' | 'jacket';
 
 export type Category = {
   slug: string;
@@ -70,6 +70,12 @@ export const CATEGORIES: Category[] = [
   { slug: 'casquettes-personnalisees', name: 'Casquettes', singular: 'casquette', shape: 'cap', title: 'Casquettes personnalisées à votre logo',
     intro: 'Casquettes 6 pans, trucker et techniques à votre logo, imprimées en DTF. Taille réglable, idéales en cuisine, sur les salons et en extérieur.',
     faq: [['Les casquettes sont-elles réglables ?', 'Oui, tous nos modèles ont une fermeture réglable : une seule taille convient à toute l\'équipe.']] },
+  { slug: 'sweats-personnalises', name: 'Sweats', singular: 'sweat', shape: 'hoodie', title: 'Sweats et sweats à capuche personnalisés',
+    intro: 'Sweats col rond, sweats à capuche et sweats zippés à votre logo, imprimés en DTF. Chauds et confortables pour l\'hiver, en équipe, en club ou en cadeau.',
+    faq: [['Peut-on imprimer sur la capuche ou la poche ?', 'Nous imprimons au cœur, à l\'anti-cœur, au dos, sur les épaules et au grand devant (sauf sur les sweats zippés, à cause du zip). La capuche et la poche ne sont pas imprimées.']] },
+  { slug: 'vestes-personnalisees', name: 'Vestes et polaires', singular: 'veste', shape: 'jacket', title: 'Vestes, polaires et softshells personnalisées',
+    intro: 'Polaires, softshells et vestes chaudes à votre logo pour vos équipes en extérieur : chantier, livraison, événements, clubs.',
+    faq: [['Le logo tient-il sur une softshell ou une polaire ?', 'Oui, l\'impression DTF adhère sur les polaires et les softshells. Lavez à l\'envers, à 30 °C, sans sèche-linge, pour la faire durer.']] },
   { slug: 'haute-visibilite-personnalisee', name: 'Haute visibilité', singular: 'vêtement haute visibilité', shape: 'hv', title: 'Vêtements haute visibilité personnalisés EN ISO 20471',
     intro: 'Gilets, vestes et parkas haute visibilité conformes EN ISO 20471, marqués à votre logo pour le BTP, la logistique et la voirie.',
     faq: [['Le marquage annule-t-il la norme EN ISO 20471 ?', 'Non, tant que le logo ne recouvre pas les bandes rétroréfléchissantes ni la surface fluorescente minimale exigée. Nous plaçons le marquage en conséquence.']] },
@@ -94,23 +100,30 @@ const p = (slug: string, category: string, name: string, type: string, sizes: st
   ({ slug, category, name, type, sizes, cost, price: sellPrice(cost), shape, colors, composition, bestseller });
 
 export const PRODUCTS: Product[] = [
-  p('polo-pegaso', 'polos-personnalises', 'Polo Pegaso', 'Polo piqué premium', 'S–5XL', 9.9, 'polo', ALL, '65 % polyester, 35 % coton · 210 g/m²', true),
-  p('polo-montreal', 'polos-personnalises', 'Polo Montreal', 'Polo bords contrastés', 'S–XXL', 12.5, 'polo', ['#151a2d', '#1d2a5c', '#ffffff', '#c8302f'], '100 % coton piqué · 220 g/m²'),
-  p('polo-estrella', 'polos-personnalises', 'Polo Estrella', 'Manches longues', 'S–4XL', 13.9, 'polols', ['#3a5bd0', '#151a2d', '#c8302f', '#ffffff', '#2f8a4d'], '100 % coton · 210 g/m²'),
-  p('t-shirt-dogo', 't-shirts-personnalises', 'T-shirt Dogo', 'Coton premium col rond', 'S–5XL', 4.9, 'tee', ALL, '100 % coton peigné · 180 g/m²', true),
-  p('t-shirt-atomic-150', 't-shirts-personnalises', 'T-shirt Atomic 150', 'Le plus économique', 'S–5XL', 3.6, 'tee', ['#ffffff', '#f2d33b', '#c8302f', '#3a5bd0', '#2f8a4d', '#151a2d'], '100 % coton · 150 g/m²'),
-  p('t-shirt-fox', 't-shirts-personnalises', 'T-shirt Fox', 'Coton bio chiné', 'S–3XL', 6.4, 'tee', ['#9aa0a6', '#1d2a5c', '#c8302f', '#2f8a4d'], '85 % coton bio, 15 % viscose · 160 g/m²'),
-  p('chemise-moscu-homme', 'chemises-personnalisees', 'Chemise Moscu homme', 'Manches longues', 'S–3XL', 16.5, 'shirt', ['#ffffff', '#151a2d'], '97 % coton, 3 % élasthanne', true),
-  p('chemise-moscu-femme', 'chemises-personnalisees', 'Chemise Moscu femme', 'Coupe cintrée', 'S–3XL', 16.5, 'shirt', ['#ffffff', '#151a2d'], '97 % coton, 3 % élasthanne'),
-  p('tablier-benoit', 'tabliers-personnalises', 'Tablier Benoit', 'Bavette réglable', 'TU', 8.5, 'apron', ['#151a2d', '#8b1e2d', '#1d2a5c', '#b8a98d', '#ffffff'], '65 % polyester, 35 % coton · 210 g/m²', true),
-  p('tablier-mini', 'tabliers-personnalises', 'Tablier Mini', 'Mi-long de service', 'TU', 5.9, 'apron', ['#151a2d'], '65 % polyester, 35 % coton'),
-  p('tablier-batali', 'tabliers-personnalises', 'Tablier Batali', 'Denim, poche centrale', 'TU', 14.9, 'apron', ['#1d2a5c', '#151a2d'], '100 % coton denim · 250 g/m²'),
+  p('polo-pegaso', 'polos-personnalises', 'Polo Pegaso', 'Polo piqué premium', 'S–5XL', 4.8, 'polo', ALL, '65 % polyester, 35 % coton · 210 g/m²', true),
+  p('polo-montreal', 'polos-personnalises', 'Polo Montreal', 'Polo bords contrastés', 'S–XXL', 6.25, 'polo', ['#151a2d', '#1d2a5c', '#ffffff', '#c8302f'], '100 % coton piqué · 220 g/m²'),
+  p('polo-estrella', 'polos-personnalises', 'Polo Estrella', 'Manches longues', 'S–4XL', 6.51, 'polols', ['#3a5bd0', '#151a2d', '#c8302f', '#ffffff', '#2f8a4d'], '100 % coton · 210 g/m²'),
+  p('t-shirt-dogo', 't-shirts-personnalises', 'T-shirt Dogo', 'Coton premium col rond', 'S–5XL', 2.39, 'tee', ALL, '100 % coton peigné · 180 g/m²', true),
+  p('t-shirt-atomic-150', 't-shirts-personnalises', 'T-shirt Atomic 150', 'Le plus économique', 'S–5XL', 1.5, 'tee', ['#ffffff', '#f2d33b', '#c8302f', '#3a5bd0', '#2f8a4d', '#151a2d'], '100 % coton · 150 g/m²'),
+  p('t-shirt-fox', 't-shirts-personnalises', 'T-shirt Fox', 'Coton bio chiné', 'S–3XL', 2.7, 'tee', ['#9aa0a6', '#1d2a5c', '#c8302f', '#2f8a4d'], '85 % coton bio, 15 % viscose · 160 g/m²'),
+  p('chemise-moscu-homme', 'chemises-personnalisees', 'Chemise Moscu homme', 'Manches longues', 'S–3XL', 10.45, 'shirt', ['#ffffff', '#151a2d'], '97 % coton, 3 % élasthanne', true),
+  p('chemise-moscu-femme', 'chemises-personnalisees', 'Chemise Moscu femme', 'Coupe cintrée', 'S–3XL', 10.45, 'shirt', ['#ffffff', '#151a2d'], '97 % coton, 3 % élasthanne'),
+  p('tablier-benoit', 'tabliers-personnalises', 'Tablier Benoit', 'Bavette réglable', 'TU', 3.68, 'apron', ['#151a2d', '#8b1e2d', '#1d2a5c', '#b8a98d', '#ffffff'], '65 % polyester, 35 % coton · 210 g/m²', true),
+  p('tablier-mini', 'tabliers-personnalises', 'Tablier Mini', 'Mi-long de service', 'TU', 1.84, 'apron', ['#151a2d'], '65 % polyester, 35 % coton'),
+  p('tablier-batali', 'tabliers-personnalises', 'Tablier Batali', 'Denim, poche centrale', 'TU', 8.35, 'apron', ['#1d2a5c', '#151a2d'], '100 % coton denim · 250 g/m²'),
   p('casquette-mercury', 'casquettes-personnalisees', 'Casquette Mercury', '6 pans technique', 'TU', 4.2, 'cap', ['#151a2d', '#1d2a5c', '#ffffff', '#c8302f', '#2f8a4d'], '90 % polyester, 10 % élasthanne', true),
   p('casquette-wizer', 'casquettes-personnalisees', 'Casquette Wizer', 'Micro-fibre légère', 'TU', 5.1, 'cap', ['#ffffff', '#f2d33b', '#c8302f', '#3a5bd0'], '100 % polyester'),
   p('casquette-barny', 'casquettes-personnalisees', 'Casquette Barny', 'Trucker filet', 'TU', 3.9, 'cap', ['#c8302f', '#1d2a5c', '#151a2d', '#2f8a4d', '#3a5bd0'], 'Polyester, filet arrière'),
-  p('gilet-hv-beta', 'haute-visibilite-personnalisee', 'Gilet HV Beta', 'Multipoches, EN ISO 20471 classe 2', 'S–3XL', 12.9, 'hv', ['#d7f22c', '#ff7a1a'], '100 % polyester', true),
-  p('veste-hv-persei', 'haute-visibilite-personnalisee', 'Veste HV Persei', 'Réversible, doublée, classe 3', 'S–4XL', 34.9, 'hvjacket', ['#d7f22c', '#ff7a1a'], '100 % polyester'),
+  p('gilet-hv-beta', 'haute-visibilite-personnalisee', 'Gilet HV Beta', 'Multipoches, EN ISO 20471 classe 2', 'S–3XL', 11.5, 'hv', ['#d7f22c', '#ff7a1a'], '100 % polyester', true),
+  p('veste-hv-persei', 'haute-visibilite-personnalisee', 'Veste HV Persei', 'Réversible, doublée, classe 3', 'S–4XL', 14.65, 'hvjacket', ['#d7f22c', '#ff7a1a'], '100 % polyester'),
   p('parka-hv-epsilon', 'haute-visibilite-personnalisee', 'Parka HV Epsilon', 'Imperméable, capuche, classe 3', 'S–4XL', 42.9, 'hvjacket', ['#d7f22c', '#ff7a1a'], 'Polyester enduit PU'),
+  // Gamme hiver (Roly 2026, prix d'achat à l'unité, ou au blister quand Roly ne vend pas à l'unité ; couleur, S–2XL). Coloris à confirmer avec le stock Roly.
+  p('sweat-clasica', 'sweats-personnalises', 'Sweat Clasica', 'Sweat col rond', 'S–3XL', 6.25, 'sweat', ['#151a2d', '#1d2a5c', '#9aa0a6', '#ffffff', '#c8302f', '#3a5bd0'], 'Molleton coton et polyester', true),
+  p('sweat-capuche-urban', 'sweats-personnalises', 'Sweat à capuche Urban', 'Capuche, poche kangourou', 'S–4XL', 7.88, 'hoodie', ['#151a2d', '#1d2a5c', '#9aa0a6', '#ffffff', '#c8302f', '#3a5bd0'], 'Molleton coton et polyester'),
+  p('sweat-zippe-montblanc', 'sweats-personnalises', 'Sweat zippé Montblanc', 'Zip intégral, capuche', 'S–3XL', 10.45, 'zipjacket', ['#151a2d', '#1d2a5c', '#9aa0a6', '#c8302f'], 'Molleton coton et polyester'),
+  p('polaire-himalaya', 'vestes-personnalisees', 'Polaire Himalaya', 'Polaire zippée', 'S–3XL', 4.57, 'jacket', ['#151a2d', '#1d2a5c', '#9aa0a6', '#c8302f'], 'Polaire polyester'),
+  p('softshell-nebraska', 'vestes-personnalisees', 'Softshell Nebraska', 'Coupe-vent déperlant', 'S–4XL', 13.44, 'jacket', ['#151a2d', '#1d2a5c', '#9aa0a6', '#c8302f'], 'Softshell polyester et élasthanne', true),
+  p('veste-oslo', 'vestes-personnalisees', 'Veste Oslo', 'Veste chaude à capuche', 'S–4XL', 10.45, 'jacket', ['#151a2d', '#1d2a5c', '#9aa0a6', '#c8302f'], 'Polyester, doublée'),
 ];
 
 /** Zones de marquage DTF. size = gabarit maximal (le logo y est inscrit) ; fixed = prix fixe, sans remise de quantité. */
@@ -172,6 +185,14 @@ export const expressFee = (pieces: number) => EXPRESS_FEES.find(([max]) => piece
 
 // Textes détaillés des pages catégories (page mère du cocon sémantique).
 const DETAILS: Record<string, string[]> = {
+ "sweats-personnalises": [
+  "Un sweat à votre logo garde votre équipe au chaud et visible tout l'hiver : à l'atelier, au club, en livraison ou en cadeau de fin d'année.",
+  "Col rond pour une tenue nette, capuche pour le confort, zippé pour l'ouvrir ou le fermer. Le logo se place au cœur, un grand visuel au dos."
+ ],
+ "vestes-personnalisees": [
+  "Les équipes en extérieur ont besoin d'une couche chaude et marquée : une polaire pour les journées fraîches, une softshell contre le vent et la bruine, une veste à capuche pour le froid.",
+  "Le logo se place au cœur et au dos, là où il se voit de loin."
+ ],
  "polos-personnalises": [
   "Le polo est la tenue professionnelle la plus polyvalente : plus habillé qu'un t-shirt, plus pratique qu'une chemise. Il convient à la restauration, à l'accueil, au commerce, aux artisans et aux équipes terrain.",
   "Pour un usage quotidien, visez un piqué de 200 à 220 g/m² : il garde sa forme et résiste aux lavages fréquents. Les mélanges polyester-coton sèchent plus vite et boulochent moins que le 100 % coton.",
@@ -227,7 +248,8 @@ export function zonesFor(prod: Product): Zone[] {
   // Tablier : poche ou grand devant, l'un ou l'autre (la poche en premier : c'est le prix « dès »).
   else if (prod.shape === 'apron') list = ['pocket', 'chest'].map((id) => ZONES.find((z) => z.id === id)!);
   else if (prod.shape === 'hv') list = notApron.filter((z) => !shoulders.includes(z.id)); // gilet sans manches
-  else if (prod.shape === 'shirt') list = notApron.filter((z) => z.id !== 'chest'); // chemise : pas de grand devant (boutonnage)
+  else if (prod.shape === 'shirt' || prod.shape === 'zipjacket' || prod.shape === 'jacket') list = notApron.filter((z) => z.id !== 'chest' && (prod.shape === 'shirt' || z.id !== 'neck')); // boutonnage ou zip : pas de grand devant ; capuche/col : pas de nuque
+  else if (prod.shape === 'hoodie') list = notApron.filter((z) => z.id !== 'neck'); // capuche : pas de nuque
   else list = notApron;
   return list.map(priced);
 }

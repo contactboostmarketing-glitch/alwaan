@@ -9,6 +9,10 @@ const PATHS: Record<Shape, string> = {
   hvjacket: 'M72 38 L112 22 L130 40 L148 22 L188 38 L232 86 L224 226 L198 226 L192 116 L192 232 L68 232 L68 116 L62 226 L36 226 L28 86 Z',
   apron: 'M100 20 L160 20 L160 80 Q190 85 200 100 L200 235 L60 235 L60 100 Q70 85 100 80 Z',
   cap: 'M50 150 Q55 70 130 62 Q205 70 210 150 Z',
+  sweat: 'M70 40 L112 25 Q130 40 148 25 L190 40 L232 92 L240 200 L218 204 L205 112 L185 100 L185 230 L75 230 L75 100 L55 112 L42 204 L20 200 L28 92 Z',
+  hoodie: 'M70 40 L112 25 Q130 40 148 25 L190 40 L232 92 L240 200 L218 204 L205 112 L185 100 L185 230 L75 230 L75 100 L55 112 L42 204 L20 200 L28 92 Z',
+  zipjacket: 'M70 40 L112 25 Q130 40 148 25 L190 40 L232 92 L240 200 L218 204 L205 112 L185 100 L185 230 L75 230 L75 100 L55 112 L42 204 L20 200 L28 92 Z',
+  jacket: 'M72 38 L112 22 L130 40 L148 22 L188 38 L232 86 L240 200 L216 204 L204 114 L192 106 L192 232 L68 232 L68 106 L56 114 L44 204 L20 200 L28 86 Z',
 };
 
 export const isDark = (hex: string) => {
@@ -49,6 +53,11 @@ export function Garment({ slug, color, view = 'front', zones = [], logo, text, t
       {s === 'apron' && (<><path d="M100 22 Q70 -5 60 30 M160 22 Q190 -5 200 30" stroke={shade} strokeWidth="4" fill="none" /><rect x="90" y="165" width="80" height="38" rx="3" fill="none" stroke={shade} strokeWidth="2" /></>)}
       {(s === 'polo' || s === 'polols') && view === 'front' && (<><path d="M130 55 L130 95" stroke={shade} strokeWidth="3" /><circle cx="130" cy="70" r="2.5" fill={shade} /><circle cx="130" cy="84" r="2.5" fill={shade} /></>)}
       {s === 'shirt' && view === 'front' && <path d="M130 48 L130 232" stroke={shade} strokeWidth="2" />}
+      {(s === 'hoodie' || s === 'zipjacket') && <path d={view === 'front' ? 'M106 30 Q130 -4 154 30 Q146 46 130 52 Q114 46 106 30 Z' : 'M104 30 Q130 -10 156 30 Q150 70 130 74 Q110 70 104 30 Z'} fill={color} stroke="rgba(20,33,63,.35)" strokeWidth="2" />}
+      {s === 'hoodie' && view === 'front' && <path d="M95 175 L165 175 L172 215 L88 215 Z" fill="none" stroke={shade} strokeWidth="2" />}
+      {(s === 'zipjacket' || s === 'jacket') && view === 'front' && <path d="M130 50 L130 230" stroke={shade} strokeWidth="2.5" />}
+      {(s === 'sweat' || s === 'hoodie' || s === 'zipjacket') && <path d="M75 220 L185 220 M42 196 L64 198 M196 198 L218 196" stroke={shade} strokeWidth="3" fill="none" />}
+      {s === 'jacket' && <path d="M110 22 L130 46 L150 22" stroke={shade} strokeWidth="3" fill="none" />}
       {marks.map((z) => {
         const cx = z.x * 2.6, cy = z.y * 2.5, w = z.w * 2.6;
         const zt = zoneText?.[z.id];

@@ -7,7 +7,7 @@ import { categoryL, productL, type Lang } from '@/i18n';
 import { ProductCard } from './ui';
 
 const SYN: Record<string, string> = {
-  gilet: 'haute visibilité', parka: 'haute visibilité', veste: 'haute visibilité', chantier: 'haute visibilité', jaune: 'haute visibilité', fluo: 'haute visibilité', securite: 'haute visibilité', vest: 'haute visibilité', jacket: 'haute visibilité',
+  gilet: 'haute visibilité', parka: 'parka', veste: 'veste', chantier: 'haute visibilité', jaune: 'haute visibilité', fluo: 'haute visibilité', securite: 'haute visibilité', vest: 'haute visibilité', jacket: 'veste', polaire: 'polaire', fleece: 'polaire', softshell: 'softshell', hoodie: 'capuche', capuche: 'capuche', pull: 'sweat', sweatshirt: 'sweat', hiver: 'sweat',
   cuisine: 'tablier', restaurant: 'tablier', serveur: 'tablier', apron: 'tablier', kitchen: 'tablier',
   tshirt: 't-shirt', tee: 't-shirt', teeshirt: 't-shirt', maillot: 't-shirt', sport: 't-shirt', club: 't-shirt',
   casquette: 'casquette', cap: 'casquette', hat: 'casquette', chapeau: 'casquette',

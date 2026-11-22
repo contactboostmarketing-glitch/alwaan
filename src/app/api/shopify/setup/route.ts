@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { DESIGN_FEE, EXPRESS_FEES, NAME_FEE, PRODUCTS, REWORK_FEE, ZONES, zonesFor, type Zone } from '@/lib/catalog';
+import { COLOR_NAMES, DESIGN_FEE, EXPRESS_FEES, NAME_FEE, PRODUCTS, REWORK_FEE, ZONES, sizesFor, zonesFor, type Product, type Zone } from '@/lib/catalog';
 import { DESIGN_HANDLE, NAME_HANDLE, REWORK_HANDLE, expressHandle, markHandle } from '@/lib/shopify';
 import { admin, adminEnabled } from '@/lib/shopifyAdmin';
 import { safeEqual } from '@/lib/secure';
@@ -87,9 +87,33 @@ async function upsertSimple(handle: string, title: string, amount: number, descr
   return { handle, action: `créé à ${price}`, publication: pr.publishablePublish.userErrors };
 }
 
-async function syncGarment(slug: string, price: number, dry: boolean) {
+/** Vêtement absent de Shopify (nouveau produit du catalogue) : créé avec ses variantes Couleur × Taille au prix du site. */
+async function createGarment(g: Product, price: string, pubs: string[]) {
+  const colors = g.colors.map((c) => COLOR_NAMES[c] || c), sizes = sizesFor(g);
+  const r = await admin<{ productSet: { product: { id: string } | null; userErrors: UserError[] } }>(
+    `mutation($i: ProductSetInput!) { productSet(synchronous: true, input: $i) { product { id } userErrors { field message } } }`,
+    { i: {
+      handle: g.slug, title: g.name, status: 'ACTIVE', productType: 'Vêtement', vendor: 'alwaan',
+      descriptionHtml: `<p>${g.type}. ${g.composition}.</p>`,
+      productOptions: [{ name: 'Couleur', values: colors.map((name) => ({ name })) }, { name: 'Taille', values: sizes.map((name) => ({ name })) }],
+      variants: colors.flatMap((c) => sizes.map((t) => ({ optionValues: [{ optionName: 'Couleur', name: c }, { optionName: 'Taille', name: t }], price, inventoryPolicy: 'CONTINUE', taxable: true }))),
+    } },
+  );
+  const e = r.productSet.userErrors;
+  if (e.length || !r.productSet.product) return { handle: g.slug, action: 'erreur à la création', errors: e };
+  const pr = await admin<{ publishablePublish: { userErrors: UserError[] } }>(
+    `mutation($id: ID!, $in: [PublicationInput!]!) { publishablePublish(id: $id, input: $in) { userErrors { field message } } }`,
+    { id: r.productSet.product.id, in: pubs.map((publicationId) => ({ publicationId })) },
+  ).catch((err) => ({ publishablePublish: { userErrors: [{ message: String(err.message) }] } }));
+  return { handle: g.slug, action: `créé à ${price} (${colors.length} couleurs × ${sizes.length} tailles)`, publication: pr.publishablePublish.userErrors };
+}
+
+async function syncGarment(slug: string, price: number, dry: boolean, pubs: string[] = []) {
   const p = await productByHandle(slug);
-  if (!p) return { handle: slug, action: 'absent de Shopify' };
+  if (!p) {
+    const g = PRODUCTS.find((x) => x.slug === slug)!;
+    return dry ? { handle: slug, action: `à créer à ${price.toFixed(2)}` } : createGarment(g, price.toFixed(2), pubs);
+  }
   const target = price.toFixed(2);
   const wrong = p.variants.nodes.filter((v) => v.price !== target);
   if (!wrong.length) return { handle: slug, action: 'déjà au bon prix', price: target };
@@ -134,7 +158,7 @@ export async function POST(req: Request) {
     for (const [, fee] of EXPRESS_FEES) marquages.push(await upsertSimple(expressHandle(fee), `Production express (${fee} €)`, fee,
       '<p>Production express en 4 jours ouvrés. Forfait selon le nombre de pièces de la commande.</p>', 'Service', pubs, dry));
     const vetements = [];
-    for (const p of PRODUCTS) vetements.push(await syncGarment(p.slug, p.price, dry));
+    for (const p of PRODUCTS) vetements.push(await syncGarment(p.slug, p.price, dry, pubs));
     const webhook = dry ? 'non modifié (simulation)' : await ensureWebhook(publicOrigin(req));
     return NextResponse.json({ ok: true, dry, marquages, vetements, webhook });
   } catch (e) {
