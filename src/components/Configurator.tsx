@@ -290,14 +290,29 @@ export function Configurator({ slug }: { slug: string }) {
   const monoName = (h: string) => t(({ '#ffffff': 'blanc', '#000000': 'noir', '#c8302f': 'rouge', '#d4a017': 'or', '#2b63d9': 'bleu', '#14213f': 'marine' } as Record<string, string>)[h] || 'couleur');
   // Dimensions réelles d'impression de chaque emplacement (validées avec la maquette).
   const dims: [string, string][] = blank ? [] : zones.filter((z) => cfg.zones.includes(z.id)).map((z) => [z.name, cfg.zoneText?.[z.id] !== undefined || cfg.logoStatus === 'text' ? t('texte, largeur {d}', { d: printDims(z) }) : printDims(z, cfg.logoRatio)]);
+  // Photos du vêtement (Roly) en vignettes à gauche de la maquette ; la 1re vignette est la maquette elle-même.
+  const [photos, setPhotos] = useState<{ model: string[]; colors: { name: string; hex?: string; images: string[] }[] } | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
+  useEffect(() => { fetch(`/api/photos/${slug}`).then((r) => r.json()).then(setPhotos).catch(() => {}); }, [slug]);
+  useEffect(() => { setPhoto(null); }, [cfg.color, cfg.logo, cfg.zones]);
+  const near = (a: string, b?: string) => { if (!b) return 1e9; const x = parseInt(a.slice(1), 16), y = parseInt(b.replace('#', ''), 16); return Math.abs((x >> 16) - (y >> 16)) + Math.abs(((x >> 8) & 255) - ((y >> 8) & 255)) + Math.abs((x & 255) - (y & 255)); };
+  const colorPhotos = photos?.colors.length ? [...photos.colors].sort((a, b) => near(cfg.color, a.hex) - near(cfg.color, b.hex))[0].images : [];
+  const thumbs = [...colorPhotos, ...(photos?.model || [])].slice(0, 6);
   const hasBack = zones.some((z) => z.view === 'back');
   const err = (at: 'logo' | 'zones' | 'qty' | 'bat') => (fieldErr?.at === at ? <p className="err small field-err" role="alert">{fieldErr.msg}</p> : null);
   const logoLabel = t(cfg.logoStatus === 'text' ? 'Texte seul (sans logo)' : cfg.logo ? 'Logo ajouté' : 'Déposez votre logo');
 
   return (
     <div className="pdp">
-      <div className="gallery">
-        <div className="stage"><Garment slug={slug} color={cfg.color} view={view} zones={cfg.zones} logo={cfg.logo} text={cfg.text} text2={cfg.text2} textFont={cfg.textFont} textColor={cfg.textColor} zoneText={cfg.zoneText} />{lowContrast && <button className="stage-alert" onClick={() => document.getElementById('mono-warn')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" /><path d="M12 9v4M12 17h.01" /></svg> {t('Attention : logo peu visible')}</button>}</div>
+      <div className={`gallery ${thumbs.length ? 'with-thumbs' : ''}`}>
+        {thumbs.length > 0 && (
+          <div className="thumbs" role="group" aria-label={t('Photos du produit')}>
+            <button aria-pressed={!photo} onClick={() => setPhoto(null)} title={t('Votre maquette')}><Garment slug={slug} color={cfg.color} view={view} zones={cfg.zones} logo={cfg.logo} text={cfg.text} /></button>
+            {thumbs.map((u) => <button key={u} aria-pressed={photo === u} onClick={() => setPhoto(u)}><img src={u} alt={`${pL.name} · ${t('photo')}`} loading="lazy" /></button>)}
+          </div>
+        )}
+        {photo && <div className="stage photo"><img src={photo} alt={pL.name} /><button className="btn line small back-mock" onClick={() => setPhoto(null)}>{t('Voir ma maquette')}</button></div>}
+        <div className="stage" hidden={!!photo}><Garment slug={slug} color={cfg.color} view={view} zones={cfg.zones} logo={cfg.logo} text={cfg.text} text2={cfg.text2} textFont={cfg.textFont} textColor={cfg.textColor} zoneText={cfg.zoneText} />{lowContrast && <button className="stage-alert" onClick={() => document.getElementById('mono-warn')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" /><path d="M12 9v4M12 17h.01" /></svg> {t('Attention : logo peu visible')}</button>}</div>
         {hasBack && (
           <div className="seg" role="group" aria-label="Vue">
             <button aria-pressed={view === 'front'} onClick={() => setView('front')}>{t('Face')}</button>
