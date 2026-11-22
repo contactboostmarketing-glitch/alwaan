@@ -17,8 +17,11 @@ import { getStock } from '@/lib/stock';
 export const maxDuration = 60;
 export async function GET(req: Request) {
   if (await limited(req, 'insights', 30, 3600)) return tooMany();
-  if (!process.env.INSIGHTS_KEY) return NextResponse.json({ error: 'INSIGHTS_KEY non configurée sur le serveur' }, { status: 503 });
-  if (!safeEqual(req.headers.get('x-insights-key'), process.env.INSIGHTS_KEY)) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+  // Lecture seule : clé INSIGHTS_KEY, ou la clé de synchro (SYNC_KEY) déjà détenue par les sessions de l'atelier.
+  const sync = process.env.SYNC_KEY || process.env.ROLY_SYNC_KEY;
+  if (!process.env.INSIGHTS_KEY && !sync) return NextResponse.json({ error: 'INSIGHTS_KEY non configurée sur le serveur' }, { status: 503 });
+  const ok = (process.env.INSIGHTS_KEY && safeEqual(req.headers.get('x-insights-key'), process.env.INSIGHTS_KEY)) || (sync && safeEqual(req.headers.get('x-sync-key'), sync));
+  if (!ok) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
   const days = Math.min(730, Math.max(7, Number(new URL(req.url).searchParams.get('jours')) || 365));
   const since = Date.now() - days * 864e5;
   const photo = (id?: string) => (id ? `${SITE_URL}/api/logo/${id}?apercu` : undefined);
