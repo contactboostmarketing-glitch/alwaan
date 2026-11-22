@@ -40,6 +40,7 @@ export function GET() {
 <g:age_group>adult</g:age_group>
 <g:is_bundle>no</g:is_bundle>
 <g:custom_label_0>${esc(c.name)}</g:custom_label_0>
+<g:return_policy_label>personnalise</g:return_policy_label>
 ${p.bestseller ? '<g:custom_label_1>best-seller</g:custom_label_1>\n' : ''}
 </item>`);
     }
