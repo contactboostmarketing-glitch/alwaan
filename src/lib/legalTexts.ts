@@ -8,7 +8,7 @@ const seller = `${COMPANY.name}, ${COMPANY.legalForm}${COMPANY.capital ? ` au ca
 const eur = (n: number) => `${n.toLocaleString('fr-FR', { minimumFractionDigits: n % 1 ? 2 : 0 })} €`;
 const express = EXPRESS_FEES.map(([max, fee], i) => (max === Infinity ? `${eur(fee)} HT au-delà de ${EXPRESS_FEES[i - 1][0]} pièces` : `${eur(fee)} HT jusqu'à ${max} pièces`)).join(', ');
 
-export const UPDATED = '20 novembre 2026';
+export const UPDATED = '23 novembre 2026';
 
 export const CGV: string[] = [
   `Dernière mise à jour : ${UPDATED}.`,

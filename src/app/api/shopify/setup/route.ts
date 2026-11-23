@@ -1,9 +1,10 @@
+import { CGV, LIVRAISON, PRIVACY } from '@/lib/legalTexts';
 import { NextResponse } from 'next/server';
 import { COLOR_NAMES, DESIGN_FEE, EXPRESS_FEES, NAME_FEE, PRODUCTS, REWORK_FEE, ZONES, sizesFor, zonesFor, type Product, type Zone } from '@/lib/catalog';
 import { DESIGN_HANDLE, NAME_HANDLE, REWORK_HANDLE, expressHandle, markHandle } from '@/lib/shopify';
 import { admin, adminEnabled } from '@/lib/shopifyAdmin';
 import { safeEqual } from '@/lib/secure';
-import { publicOrigin } from '@/lib/site';
+import { LEGAL_PAGES, publicOrigin } from '@/lib/site';
 
 /**
  * Met Shopify en accord avec la grille de prix du site :
@@ -143,6 +144,31 @@ async function syncGarment(slug: string, price: number, dry: boolean, pubs: stri
   return { handle: slug, action: e.length ? `${added}erreur` : `${added}${wrong.length} variante(s) mises à ${target}`, errors: e };
 }
 
+/**
+ * Politiques Shopify (liens en bas de la page de paiement) = textes d'alwaan.fr : CGV, confidentialité, livraison, retours, mentions légales.
+ * Nécessite l'autorisation write_legal_policies sur l'application Shopify ; sans elle, renvoie l'erreur sans bloquer la synchro.
+ */
+async function syncPolicies(dry: boolean) {
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const html = (lines: string[], path: string) => lines.map((b) => b.startsWith('## ') ? `<h2>${esc(b.slice(3))}</h2>` : b.startsWith('- ') ? `<p>• ${esc(b.slice(2))}</p>` : `<p>${esc(b)}</p>`).join('\n')
+    + `\n<p><em>Version de référence : <a href="https://alwaan.fr${path}">https://alwaan.fr${path}</a></em></p>`;
+  const list: [string, string][] = [
+    ['TERMS_OF_SERVICE', html(CGV, '/cgv')], ['PRIVACY_POLICY', html(PRIVACY, '/confidentialite')], ['SHIPPING_POLICY', html(LIVRAISON, '/livraison')],
+    ['REFUND_POLICY', html(LEGAL_PAGES.retours.body, '/retours')], ['LEGAL_NOTICE', html(LEGAL_PAGES['mentions-legales'].body, '/mentions-legales')],
+  ];
+  if (dry) return list.map(([type]) => `${type} : à mettre à jour`);
+  const out: string[] = [];
+  for (const [type, body] of list) {
+    try {
+      const r = await admin<{ shopPolicyUpdate: { userErrors: UserError[] } }>(
+        `mutation($p: ShopPolicyInput!) { shopPolicyUpdate(shopPolicy: $p) { userErrors { field message } } }`, { p: { type, body } });
+      const e = r.shopPolicyUpdate.userErrors;
+      out.push(`${type} : ${e.length ? `erreur ${e.map((x) => x.message).join(', ')}` : 'à jour'}`);
+    } catch (e) { out.push(`${type} : ${String((e as Error).message).slice(0, 160)}`); }
+  }
+  return out;
+}
+
 /** Abonne le site au webhook « commande payée » (conversions, dossiers de retouche, recommander). */
 async function ensureWebhook(origin: string): Promise<string> {
   const uri = `${origin}/api/shopify/webhook`;
@@ -182,7 +208,8 @@ export async function POST(req: Request) {
     const vetements = [];
     for (const p of PRODUCTS) vetements.push(await syncGarment(p.slug, p.price, dry, pubs));
     const webhook = dry ? 'non modifié (simulation)' : await ensureWebhook(publicOrigin(req));
-    return NextResponse.json({ ok: true, dry, marquages, vetements, webhook });
+    const politiques = await syncPolicies(dry);
+    return NextResponse.json({ ok: true, dry, marquages, vetements, webhook, politiques });
   } catch (e) {
     return NextResponse.json({ ok: false, error: String((e as Error).message).slice(0, 500) }, { status: 502 });
   }
