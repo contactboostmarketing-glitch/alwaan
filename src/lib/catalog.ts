@@ -113,8 +113,8 @@ const PRICE_OVERRIDE: Record<string, number> = { 'parka-hv-epsilon': 50 };
  */
 export const CAP_MARK = 1.5;
 const capTop = (cost: number) => Math.round((6 * cost) / 4.2 * 100) / 100;
-// Bonnet Rosmal : proportionnel à la Mercury sur le prix d'achat réel (1,29 € contre 1,12 €) → 6,90 € puis 4,03 € à 100 pièces.
-export const CAP_TOP: Record<string, number> = { 'casquette-mercury': 6, 'casquette-wizer': capTop(5.1), 'casquette-barny': capTop(3.9), 'bonnet-rosmal': 6.9 };
+// Bonnet Rosmal : 1,29 € d'achat + ≈ 2 € de marquage (non inclus) → 7,90 € puis 4,61 € à 100 pièces (choix du gérant).
+export const CAP_TOP: Record<string, number> = { 'casquette-mercury': 6, 'casquette-wizer': capTop(5.1), 'casquette-barny': capTop(3.9), 'bonnet-rosmal': 7.9 };
 /** [pièces minimum, prix tout compris / prix à l'unité] */
 export const CAP_LADDER: [number, number][] = [[1, 1], [10, 5.2 / 6], [30, 4.5 / 6], [50, 4 / 6], [100, 3.5 / 6]];
 export const capPrice = (slug: string, q: number) => {
