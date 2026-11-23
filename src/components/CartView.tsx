@@ -174,7 +174,7 @@ export function CartView() {
           )}
           <label className={`consent ${cgvErr ? 'invalid' : ''}`} id="cart-cgv"><input type="checkbox" checked={cgv} aria-invalid={cgvErr || undefined} aria-describedby={cgvErr ? 'cart-cgv-err' : undefined} onChange={(e) => { setCgv(e.target.checked); setCgvErr(false); }} /><span>{tx('J\'accepte les')} <Link href="/cgv">{tx('CGV')}</Link> {tx(blankOnly ? '(textile vierge : rétractation 14 jours pour les particuliers)' : lines.some((l) => l.logoStatus === 'blank') ? '(articles personnalisés : pas de rétractation ; textile vierge : 14 jours)' : '(articles personnalisés : pas de rétractation)')}</span></label>
           {cgvErr && <p className="err small field-err" id="cart-cgv-err" role="alert">{tx('Cochez l\'acceptation des CGV pour continuer.')}</p>}
-          <button className="btn cta block" onClick={checkout} disabled={busy}>{tx(busy ? 'Redirection…' : 'Commander avec obligation de paiement')}</button>
+          <button className="btn cta block" onClick={checkout} disabled={busy}>{tx(busy ? 'Redirection…' : 'Payer')}</button>
           {connected && pro && <button className="btn line block" onClick={payByTransfer} disabled={busy}><I name="bank" size={18} /> {tx('Payer par virement')}</button>}
           {!connected && pro && <p className="muted small">{tx('Virement possible pour les pros connectés à leur compte.')} <Link className="link" href={lk('/compte')}>{tx('Se connecter')}</Link></p>}
           {msg && <p className="err" role="alert">{msg}</p>}
