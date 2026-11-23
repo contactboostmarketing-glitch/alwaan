@@ -22,7 +22,7 @@ function markingProducts(): { handle: string; zone: Zone }[] {
   const seen = new Map<string, Zone>();
   for (const z of ZONES) seen.set(markHandle(z), z);
   // Variantes de prix (premium) : nom standard de la zone, pas son nom propre à un vêtement (« Face » sur casquette).
-  for (const p of PRODUCTS) for (const z of zonesFor(p)) if (!seen.has(markHandle(z))) seen.set(markHandle(z), { ...z, name: ZONES.find((x) => x.id === z.id)!.name });
+  for (const p of PRODUCTS) for (const z of zonesFor(p)) if (!seen.has(markHandle(z))) seen.set(markHandle(z), { ...z, name: p.shape === 'cap' ? 'face casquette' : ZONES.find((x) => x.id === z.id)!.name });
   return [...seen].map(([handle, zone]) => ({ handle, zone }));
 }
 
