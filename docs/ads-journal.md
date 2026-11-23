@@ -147,3 +147,9 @@ Aucun.
 - I2 : fiche produit « dès X € HT la pièce à partir de N pièces, logo compris · Y € HT à l'unité » (aussi dans le rendu serveur) ; tableau des paliers inchangé.
 - I3 bis : bandeau « Noël : commandez avant le … pour être livré au plus tard le 24 décembre » sur les pages produits, catégories, métiers et villes (FR et EN), calculé à la date du jour ; disparaît après la date limite.
 - En attente du gérant : budget de décembre (800 € recommandé ou 980 €), seuils par groupe, hausses CPC Clubs / zones Nord-Belgique, bannière cookies Shopify.
+
+**23/11 (nuit) : décisions finales avant lancement**
+- Budget de décembre **980 €** retenu par le gérant : 40 €/j du 30/11 au 20/12 (Search pro 30 €, Shopping 8 €, Marque 2 €), pas de baisse le 11/12.
+- Règles automatiques (exécution unique, e-mail à chaque exécution) : 21/12 0 h → 6 € / 3 € / 1 € (10 €/j) ; 04/01 6 h → 30 € / 8 € / 2 €.
+- Point de contrôle obligatoire le **10/12** : à 40 €/j, le seuil de 400 € sans commande payée peut être atteint ce jour-là.
+- Livraison : point relais Mondial Relay 4,90 € HT (5,88 € TTC dans Merchant, prix le plus bas affiché par Shopping), domicile 9,90 € HT, offerts dès 150 € HT, France et Belgique. Expédition depuis l'atelier, 121 rue Léon Gambetta, Haubourdin (Sendcloud).
