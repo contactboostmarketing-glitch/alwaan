@@ -199,7 +199,7 @@ Les hausses de budget restent soumises à la validation écrite du gérant, mêm
 À surveiller avant d'ajouter : « flocage » (souvent utilisé pour tout type de marquage, à tester en expression dans le groupe Tenue si les termes de recherche le confirment), « marquage textile », « sérigraphie » (gros volumes, intention compatible ou non).
 
 ### 5.2 Négatifs permanents (liste partagée, niveau compte)
-- **Prestation non proposée** : broderie, brodé, brodée, brodés, broder, sublimation, maillot, maillots, bonnet, sac, tote bag, mug, chaussures, veste de cuisine, veste de cuisinier, blouse médicale, tunique médicale, enfant, enfants, bébé, chien
+- **Prestation non proposée** : broderie, brodé, brodée, brodés, broder, sublimation, maillot, maillots, sac, tote bag, mug, chaussures, veste de cuisine, veste de cuisinier, blouse médicale, tunique médicale, enfant, enfants, bébé, chien
 - **Prix et gratuité** : gratuit, gratuite, 1 €, 1 euro, pas cher 1, échantillon gratuit
 - **Emploi** : emploi, recrutement, offre d'emploi, stage, alternance, salaire, CDI, intérim
 - **Faire soi-même / matériel** : tuto, tutoriel, DIY, faire soi-même, machine, presse à chaud, imprimante, transfert dtf, film dtf, encre, flex, vinyle, cricut

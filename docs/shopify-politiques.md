@@ -190,7 +190,7 @@ Les caractéristiques essentielles des produits (matière, grammage, tailles, co
 
 Personnalisation : le Client fournit son logo, son texte ou choisit un design, l'emplacement et la couleur du vêtement. Le Site affiche une maquette en direct. Lorsque le logo comporte un fond, le Client choisit de le conserver ou de le retirer. Un logo de faible définition fait l'objet d'un avertissement ; le Client qui le valide malgré tout accepte le rendu correspondant.
 
-Gabarits d'impression : cœur, anti-cœur et poche jusqu'à 10 × 10 cm ; dos et grand devant jusqu'à 27 × 27 cm ; épaules jusqu'à 5 × 5 cm ; casquettes et bonnets jusqu'à 6 × 6 cm ; nuque selon le gabarit indiqué. Le logo est inscrit dans le gabarit en conservant ses proportions.
+Gabarits d'impression : cœur, anti-cœur et poche jusqu'à 10 × 10 cm ; dos et grand devant jusqu'à 27 × 27 cm ; épaules jusqu'à 5 × 5 cm ; casquettes jusqu'à 6 × 6 cm ; bonnets jusqu'à 7 × 4 cm sur le revers ; nuque selon le gabarit indiqué. Le logo est inscrit dans le gabarit en conservant ses proportions.
 
 
 ### Article 3 · Bon à tirer (maquette validée)
