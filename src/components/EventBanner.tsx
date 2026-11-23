@@ -17,7 +17,7 @@ export function EventBanner({ compact = false }: { compact?: boolean }) {
   if (!ev) return null;
   const fmt = (d: Date) => d.toLocaleDateString(lang === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   const name = lang === 'en' ? ev.en : ev.fr;
-  const deadline = ev.orderBy ? t('Commandez avant le {d} pour l\'avoir à temps', { d: fmt(ev.orderBy) }) : t('Encore possible en production express');
+  const deadline = ev.orderBy ? t('Commandez avant le {d} pour l\'avoir à temps', { d: fmt(ev.orderBy) }) : t('Encore possible en express, sur les articles en stock');
   const base = l('/idees-cadeaux');
   if (compact) return <Link className="gifts-strip event-strip" href={`${base}/${ev.occasion}`}><I name={ev.icon} size={16} /> <b>{name} · {fmt(ev.date)}</b> · {deadline} →</Link>;
   return (

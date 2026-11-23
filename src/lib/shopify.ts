@@ -7,7 +7,7 @@
 import { COLOR_NAMES, PREMIUM_MARK, ZONES, getProduct, printDims, zonesFor, type Zone } from './catalog';
 import { sign } from './secure';
 import { getStock } from './stock';
-import { ON_ORDER_DAYS, shortSizes, skey } from './stockTypes';
+import { onOrderDays, shortSizes, skey } from './stockTypes';
 import { cartTotals, lineFull, namesAllowed, qtyOf, reworkLogos, round, type LineConfig } from './pricing';
 import { admin, adminEnabled, createExactDiscount } from './shopifyAdmin';
 import { SITE_URL } from './site';
@@ -91,7 +91,7 @@ export async function toShopifyLines(lines: LineConfig[], origin = SITE_URL, exp
         ?? variants.find((x) => opt(x, 'Couleur') === color);
       if (!v) throw new Error(`Variante introuvable : ${p.name} ${color} ${size}`);
       // Stock atelier : clé cachée (préfixe _) pour la déduction au paiement, et mention « sur commande » pour l'atelier.
-      const stockAttrs = [{ key: '_stock', value: skey(l.slug, l.color, size) }, ...(shortSizes(stock, l).includes(size) ? [{ key: 'Disponibilité', value: `Sur commande fournisseur (+${ON_ORDER_DAYS} j ouvrés)` }] : [])];
+      const stockAttrs = [{ key: '_stock', value: skey(l.slug, l.color, size) }, ...(shortSizes(stock, l).includes(size) ? [{ key: 'Disponibilité', value: `Sur commande fournisseur (+${onOrderDays(l.logoStatus === 'blank')} j ouvré${onOrderDays(l.logoStatus === 'blank') > 1 ? 's' : ''})` }] : [])];
       out.push({ merchandiseId: v.id, quantity: q, attributes: [...attrs, ...stockAttrs, ...(size === 'Total' ? [{ key: 'Tailles', value: 'À préciser avant production' }] : [])] });
     }
     const pieces = qtyOf(l);

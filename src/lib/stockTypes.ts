@@ -4,6 +4,10 @@
 // Tant qu'aucun stock n'est saisi (tracking = false), tout est considéré comme disponible.
 
 export const ON_ORDER_DAYS = 5;
+// Article imprimé sur commande : les 5 jours fournisseur sont déjà dans les 7 jours de production standard ;
+// on garde 1 jour de marge (commande fournisseur passée le jour même). Le textile vierge, lui, attend les 5 jours.
+export const ON_ORDER_PRINT_DAYS = 1;
+export const onOrderDays = (blank: boolean) => (blank ? ON_ORDER_DAYS : ON_ORDER_PRINT_DAYS);
 export type Stock = { tracking: boolean; q: Record<string, number>; updatedAt?: string };
 export const skey = (slug: string, color: string, size: string) => `${slug}|${color}|${size}`;
 
@@ -23,3 +27,6 @@ export function shortSizes(s: Stock | null | undefined, l: { slug: string; color
   return Object.entries(l.qty).filter(([size, n]) => n > 0 && n > (available(s, l.slug, l.color, size) ?? Infinity)).map(([size]) => size);
 }
 export const onOrder = (s: Stock | null | undefined, l: { slug: string; color: string; qty: Record<string, number> }) => shortSizes(s, l).length > 0;
+/** Express (4 jours ouvrés) : seulement si le stock est suivi et que tout le panier est en stock (le fournisseur met 5 jours). */
+export const expressOk = (s: Stock | null | undefined, lines: { slug: string; color: string; qty: Record<string, number> }[]) =>
+  !!s?.tracking && lines.length > 0 && !lines.some((l) => onOrder(s, l));

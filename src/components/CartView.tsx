@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { printDims, CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor, defaultZone, expressFee, SAMPLE_EXTRA_DAYS, SAMPLE_MIN, RELAY_HT } from '@/lib/catalog';
 import { attributionForCheckout, track } from '@/lib/track';
 import { deliveryDate, fmtDay } from '@/lib/delivery';
-import { ON_ORDER_DAYS, onOrder, shortSizes } from '@/lib/stockTypes';
+import { expressOk, onOrder, onOrderDays, shortSizes } from '@/lib/stockTypes';
 import { useStock } from '@/lib/useStock';
 import type { Stock } from '@/lib/stockTypes';
 import { namesAllowed, cartTotals, eur, lineTotal, logoKey, pools, qtyOf, unitAt, unitPrice, type LineConfig } from '@/lib/pricing';
@@ -24,6 +24,9 @@ export function CartView() {
   // Panier uniquement en textile vierge : pas d'impression, donc ni production express ni délai d'atelier.
   const blankOnly = lines.length > 0 && lines.every((l) => l.logoStatus === 'blank');
   useEffect(() => { if (blankOnly && express) setExpress(false); }, [blankOnly, express, setExpress]);
+  // Express : 4 jours ouvrés, impossible si un article doit venir du fournisseur (5 jours). On attend le stock chargé avant de décocher.
+  const canExpress = expressOk(stock, lines);
+  useEffect(() => { if (stock && express && !canExpress) setExpress(false); }, [stock, express, canExpress, setExpress]);
   const [code, setCode] = useState('');
   const [cgv, setCgv] = useState(false), [cgvErr, setCgvErr] = useState(false);
   const [quoteOpen, setQuoteOpen] = useState(false);
@@ -163,7 +166,7 @@ export function CartView() {
           <div className="row tot"><span>{tx('Total TTC')}</span><span>{eur(t.ttc, lang)}</span></div>
           {!pro && <p className="muted small">{tx('dont TVA')} {eur(t.vat, lang)}</p>}
           {t.saved > 1 && <div className="row save"><span>{tx('Vous économisez')}</span><span><Price raw ht={t.saved} /></span></div>}
-          {!blankOnly && <label className={`express ${express ? 'on' : ''}`}>
+          {!blankOnly && canExpress && <label className={`express ${express ? 'on' : ''}`}>
             <input type="checkbox" checked={express} onChange={(e) => setExpress(e.target.checked)} />
             <span className="opt-ic"><I name="zap" size={20} /></span><span><b>{tx('Production express')}</b><small>{tx('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), true, anyOnOrder), lang) })}</small></span>
             <b className="express-fee">+<Price raw ht={expressFee(t.pieces || 1)} /></b>
@@ -218,7 +221,7 @@ function CartLine({ l, i, pool, stock, onRemove }: { l: LineConfig; i: number; p
           ))}{!showAll && Object.values(l.qty).some((v) => !v) && <button className="link small" onClick={() => setShowAll(true)}>{tx('+ taille')}</button>}</div>
         )}
         <small>{blank ? logo : `${logo} · ${bat}`}</small>
-        {shortSizes(stock, l).length > 0 && <small className="order-note"><I name="clock" size={14} /> {tx('Sur commande ({s}) : +{n} jours ouvrés', { s: shortSizes(stock, l).join(', '), n: ON_ORDER_DAYS })}</small>}
+        {shortSizes(stock, l).length > 0 && <small className="order-note"><I name="clock" size={14} /> {tx(blank ? 'Sur commande ({s}) : +{n} jours ouvrés' : 'Sur commande ({s}) : +{n} jour ouvré', { s: shortSizes(stock, l).join(', '), n: onOrderDays(blank) })}</small>}
         {l.teamId && <small className="with-ic"><I name="users" size={14} /> {tx('Liste d\'équipe')}{l.printNames && namesAllowed(l) ? ` · ${tx('prénoms imprimés')}` : ''}</small>}
         <div className="acts"><Link className="link" href={`${lk(`/produits/${p.slug}`)}?modifier=${i}`}>{tx('Modifier')}</Link>{!blank && <Link className="link" href={`${lk(`/produits/${p.slug}`)}?meme-logo`}>{tx('Autre couleur')}</Link>}<button className="link mutedl" onClick={onRemove}>{tx('Supprimer')}</button></div>
       </div>

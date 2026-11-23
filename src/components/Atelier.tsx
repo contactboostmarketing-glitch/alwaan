@@ -291,7 +291,7 @@ function QcPhotos({ order, initial, staffKey }: { order: string; initial: string
 
 /**
  * Stock du textile vierge à l'atelier, par vêtement, couleur et taille.
- * Case vide = pas de stock suivi pour cette référence : elle est vendue « sur commande » (+5 jours ouvrés).
+ * Case vide = pas de stock suivi pour cette référence : elle est vendue « sur commande » (+1 jour ouvré en imprimé, +5 en textile vierge, pas d'express).
  * Les commandes payées déduisent automatiquement les pièces prises en stock.
  */
 export function AtelierStock() {
@@ -319,7 +319,7 @@ export function AtelierStock() {
   const fillColor = (c: string, n: string) => setDraft((d) => ({ ...d, ...Object.fromEntries(sizes.map((s) => [skey(slug, c, s), n])) }));
   return (
     <section className="wrap atelier"><AtelierNav /><h1>Stock atelier</h1>
-      <p className="muted small">Case vide = référence <b>sur commande</b> (le client voit +5 jours ouvrés). Les commandes payées déduisent le stock automatiquement.{stock?.updatedAt ? ` Dernière mise à jour : ${when(stock.updatedAt)}.` : ''}</p>
+      <p className="muted small">Case vide = référence <b>sur commande</b> (le client voit +1 jour ouvré en imprimé, +5 en textile vierge, et pas d'express). Saisissez tout le stock en une fois : dès la première saisie, ce qui n'est pas saisi passe sur commande. Les commandes payées déduisent le stock automatiquement.{stock?.updatedAt ? ` Dernière mise à jour : ${when(stock.updatedAt)}.` : ''}</p>
       <div className="stk-products">{PRODUCTS.map((x) => {
         const n = Object.entries(stock?.q || {}).filter(([k]) => k.startsWith(`${x.slug}|`)).reduce((a, [, v]) => a + v, 0);
         return <button key={x.slug} className="chip" aria-pressed={x.slug === slug} onClick={() => setSlug(x.slug)}>{x.name}{n ? <small> · {n}</small> : null}</button>;

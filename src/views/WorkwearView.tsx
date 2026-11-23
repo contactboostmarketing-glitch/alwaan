@@ -83,7 +83,7 @@ const T = {
     faqH: 'Questions fréquentes',
     faq: [
       ['Y a-t-il un minimum pour des vêtements de travail personnalisés ?', `Non, vous commandez dès 1 pièce, sans frais de préparation. Le marquage baisse automatiquement : ${tiersTxt('fr')} au même logo, tous vêtements confondus.`],
-      ['Quel délai pour recevoir les tenues de mon équipe ?', `${PRODUCTION_DAYS} jours ouvrés de production après la commande, puis la livraison. En express, la production passe à ${EXPRESS_DAYS} jours ouvrés (${expressTxt('fr')}). La date estimée s'affiche sur la page produit et dans le panier.`],
+      ['Quel délai pour recevoir les tenues de mon équipe ?', `${PRODUCTION_DAYS} jours ouvrés de production après la commande, puis la livraison. En express, pour les articles en stock, la production passe à ${EXPRESS_DAYS} jours ouvrés (${expressTxt('fr')}). La date estimée s'affiche sur la page produit et dans le panier.`],
       ['Brodez-vous les logos ?', 'Non. Tous nos marquages sont imprimés en DTF : le logo garde toutes ses couleurs et ses détails, sur coton comme sur polyester, dès 1 pièce. Nous ne faisons ni broderie ni sérigraphie.'],
       ['Comment récupérer les tailles de toute l\'équipe ?', 'Avec le lien d\'équipe : vous le partagez, chacun indique son nom, son prénom et sa taille, et votre panier se remplit seul. Vous validez ensuite une seule commande.'],
       ['Peut-on payer par virement et obtenir un devis ?', 'Oui. Les pros connectés à leur compte client peuvent payer par virement : la production démarre à réception des fonds. Un devis PDF se télécharge en un clic depuis le panier. Pour plus de 50 pièces ou plusieurs modèles, le formulaire de devis vous apporte une réponse sous 24 h ouvrées.'],
@@ -125,7 +125,7 @@ const T = {
     faqH: 'Frequently asked questions',
     faq: [
       ['Is there a minimum order for custom workwear?', `No, you can order from 1 piece with no setup fee. Printing gets cheaper automatically: ${tiersTxt('en')} with the same logo, across all garments.`],
-      ['How long does it take to receive my team\'s outfits?', `${PRODUCTION_DAYS} business days of production after your order, plus delivery. With express, production takes ${EXPRESS_DAYS} business days (${expressTxt('en')}). The estimated date is shown on the product page and in the cart.`],
+      ['How long does it take to receive my team\'s outfits?', `${PRODUCTION_DAYS} business days of production after your order, plus delivery. With express, for items in stock, production takes ${EXPRESS_DAYS} business days (${expressTxt('en')}). The estimated date is shown on the product page and in the cart.`],
       ['Do you embroider logos?', 'No. All our prints are made with DTF: your logo keeps every colour and detail, on cotton or polyester, from 1 piece. We do not offer embroidery or screen printing.'],
       ['How do I collect everyone\'s sizes?', 'With the team link: share it, everyone enters their first name, last name and size, and your cart fills itself. You then confirm a single order.'],
       ['Can I pay by bank transfer and get a quote?', 'Yes. Business customers signed in to their account can pay by bank transfer: production starts when the funds arrive. A PDF quote downloads in one click from the cart. For more than 50 pieces or several models, the quote form gets you an answer within 24 business hours.'],

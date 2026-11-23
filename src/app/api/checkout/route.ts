@@ -12,6 +12,8 @@ import { lookupCode } from '@/lib/vouchers';
 import { COMPANY, SITE_URL, publicOrigin } from '@/lib/site';
 import { sanitize } from '@/lib/cartSanitize';
 import { createShopifyCheckout, createTransferOrder, shopifyEnabled } from '@/lib/shopify';
+import { getStock } from '@/lib/stock';
+import { expressOk } from '@/lib/stockTypes';
 
 export async function POST(req: Request) {
   if (await limited(req, 'paiement', 30, 600)) return tooMany();
@@ -26,6 +28,12 @@ export async function POST(req: Request) {
     for (const l of group) l.reworkId = id;
   }
   const express = body?.express === true;
+  // Express (4 jours ouvrés) : seulement si tout le panier est en stock à l'atelier ; le fournisseur met 5 jours.
+  if (express && !expressOk(await getStock().catch(() => null), lines)) {
+    return NextResponse.json({ error: body?.lang === 'en'
+      ? 'Express production is only available when every item is in stock. Untick express to continue.'
+      : 'La production express n\'est possible que si tous les articles sont en stock. Décochez l\'express pour continuer.' }, { status: 409 });
+  }
   // Remise revendeur : vérifiée côté serveur (compte connecté + statut validé), jamais sur parole du navigateur.
   const customerEmail = await sessionEmail(req, publicOrigin(req));
   const resellerOk = await isReseller(customerEmail);

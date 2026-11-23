@@ -6,7 +6,7 @@ import { SITE_URL } from './site';
 import { skey, type Stock } from './stockTypes';
 
 /** Seuil d'alerte de réassort (pièces restantes par référence). */
-export const STOCK_ALERT = Number(process.env.STOCK_ALERT || 5);
+export const STOCK_ALERT = Number(process.env.STOCK_ALERT || 0);
 
 const STORE = 'stock', KEY = 'atelier';
 type Saved = { q: Record<string, number>; updatedAt?: string };
@@ -21,7 +21,7 @@ export async function getStock(): Promise<Stock> {
 export async function setStock(changes: Record<string, number | null>): Promise<Stock> {
   const { q } = await getStock();
   for (const [k, v] of Object.entries(changes)) {
-    if (!/^[a-z0-9-]+\|#[0-9a-f]{6}\|[\w ]{1,20}$/i.test(k)) continue;
+    if (!/^[a-z0-9-]+\|#[0-9a-f]{6}\|[\w /]{1,20}$/i.test(k)) continue; // « M/L », « XL/2XL » (gilets HV)
     if (v === null || !Number.isFinite(v)) delete q[k]; else q[k] = Math.max(0, Math.min(99999, Math.round(v)));
   }
   const updatedAt = new Date().toISOString();
@@ -44,8 +44,8 @@ export async function decrementStock(items: { key: string; quantity: number }[])
   let alert = '';
   if (low.length) alert = await sendMail({
     to: atelierEmail(),
-    subject: `Réassort : ${low.length} référence${low.length > 1 ? 's' : ''} sous ${STOCK_ALERT} pièces`,
-    html: layout({ title: 'Stock bas à l\'atelier', intro: `Ces références sont passées sous ${STOCK_ALERT} pièces. Au-delà du stock, le site les affiche « sur commande » (+5 jours ouvrés).`,
+    subject: `Réassort : ${low.length} référence${low.length > 1 ? 's' : ''} ${STOCK_ALERT ? `à ${STOCK_ALERT} pièces ou moins` : `épuisée${low.length > 1 ? 's' : ''}`}`,
+    html: layout({ title: 'Stock bas à l\'atelier', intro: `${STOCK_ALERT ? `Ces références sont à ${STOCK_ALERT} pièces ou moins.` : 'Ces références sont épuisées.'} Au-delà du stock, le site les affiche « sur commande » (+1 jour ouvré en imprimé, +5 en textile vierge) et l\'express n\'est plus proposé.`,
       rows: low.map(({ key }) => esc(`${label(key)} : ${s.q[key]} restante${s.q[key] > 1 ? 's' : ''}`)), cta: ['Mettre à jour le stock', `${SITE_URL}/atelier/stock`] }),
   }).catch((e) => `erreur ${(e as Error).message}`);
   return (done.join(', ') || 'rien à déduire') + (alert ? ` · alerte ${alert}` : '');

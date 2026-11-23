@@ -53,7 +53,7 @@ export const LEGAL_PAGES: Record<string, { title: string; body: string[]; final?
         'D\'ici là, si votre réclamation écrite n\'a pas abouti, vous pouvez saisir gratuitement un conciliateur de justice (conciliateurs.fr).']),
   ] },
   livraison: { title: 'Livraison et délais', final: true, body: [
-    'Délais indicatifs : production en 7 jours ouvrés après la commande, ou 4 jours ouvrés en production express (option payante : 15 € jusqu\'à 10 pièces, 20 € jusqu\'à 20, 30 € jusqu\'à 30, 60 € au-delà). Livraison en France et en Belgique.',
+    'Délais indicatifs : production en 7 jours ouvrés après la commande, ou 4 jours ouvrés en production express pour les articles en stock à l\'atelier (option payante : 15 € jusqu\'à 10 pièces, 20 € jusqu\'à 20, 30 € jusqu\'à 30, 60 € au-delà). Livraison en France et en Belgique.',
     'Livraison offerte dès 120 € HT d\'articles. Sinon : 9,90 € HT à domicile ou en entreprise (Colissimo), ou 4,90 € HT en point relais Mondial Relay (point choisi juste après le paiement). Suivi par email.'] },
   retours: { title: 'Retours, SAV et garanties', final: true, body: [
     'Articles personnalisés : fabriqués à votre logo, ils ne bénéficient pas du droit de rétractation (art. L221-28 3° du Code de la consommation). Les garanties légales de conformité et des vices cachés s\'appliquent toujours.',

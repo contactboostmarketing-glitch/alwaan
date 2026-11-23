@@ -18,7 +18,7 @@ import { rolyColor } from '@/lib/rolyMatch';
 import { ROLY_INFO } from '@/lib/rolyInfo';
 import { track } from '@/lib/track';
 import { deliveryDate, fmtDay } from '@/lib/delivery';
-import { ON_ORDER_DAYS, available, colorStocked, shortSizes } from '@/lib/stockTypes';
+import { available, colorStocked, onOrderDays, shortSizes } from '@/lib/stockTypes';
 import { useStock } from '@/lib/useStock';
 import { I } from './Icons';
 
@@ -147,6 +147,9 @@ export function Configurator({ slug }: { slug: string }) {
   };
   const blank = cfg.logoStatus === 'blank';
   const short = shortSizes(stock, { slug, color: cfg.color, qty: cfg.qty });
+  // Sur commande : couleur absente du stock ou tailles au-delà du stock. Express : seulement si tout est en stock.
+  const late = !colorStocked(stock, slug, cfg.color) || short.length > 0;
+  const canExpress = !blank && !!stock?.tracking && !late;
   const stockHint = (size: string) => {
     const n = available(stock, slug, cfg.color, size);
     if (n === null) return null;
@@ -367,7 +370,7 @@ export function Configurator({ slug }: { slug: string }) {
               {extra.length > 0 && <small className="muted">{t('En cours : {c}. Toutes les couleurs comptent pour la remise.', { c: colorName(lang, cfg.color) })}</small>}
             </div>
           )}
-          {!colorStocked(stock, slug, cfg.color) && <p className="order-note"><I name="clock" size={15} /> {t('Couleur sur commande : +{n} jours ouvrés', { n: ON_ORDER_DAYS })}</p>}
+          {!colorStocked(stock, slug, cfg.color) && <p className="order-note"><I name="clock" size={15} /> {t(blank ? 'Couleur sur commande : +{n} jours ouvrés' : 'Couleur sur commande : +{n} jour ouvré', { n: onOrderDays(blank) })}</p>}
         </div>
 
         <div className={`blk ${fieldErr?.at === 'logo' ? 'invalid' : ''}`} id="cfg-logo">
@@ -471,7 +474,7 @@ export function Configurator({ slug }: { slug: string }) {
             ))}
           </div>
           {err('qty')}
-          {short.length > 0 && colorStocked(stock, slug, cfg.color) && <p className="order-note"><I name="clock" size={15} /> {t('Au-delà du stock, sur commande : +{n} jours ouvrés', { n: ON_ORDER_DAYS })}</p>}
+          {short.length > 0 && colorStocked(stock, slug, cfg.color) && <p className="order-note"><I name="clock" size={15} /> {t(blank ? 'Au-delà du stock, sur commande : +{n} jours ouvrés' : 'Au-delà du stock, sur commande : +{n} jour ouvré', { n: onOrderDays(blank) })}</p>}
           {others > 0 && <p className="muted small">{t('+ {n} avec ce logo déjà dans le panier, comptées pour la remise.', { n: pcs(others) })}</p>}
           {!blank && q > 0 && zones.some((z) => cfg.zones.includes(z.id) && !z.fixed) && (nt ? (
             <div className="nudge"><span>+{pcs(nt[0] - pool)} = {capMode ? <b><Price ht={at(nt[0])} suffix={false} />/pc</b> : <>{t('marquage')} <b>-{Math.round(nt[1] * 100)} %</b></>}</span><button className="btn line small" onClick={reachTier}>{t('Passer à {n}', { n: nt[0] - others })}</button></div>
@@ -495,7 +498,7 @@ export function Configurator({ slug }: { slug: string }) {
               <div className="tot"><Price ht={at(pool)} /> <small className="muted">/ {t('pièce')}</small></div>
               <small className="muted">{t('Choisissez vos tailles')}</small>
             </>)}
-            <p className="eta"><I name="truck" size={16} /> {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), false, short.length > 0, blank), lang) })}{!blank && <> · <span className="muted">{t('express possible')}</span></>}</p>
+            <p className="eta"><I name="truck" size={16} /> {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), false, late, blank), lang) })}{canExpress && <> · <span className="muted">{t('express possible')}</span></>}</p>
           </div>
           {justAdded && editIndex === null
             ? <Link className="btn cta added" href={l('/panier')}><I name="check" size={18} strokeWidth={3} /> {t('Ajouté · Voir le panier')}</Link>
@@ -504,7 +507,7 @@ export function Configurator({ slug }: { slug: string }) {
         </div>
         {/* Mobile : la barre d'achat reste compacte, délai et lien d'équipe juste en dessous. */}
         <div className="addrow-extra">
-          <p className="eta"><I name="truck" size={16} /> {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), false, short.length > 0, blank), lang) })}{!blank && <> · <span className="muted">{t('express possible')}</span></>}</p>
+          <p className="eta"><I name="truck" size={16} /> {t('Délai indicatif : reçu vers le {d}', { d: fmtDay(deliveryDate(new Date(), false, late, blank), lang) })}{canExpress && <> · <span className="muted">{t('express possible')}</span></>}</p>
           {editIndex === null && <button className="link small team-link" onClick={() => submit(true)} disabled={saving}><I name="users" size={18} /> {t('Récupérer les noms et tailles de l\'équipe par un lien')}</button>}
           {!blank && editIndex === null && <button className="link small" onClick={share} disabled={saving}><I name="users" size={18} /> {t('Partager ma maquette pour la faire valider')}</button>}
           <button className="link small" onClick={() => window.dispatchEvent(new Event('alwaan:chat'))}><I name="sparkles" size={18} /> {t('Une question ? Le conseiller vous répond')}</button>

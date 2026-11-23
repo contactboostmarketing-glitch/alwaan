@@ -24,8 +24,8 @@ export function addBusinessDays(d: Date, n: number, cutoff = true): Date {
   while (n > 0) { r.setDate(r.getDate() + 1); if (isBusinessDay(r)) n--; }
   return r;
 }
-import { ON_ORDER_DAYS } from './stockTypes';
+import { onOrderDays } from './stockTypes';
 /** Date de réception indicative (production standard ou express + transport, + réception fournisseur si sur commande). */
 export const deliveryDate = (from = new Date(), express = false, onOrder = false, blankOnly = false, extraDays = 0) =>
-  addBusinessDays(from, (blankOnly ? BLANK_DAYS : express ? EXPRESS_DAYS : PRODUCTION_DAYS) + TRANSIT_DAYS + (onOrder ? ON_ORDER_DAYS : 0) + extraDays);
+  addBusinessDays(from, (blankOnly ? BLANK_DAYS : express ? EXPRESS_DAYS : PRODUCTION_DAYS) + TRANSIT_DAYS + (onOrder ? onOrderDays(blankOnly) : 0) + extraDays);
 export const fmtDay = (d: Date, lang: 'fr' | 'en' = 'fr') => d.toLocaleDateString(lang === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
