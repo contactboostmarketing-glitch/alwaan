@@ -115,15 +115,32 @@ async function syncGarment(slug: string, price: number, dry: boolean, pubs: stri
     return dry ? { handle: slug, action: `à créer à ${price.toFixed(2)}` } : createGarment(g, price.toFixed(2), pubs);
   }
   const target = price.toFixed(2);
+  // Couleurs ajoutées au catalogue depuis la création du produit : variantes Couleur × Taille à créer.
+  const g = PRODUCTS.find((x) => x.slug === slug)!;
+  const has = new Set(p.variants.nodes.map((v) => v.selectedOptions.find((o) => o.name === 'Couleur')?.value));
+  const missing = has.has(undefined) ? [] : g.colors.map((c) => COLOR_NAMES[c] || c).filter((c) => !has.has(c));
+  let added = '';
+  if (missing.length) {
+    if (dry) added = `couleurs à ajouter : ${missing.join(', ')} · `;
+    else {
+      const sizes = sizesFor(g);
+      const r = await admin<{ productVariantsBulkCreate: { userErrors: UserError[] } }>(
+        `mutation($p: ID!, $v: [ProductVariantsBulkInput!]!) { productVariantsBulkCreate(productId: $p, variants: $v) { userErrors { field message } } }`,
+        { p: p.id, v: missing.flatMap((c) => sizes.map((s) => ({ optionValues: [{ optionName: 'Couleur', name: c }, { optionName: 'Taille', name: s }], price: target, inventoryPolicy: 'CONTINUE', taxable: true }))) },
+      );
+      const e = r.productVariantsBulkCreate.userErrors;
+      added = e.length ? `erreur couleurs : ${e.map((x) => x.message).join(', ')} · ` : `couleurs ajoutées : ${missing.join(', ')} · `;
+    }
+  }
   const wrong = p.variants.nodes.filter((v) => v.price !== target);
-  if (!wrong.length) return { handle: slug, action: 'déjà au bon prix', price: target };
-  if (dry) return { handle: slug, action: `${wrong.length} variante(s) ${[...new Set(wrong.map((v) => v.price))].join('/')} → ${target}` };
+  if (!wrong.length) return { handle: slug, action: `${added}déjà au bon prix`, price: target };
+  if (dry) return { handle: slug, action: `${added}${wrong.length} variante(s) ${[...new Set(wrong.map((v) => v.price))].join('/')} → ${target}` };
   const r = await admin<{ productVariantsBulkUpdate: { userErrors: UserError[] } }>(
     `mutation($p: ID!, $v: [ProductVariantsBulkInput!]!) { productVariantsBulkUpdate(productId: $p, variants: $v) { userErrors { field message } } }`,
     { p: p.id, v: wrong.map((v) => ({ id: v.id, price: target })) },
   );
   const e = r.productVariantsBulkUpdate.userErrors;
-  return { handle: slug, action: e.length ? 'erreur' : `${wrong.length} variante(s) mises à ${target}`, errors: e };
+  return { handle: slug, action: e.length ? `${added}erreur` : `${added}${wrong.length} variante(s) mises à ${target}`, errors: e };
 }
 
 /** Abonne le site au webhook « commande payée » (conversions, dossiers de retouche, recommander). */
