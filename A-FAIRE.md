@@ -7,6 +7,7 @@ Liste des actions en attente (à faire par l'équipe alwaan, ou des informations
 - [x] `SYNC_KEY` créée dans Netlify (synchronisation Shopify : POST /api/shopify/setup, en-tête x-sync-key ; ?dry=1 pour simuler).
 - [ ] Lancer la synchro Shopify après chaque changement de prix ou de produit (crée les produits manquants, aligne les prix).
 - [ ] Confirmer les coloris Roly de la gamme hiver (Clasica, Urban, Montblanc, Himalaya, Nebraska, Oslo) et les prix des casquettes Mercury, Wizer, Barny et de la parka Epsilon.
+- [x] API Roly : ROLY_USERNAME / ROLY_PASSWORD (identifiants extranet) dans Netlify, pour les photos produits, le stock et les tarifs. Diagnostic : GET /api/roly/check (en-tête x-sync-key).
 - [ ] Activer la double authentification : Shopify, Netlify, GitHub, boîte contact@alwaan.fr.
 
 ## Variables Netlify à renseigner
