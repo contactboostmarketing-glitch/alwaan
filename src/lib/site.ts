@@ -52,7 +52,7 @@ export const LEGAL_PAGES: Record<string, { title: string; body: string[]; final?
   ] },
   livraison: { title: 'Livraison et délais', final: true, body: [
     'Délais indicatifs : production en 7 jours ouvrés après la commande, ou 4 jours ouvrés en production express (option payante : 15 € jusqu\'à 10 pièces, 20 € jusqu\'à 20, 30 € jusqu\'à 30, 60 € au-delà). Livraison en France et en Belgique.',
-    'Livraison offerte dès 150 € HT d\'articles, sinon 9,90 € HT. Suivi par email.'] },
+    'Livraison offerte dès 150 € HT d\'articles. Sinon : 9,90 € HT à domicile ou en entreprise (Colissimo), ou 4,90 € HT en point relais Mondial Relay (point choisi juste après le paiement). Suivi par email.'] },
   retours: { title: 'Retours, SAV et garanties', final: true, body: [
     'Articles personnalisés : fabriqués à votre logo, ils ne bénéficient pas du droit de rétractation (art. L221-28 3° du Code de la consommation). Les garanties légales de conformité et des vices cachés s\'appliquent toujours.',
     'Textile vierge (vendu sans aucun marquage) : les particuliers disposent d\'un délai de rétractation de 14 jours à compter de la réception, sans avoir à se justifier. Prévenez-nous par email à ' + COMPANY.email + ' (ou avec le formulaire ci-dessous), puis renvoyez les articles neufs, non portés, non lavés et dans leur emballage d\'origine, sous 14 jours. Les frais de retour sont à votre charge. Nous vous remboursons sous 14 jours après réception du retour, frais de livraison initiaux compris (au tarif standard), par le même moyen de paiement. Cette possibilité ne concerne pas les clients professionnels ni les articles personnalisés.',

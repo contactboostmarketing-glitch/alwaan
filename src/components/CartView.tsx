@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { printDims, CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor, defaultZone, expressFee, SAMPLE_EXTRA_DAYS, SAMPLE_MIN } from '@/lib/catalog';
+import { printDims, CATEGORIES, COLOR_NAMES, COMPLETE_THE_LOOK, PRODUCTS, PROMO_CODES, defaultColor, getProduct, sizesFor, zonesFor, defaultZone, expressFee, SAMPLE_EXTRA_DAYS, SAMPLE_MIN, RELAY_HT } from '@/lib/catalog';
 import { attributionForCheckout, track } from '@/lib/track';
 import { deliveryDate, fmtDay } from '@/lib/delivery';
 import { ON_ORDER_DAYS, onOrder, shortSizes } from '@/lib/stockTypes';
@@ -158,6 +158,7 @@ export function CartView() {
           {voucher && !t.voucher && !t.skipped && <p className="muted small">{tx('Code {c} : -{a} € dès {m} € HT d\'articles', { c: voucher.code, a: voucher.amount, m: voucher.min })}</p>}
           {t.express > 0 && <div className="row"><span className="with-ic"><I name="zap" size={16} /> {tx('Production express')}</span><span><Price raw ht={t.express} /></span></div>}
           <div className="row"><span>{tx('Livraison')}</span><span>{t.shipping ? <Price raw ht={t.shipping} /> : tx('Offerte')}</span></div>
+          {t.shipping > 0 && <p className="muted small ship-note">{tx('À domicile ou en entreprise. En point relais :')} <Price raw ht={RELAY_HT} />{tx(', au choix sur la page de paiement.')}</p>}
           {pro && <><div className="row"><span>{tx('Total HT')}</span><span>{eur(t.ht, lang)}</span></div><div className="row"><span>{tx('TVA 20 %')}</span><span>{eur(t.vat, lang)}</span></div></>}
           <div className="row tot"><span>{tx('Total TTC')}</span><span>{eur(t.ttc, lang)}</span></div>
           {!pro && <p className="muted small">{tx('dont TVA')} {eur(t.vat, lang)}</p>}

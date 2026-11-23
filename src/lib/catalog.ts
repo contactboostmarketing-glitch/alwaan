@@ -49,6 +49,7 @@ const ALL = ['#ffffff', '#f2d33b', '#e8892b', '#c8302f', '#8b1e2d', '#d43f8d', '
 export const GENERAL_FAQ: [string, string][] = [
   ['Y a-t-il un minimum de commande ?', 'Non, vous pouvez commander dès 1 pièce. Le marquage baisse automatiquement : -15 % dès 5 pièces, -20 % dès 10 et -40 % dès 30 (hors grand devant, à prix fixe). Les pièces qui portent le même logo se cumulent, même sur des vêtements différents.'],
   ['Quand vais-je recevoir ma commande ?', 'Délai indicatif : 7 jours ouvrés de production après votre commande, plus la livraison. En option, la production express passe à 4 jours ouvrés (15 € jusqu\'à 10 pièces, 20 € jusqu\'à 20, 30 € jusqu\'à 30, 60 € au-delà). La date estimée s\'affiche sur la page produit et dans le panier.'],
+  ['Combien coûte la livraison ?', 'Livraison offerte dès 150 € HT d\'articles. En dessous : 9,90 € HT à domicile ou à l\'adresse de l\'entreprise (Colissimo), ou 4,90 € HT en point relais Mondial Relay, en France et en Belgique. Vous choisissez le mode de livraison sur la page de paiement ; pour le point relais, le point est choisi juste après le paiement.'],
   ['Quel fichier de logo envoyer ?', 'Un PNG à fond transparent ou un SVG, le plus grand possible (au moins 800 pixels de large). Le site vous prévient si votre logo est en petite définition. Pas de logo ? Vous pouvez imprimer un simple texte.'],
   ['Puis-je retourner un vêtement personnalisé ?', 'Les articles marqués à votre logo sont fabriqués sur mesure et ne bénéficient pas du droit de rétractation (article L221-28 3° du Code de la consommation). Un défaut d\'impression ou une erreur de notre part est refait à nos frais.'],
 ];
@@ -183,6 +184,8 @@ export const TIERS: [number, number][] = [[1, 0], [5, 0.15], [10, 0.2], [30, 0.4
 export const MAX_DISCOUNT = TIERS[TIERS.length - 1][1];
 export const FREE_SHIPPING_HT = 150;
 export const SHIPPING_HT = 9.9;
+/** Livraison en point relais (Mondial Relay, choix du point après le paiement), offerte au même seuil. */
+export const RELAY_HT = 4.9;
 export const VAT = 0.2;
 /** Codes fixes réutilisables : aucun (un code public circule et se réutilise à l'infini). */
 export const PROMO_CODES: Record<string, number> = {};

@@ -1,6 +1,6 @@
 // Textes juridiques complets (CGV, confidentialité). Format : "## " = titre, "- " = élément de liste.
 // À faire relire par un juriste avant de s'y fier. Les éléments variables viennent de COMPANY (site.ts).
-import { DESIGN_FEE, EXPRESS_FEES, FREE_SHIPPING_HT, NAME_FEE, NAMES_MIN, REFERRAL_DEFAULTS, RESELLER_RATE, REWORK_FEE, SAMPLE_MIN, SHIPPING_HT, SHOP_COMMISSION } from './legalParams';
+import { DESIGN_FEE, EXPRESS_FEES, FREE_SHIPPING_HT, NAME_FEE, RELAY_HT, NAMES_MIN, REFERRAL_DEFAULTS, RESELLER_RATE, REWORK_FEE, SAMPLE_MIN, SHIPPING_HT, SHOP_COMMISSION } from './legalParams';
 import { COMPANY } from './site';
 
 const email = COMPANY.email || 'contact@alwaan.fr';
@@ -33,7 +33,7 @@ export const CGV: string[] = [
   'Les prix sont indiqués en euros, hors taxes (HT) en mode « Pro » et toutes taxes comprises (TTC, TVA française de 20 %) en mode « Particulier ». Le prix d\'un article comprend le vêtement et le ou les marquages choisis. Le prix applicable est celui affiché dans le panier au moment de la validation de la commande.',
   'Remise de quantité : le prix du marquage baisse automatiquement selon le nombre de pièces portant le même logo (paliers affichés sur le Site). Le grand devant est à prix fixe. Le vêtement ne fait pas l\'objet de remise de quantité.',
   `Options : prénom imprimé (${eur(NAME_FEE)} HT par pièce, au-delà de ${NAMES_MIN} pièces), création design pour les particuliers (${eur(DESIGN_FEE)} HT par pièce), production express (${express}), retouche graphiste (${eur(REWORK_FEE)} HT par logo).`,
-  `Frais de livraison : ${eur(SHIPPING_HT)} HT, offerts à partir de ${eur(FREE_SHIPPING_HT)} HT d'articles. Ils sont indiqués avant le paiement.`,
+  `Frais de livraison : ${eur(SHIPPING_HT)} HT à domicile ou à l'adresse de l'entreprise, ${eur(RELAY_HT)} HT en point relais Mondial Relay ; offerts à partir de ${eur(FREE_SHIPPING_HT)} HT d'articles. Le mode de livraison est choisi sur la page de paiement, où les frais sont indiqués avant de payer.`,
   'Codes et avantages : codes promotionnels, codes de parrainage, bons d\'achat et remise revendeur s\'appliquent dans les conditions affichées au moment de la commande ; ils ne sont ni échangeables contre de l\'argent ni cumulables sauf mention contraire. En cas d\'erreur manifeste de prix (prix dérisoire), alwaan peut annuler la commande et la rembourser.',
   'Client professionnel établi hors de France dans l\'Union européenne : si les conditions de l\'autoliquidation de la TVA sont remplies (numéro de TVA intracommunautaire valide communiqué avant la commande), la facture est établie hors taxes.',
   '## Article 6 · Commande',
@@ -152,9 +152,9 @@ export const COOKIES: string[] = [
 export const LIVRAISON: string[] = [
   `Dernière mise à jour : ${UPDATED}.`,
   '## Zones de livraison',
-  'Nous livrons en France métropolitaine et en Belgique, à l\'adresse indiquée lors de la commande. Un email de suivi est envoyé à l\'expédition.',
+  'Nous livrons en France métropolitaine et en Belgique, à domicile ou à l\'adresse de l\'entreprise (Colissimo), ou en point relais Mondial Relay. Le mode de livraison est choisi sur la page de paiement ; pour le point relais, le point est choisi juste après le paiement. Un email de suivi est envoyé à l\'expédition.',
   '## Frais de livraison',
-  `Livraison offerte dès ${eur(FREE_SHIPPING_HT)} HT d'articles. En dessous : ${eur(SHIPPING_HT)} HT par commande.`,
+  `Livraison offerte dès ${eur(FREE_SHIPPING_HT)} HT d'articles. En dessous : ${eur(SHIPPING_HT)} HT par commande à domicile ou en entreprise, ou ${eur(RELAY_HT)} HT en point relais.`,
   '## Délais indicatifs',
   'La date de réception estimée est affichée sur chaque fiche produit et dans le panier. Elle tient compte des jours ouvrés (hors week-end) ; une commande passée après 14 h démarre le jour ouvré suivant.',
   '- Articles personnalisés : production en 7 jours ouvrés après le paiement et la validation de la maquette, puis 1 à 3 jours ouvrés de transport.',
