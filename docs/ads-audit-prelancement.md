@@ -122,7 +122,7 @@ Les 16 pages répondent en 200. Temps de réponse serveur : 0,20 à 0,36 s (accu
 
 | # | Constat | Recommandation | Grav. |
 |---|---|---|---|
-| L1 | Titres et extensions de prix **absents des pages d'atterrissage** : « Polo + logo cœur 13,60 € HT » (la page Polos affiche « dès 12,00 € HT dès 30 pièces ») ; « Casquette + logo 5,50 € HT » et la description 9 (la page Casquettes affiche « dès 3,00 € HT dès 100 pièces ») ; extension de prix « T-shirt Dogo 8,78 € HT ». | Remplacer par des prix visibles : « Polos dès 12 € HT (30 pièces) », « Casquette dès 3 € HT, 100 pcs ». Extensions de prix en **« À partir de »** avec la condition dans la description : Polo Pegaso 12,00 € « HT, logo cœur, dès 30 pcs » → `/produits/polo-pegaso` ; Casquette Mercury 3,00 € « HT, logo inclus, 100 pcs » → `/produits/casquette-mercury` ; T-shirt Dogo 7,18 € « HT, logo cœur, dès 30 pcs » → `/produits/t-shirt-dogo`. Mettre en pause la description 9 jusqu'à I2. | **A** |
+| L1 | Titres et extensions de prix **absents des pages d'atterrissage** : « Polo + logo cœur 13,60 € HT » (la page Polos affiche « dès 12,00 € HT dès 30 pièces ») ; « Casquette + logo 6 € HT » et la description 9 (la page Casquettes affiche « dès 3,00 € HT dès 100 pièces ») ; extension de prix « T-shirt Dogo 8,78 € HT ». | Remplacer par des prix visibles : « Polos dès 12 € HT (30 pièces) », « Casquette dès 3,50 € HT, 100 pcs ». Extensions de prix en **« À partir de »** avec la condition dans la description : Polo Pegaso 12,00 € « HT, logo cœur, dès 30 pcs » → `/produits/polo-pegaso` ; Casquette Mercury 3,00 € « HT, logo inclus, 100 pcs » → `/produits/casquette-mercury` ; T-shirt Dogo 7,18 € « HT, logo cœur, dès 30 pcs » → `/produits/t-shirt-dogo`. Mettre en pause la description 9 jusqu'à I2. | **A** |
 | L2 | Le groupe **Noël pro** pointe vers `/vetements/sweats-personnalises`, qui **n'affiche pas** « Commandez avant le 10 déc. ». Seul l'accueil l'affiche. | URL finale du groupe Noël = **`/`** (accueil : date limite + cadeaux d'équipe), jusqu'à ce que l'informaticien affiche le bandeau date limite sur les pages catégorie (I3 bis). | **A** |
 | L3 | « Tenue de travail » arrive sur l'accueil (h1 « Vos tenues à votre logo, expédiées en 7 jours ouvrés ») : correct, mais générique, et le visuel de saison est Noël. | Accepté pour décembre. Page hub « Vêtements de travail personnalisés » demandée (I7). | C |
 | L4 | `/metiers` et `/vetements-personnalises` renvoient une **404**. | Ne les utiliser dans aucun lien annexe ni aucune URL. | B |
@@ -269,12 +269,12 @@ Libellés de l'interface Google Ads et Merchant Center en français. Ils peuvent
 
 **C8. Annonces et éléments**
 - [ ] Groupe Polos > annonce : remplacer le titre « Polo + logo cœur 13,60 € HT » par **« Polos dès 12 € HT (30 pièces) »**.
-- [ ] Groupe Casquettes > annonce : remplacer « Casquette + logo 5,50 € HT » par **« Casquette dès 3 € HT, 100 pcs »**.
+- [ ] Groupe Casquettes > annonce : remplacer « Casquette + logo 6 € HT » par **« Casquette dès 3,50 € HT, 100 pcs »**.
 - [ ] Description n° 9 (prix dégressif Mercury) : la retirer des annonces jusqu'à ce que la fiche affiche le prix à l'unité (I2).
 - [ ] Groupe Noël pro > annonce > URL finale : **`https://alwaan.fr/`**.
 - [ ] Éléments > **Prix** : type « Produits », qualificatif **« À partir de »** :
   - Polo Pegaso **12,00 €**, « HT, logo cœur, dès 30 pcs », `https://alwaan.fr/produits/polo-pegaso` ;
-  - Casquette Mercury **3,00 €**, « HT, logo inclus, 100 pcs », `https://alwaan.fr/produits/casquette-mercury` ;
+  - Casquette Mercury **3,50 €**, « HT, logo inclus, 100 pcs », `https://alwaan.fr/produits/casquette-mercury` ;
   - T-shirt Dogo **7,18 €**, « HT, logo cœur, dès 30 pcs », `https://alwaan.fr/produits/t-shirt-dogo`.
   - Supprimer les anciennes valeurs 13,60 €, 5,50 € et 8,78 €.
 - [ ] Éléments > **Extrait structuré** : en-tête « Types » (déjà créé) ; ajouter en-tête **« Services »** : Maquette en direct, Lien d'équipe, Boutique club, Devis PDF immédiat, Impression DTF.

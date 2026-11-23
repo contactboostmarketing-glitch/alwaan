@@ -138,7 +138,7 @@ Extensions : liens annexes (Polos, Haute visibilité, Clubs et associations, Dev
 - Polos : « Polo personnalisé à votre logo », « Polo + logo cœur 13,60 € HT », « Polos resto et accueil »
 - Haute visibilité : « Gilet haute visibilité + logo », « Conforme EN ISO 20471 », « Bandes réfléchissantes libres », « Gilets HV pour BTP, logistique »
 - Restauration : « Tenues de restaurant à logo », « Tablier personnalisé à logo », « Polos, tabliers et casquettes »
-- Casquettes : « Casquette + logo 5,50 € HT », « Casquette à votre logo », « Dès 100 pièces : 3 € HT/pce »
+- Casquettes : « Casquette + logo 6 € HT », « Casquette à votre logo », « Dès 100 pièces : 3,50 € HT/pce »
 - Hiver : « Sweat personnalisé à logo », « Softshell et polaire à logo », « Tenues d'hiver pour l'équipe »
 - Clubs : « T-shirt personnalisé à logo », « T-shirts pour clubs et assos », « Boutique club en ligne »
 - Noël (fin 10/12, 14 h) : « Cadeaux d'équipe à votre logo », « Pour Noël : avant le 10/12 »
@@ -154,7 +154,7 @@ Extensions : liens annexes (Polos, Haute visibilité, Clubs et associations, Dev
 6. Polos, tabliers et casquettes à votre logo pour la salle et la cuisine. Dès 1 pièce.
 7. Livraison offerte dès 150 € HT. Une question ? Notre atelier répond sur WhatsApp.
 8. Devis PDF immédiat depuis le panier, paiement par carte ou par virement pour les pros.
-9. Casquette Mercury à votre logo : 5,50 € HT l'unité, 4,80 € dès 10, 4 € dès 30 pièces.
+9. Casquette Mercury à votre logo : 6 € HT l'unité, 5,20 € dès 10, 4,50 € dès 30 pièces.
 10. Pas de broderie : une impression DTF nette, toutes couleurs, dégradés compris.
 11. *(Noël, fin 10/12)* Noël : commandez avant le 10 décembre pour être livré au plus tard le 24, selon le site.
 12. *(Janvier)* Nouvelle année, nouvelles tenues : équipez vos équipes dès 1 pièce, maquette en direct.

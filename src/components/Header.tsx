@@ -31,7 +31,7 @@ export function Header() {
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
   return (
     <>
-      <div className="promo">{t('Livraison offerte dès 150 € HT · Maquette en direct avec votre logo · Dès 1 pièce')}</div>
+      <div className="promo">{t('Livraison offerte dès 120 € HT · Maquette en direct avec votre logo · Dès 1 pièce')}</div>
       <header className="site">
         <div className="wrap hd">
           <Link className="logo" href={l('/')} aria-label={t('alwaan, accueil')}><Logo /><b>alwaan</b></Link>

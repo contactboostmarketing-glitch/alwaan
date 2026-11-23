@@ -42,7 +42,7 @@ export async function quotePdf(o: { number: string; date: Date; validUntil: Date
     text(`Tailles : ${sizes}`, 46, 8.5, font, muted); y -= 16;
   });
   const t = cartTotals(o.lines, o.promo, o.express, o.reseller);
-  if (reworkLogos(o.lines).length) { newPageIfNeeded(20); text('Retouche du logo par notre graphiste', 46, 10); right(String(reworkLogos(o.lines).length), 400); right(eur(REWORK_FEE), 475); right(eur(t.rework), 550); y -= 18; }
+  if (reworkLogos(o.lines).length) { newPageIfNeeded(20); text('Retouche du logo par notre graphiste', 46, 10); right(String(reworkLogos(o.lines).length), 400); right(REWORK_FEE ? eur(REWORK_FEE) : 'offerte', 475); right(t.rework ? eur(t.rework) : 'offerte', 550); y -= 18; }
   page.drawLine({ start: { x: 300, y: y + 6 }, end: { x: 555, y: y + 6 }, thickness: 0.6, color: muted }); y -= 8;
   const row = (label: string, v: string, b = false) => { newPageIfNeeded(16); text(label, 320, 10, b ? bold : font); right(v, 550, b ? 12 : 10, b ? bold : font); y -= b ? 18 : 14; };
   row('Sous-total HT', eur(t.goods));

@@ -17,7 +17,7 @@ const T = {
       ['Quels sont les délais pour du textile vierge ?', `Les articles en stock sont expédiés sous ${BLANK_DAYS} jours ouvrés. Une couleur ou une taille « sur commande » ajoute 5 jours ouvrés, c'est indiqué sur la fiche produit avant de payer.`],
       ['Y a-t-il des prix de gros ?', 'Le prix affiché est le même dès 1 pièce. Revendeurs et agences : -10 % sur tout après vérification du Kbis dans votre espace client. Pour un très gros volume, écrivez-nous.'],
       ['Puis-je retourner du textile vierge ?', 'Oui pour les particuliers : 14 jours de rétractation à réception, articles neufs et non portés. Les articles personnalisés, eux, ne sont ni repris ni échangés.'],
-      ['Puis-je mélanger textile vierge et personnalisé ?', 'Oui, dans le même panier. La livraison est offerte dès 150 € HT au total.'],
+      ['Puis-je mélanger textile vierge et personnalisé ?', 'Oui, dans le même panier. La livraison est offerte dès 120 € HT au total.'],
     ] as [string, string][],
   },
   en: {
@@ -31,7 +31,7 @@ const T = {
       ['How fast are blank garments shipped?', `In-stock items ship within ${BLANK_DAYS} business days. A colour or size marked "made to order" adds 5 business days, shown before you pay.`],
       ['Are there bulk prices?', 'The price is the same from 1 piece. Resellers and agencies: -10% on everything once your company is verified. For very large volumes, contact us.'],
       ['Can I return blank garments?', 'Yes for consumers: 14-day withdrawal from delivery, items new and unworn. Personalised items cannot be returned or exchanged.'],
-      ['Can I mix blank and printed items?', 'Yes, in the same cart. Free delivery from €150 excl. VAT in total.'],
+      ['Can I mix blank and printed items?', 'Yes, in the same cart. Free delivery from €120 excl. VAT in total.'],
     ] as [string, string][],
   },
 };

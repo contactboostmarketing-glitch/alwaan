@@ -49,7 +49,8 @@ export function WorkshopView({ lang }: { lang: Lang }) {
         <p className="muted small mt">{COMPANY.name} · {COMPANY.address}</p>
       </section>
       <JsonLd data={{
-        '@context': 'https://schema.org', '@type': 'LocalBusiness', name: 'alwaan', legalName: COMPANY.name, url: SITE_URL, email: COMPANY.email,
+        '@context': 'https://schema.org', '@type': 'LocalBusiness', name: 'alwaan', legalName: COMPANY.name, url: SITE_URL, email: COMPANY.email, telephone: COMPANY.phone,
+        openingHoursSpecification: [{ '@type': 'OpeningHoursSpecification', dayOfWeek: COMPANY.hours.schema.days, opens: COMPANY.hours.schema.opens, closes: COMPANY.hours.schema.closes }],
         address: { '@type': 'PostalAddress', streetAddress: '121 rue Léon Gambetta', postalCode: '59320', addressLocality: 'Haubourdin', addressCountry: 'FR' },
         areaServed: ['FR', 'BE'], description: t.lead,
       }} />

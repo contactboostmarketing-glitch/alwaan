@@ -49,7 +49,7 @@ const ALL = ['#ffffff', '#f2d33b', '#e8892b', '#c8302f', '#8b1e2d', '#d43f8d', '
 export const GENERAL_FAQ: [string, string][] = [
   ['Y a-t-il un minimum de commande ?', 'Non, vous pouvez commander dès 1 pièce. Le marquage baisse automatiquement : -15 % dès 5 pièces, -20 % dès 10 et -40 % dès 30 (hors grand devant, à prix fixe). Les pièces qui portent le même logo se cumulent, même sur des vêtements différents.'],
   ['Quand vais-je recevoir ma commande ?', 'Délai indicatif : 7 jours ouvrés de production après votre commande, plus la livraison. En option, la production express passe à 4 jours ouvrés (15 € jusqu\'à 10 pièces, 20 € jusqu\'à 20, 30 € jusqu\'à 30, 60 € au-delà). La date estimée s\'affiche sur la page produit et dans le panier.'],
-  ['Combien coûte la livraison ?', 'Livraison offerte dès 150 € HT d\'articles. En dessous : 9,90 € HT à domicile ou à l\'adresse de l\'entreprise (Colissimo), ou 4,90 € HT en point relais Mondial Relay, en France et en Belgique. Vous choisissez le mode de livraison sur la page de paiement ; pour le point relais, le point est choisi juste après le paiement.'],
+  ['Combien coûte la livraison ?', 'Livraison offerte dès 120 € HT d\'articles. En dessous : 9,90 € HT à domicile ou à l\'adresse de l\'entreprise (Colissimo), ou 4,90 € HT en point relais Mondial Relay, en France et en Belgique. Vous choisissez le mode de livraison sur la page de paiement ; pour le point relais, le point est choisi juste après le paiement.'],
   ['Quel fichier de logo envoyer ?', 'Un PNG à fond transparent ou un SVG, le plus grand possible (au moins 800 pixels de large). Le site vous prévient si votre logo est en petite définition. Pas de logo ? Vous pouvez imprimer un simple texte.'],
   ['Puis-je retourner un vêtement personnalisé ?', 'Les articles marqués à votre logo sont fabriqués sur mesure et ne bénéficient pas du droit de rétractation (article L221-28 3° du Code de la consommation). Un défaut d\'impression ou une erreur de notre part est refait à nos frais.'],
 ];
@@ -99,18 +99,21 @@ export const COEF = 2;
 export const sellPrice = (cost: number) => Math.round(cost * COEF * 100) / 100;
 
 const p = (slug: string, category: string, name: string, type: string, sizes: string, cost: number, shape: Shape, colors: string[], composition: string, bestseller = false): Product =>
-  ({ slug, category, name, type, sizes, cost, price: CAP_TOP[slug] ? Math.round((CAP_TOP[slug] - CAP_MARK) * 100) / 100 : sellPrice(cost), shape, colors, composition, bestseller });
+  ({ slug, category, name, type, sizes, cost, price: CAP_TOP[slug] ? Math.round((CAP_TOP[slug] - CAP_MARK) * 100) / 100 : PRICE_OVERRIDE[slug] ?? sellPrice(cost), shape, colors, composition, bestseller });
+
+/** Prix de vente HT du vêtement fixés par le gérant (au lieu de prix d'achat × 2). */
+const PRICE_OVERRIDE: Record<string, number> = { 'parka-hv-epsilon': 50 };
 
 /**
  * Casquettes : prix « tout compris » (casquette + logo face) dégressif selon les pièces au même logo.
- * Mercury 5,50 € HT à l'unité → 3,00 € HT dès 100 pièces ; les autres modèles en proportion de leur prix d'achat.
+ * Mercury 6,00 € HT à l'unité → 3,50 € HT dès 100 pièces ; les autres modèles en proportion de leur prix d'achat.
  * Le marquage face est facturé CAP_MARK, la casquette nue (textile vierge) = prix tout compris − CAP_MARK.
  */
 export const CAP_MARK = 1.5;
-const capTop = (cost: number) => Math.round((5.5 * cost) / 4.2 * 100) / 100;
-export const CAP_TOP: Record<string, number> = { 'casquette-mercury': 5.5, 'casquette-wizer': capTop(5.1), 'casquette-barny': capTop(3.9) };
+const capTop = (cost: number) => Math.round((6 * cost) / 4.2 * 100) / 100;
+export const CAP_TOP: Record<string, number> = { 'casquette-mercury': 6, 'casquette-wizer': capTop(5.1), 'casquette-barny': capTop(3.9) };
 /** [pièces minimum, prix tout compris / prix à l'unité] */
-export const CAP_LADDER: [number, number][] = [[1, 1], [10, 4.8 / 5.5], [30, 4 / 5.5], [50, 3.5 / 5.5], [100, 3 / 5.5]];
+export const CAP_LADDER: [number, number][] = [[1, 1], [10, 5.2 / 6], [30, 4.5 / 6], [50, 4 / 6], [100, 3.5 / 6]];
 export const capPrice = (slug: string, q: number) => {
   const top = CAP_TOP[slug]; if (!top) return undefined;
   let r = CAP_LADDER[0][1]; for (const [m, x] of CAP_LADDER) if (q >= m) r = x;
@@ -137,7 +140,7 @@ export const PRODUCTS: Product[] = [
   p('casquette-barny', 'casquettes-personnalisees', 'Casquette Barny', 'Trucker filet', 'TU', 3.9, 'cap', ['#151a2d', '#c8302f', '#f2d33b', '#3a5bd0', '#2f8a4d'], 'Polyester, filet arrière'),
   p('gilet-hv-beta', 'haute-visibilite-personnalisee', 'Gilet HV Beta', 'Multipoches, EN ISO 20471 classe 2', 'S–3XL', 11.5, 'hv', ['#d7f22c', '#ff7a1a'], '100 % polyester', true),
   p('veste-hv-persei', 'haute-visibilite-personnalisee', 'Veste HV Persei', 'Réversible, doublée, classe 3', 'S–4XL', 14.65, 'hvjacket', ['#d7f22c'], '100 % polyester'),
-  p('parka-hv-epsilon', 'haute-visibilite-personnalisee', 'Parka HV Epsilon', 'Imperméable, capuche, EN ISO 20471 classe 2', 'S–4XL', 42.9, 'hvjacket', ['#d7f22c', '#ff7a1a'], 'Polyester enduit PU'),
+  p('parka-hv-epsilon', 'haute-visibilite-personnalisee', 'Parka HV Epsilon', 'Imperméable, capuche, EN ISO 20471 classe 2', 'S–4XL', 25.15, 'hvjacket', ['#d7f22c', '#ff7a1a'], 'Polyester enduit PU'),
   // Gamme hiver (Roly 2026, prix d'achat à l'unité, ou au blister quand Roly ne vend pas à l'unité ; couleur, S–2XL). Coloris à confirmer avec le stock Roly.
   p('sweat-clasica', 'sweats-personnalises', 'Sweat Clasica', 'Sweat col rond', 'S–3XL', 6.25, 'sweat', ['#151a2d', '#1d2a5c', '#9aa0a6', '#ffffff', '#c8302f', '#3a5bd0'], 'Molleton coton et polyester', true),
   p('sweat-capuche-urban', 'sweats-personnalises', 'Sweat à capuche Urban', 'Capuche, poche kangourou', 'S–4XL', 7.88, 'hoodie', ['#151a2d', '#1d2a5c', '#9aa0a6', '#ffffff', '#c8302f', '#3a5bd0'], 'Molleton coton et polyester'),
@@ -182,7 +185,7 @@ export const CLASH: Record<string, string[]> = { chest: ['heart', 'antiheart', '
 /** Remise sur le marquage uniquement : [pièces minimum, remise]. Le vêtement n'a pas de remise. */
 export const TIERS: [number, number][] = [[1, 0], [5, 0.15], [10, 0.2], [30, 0.4]];
 export const MAX_DISCOUNT = TIERS[TIERS.length - 1][1];
-export const FREE_SHIPPING_HT = 150;
+export const FREE_SHIPPING_HT = 120;
 export const SHIPPING_HT = 9.9;
 /** Livraison en point relais (Mondial Relay, choix du point après le paiement), offerte au même seuil. */
 export const RELAY_HT = 4.9;
@@ -194,7 +197,8 @@ export const RELANCE_RATE = 0.1;
 export const RELANCE_CODE = /^(RETOUR|AVIS|BIENV)-[A-Z0-9]{6}$/;
 export const promoRate = (code?: string | null) => { const c = (code || '').trim().toUpperCase(); return PROMO_CODES[c] ?? (RELANCE_CODE.test(c) ? RELANCE_RATE : 0); };
 /** Logo retravaillé par notre graphiste (fond, netteté, vectorisation) : forfait HT, une fois par logo. */
-export const REWORK_FEE = 4;
+/** Retouche du logo par notre graphiste : offerte (le produit Shopify reste, à 0 €, pour signaler le dossier à l'atelier). */
+export const REWORK_FEE = 0;
 /** Remise des revendeurs validés (Kbis vérifié) : sur tout, hors livraison. */
 export const RESELLER_RATE = 0.1;
 /** Prénom imprimé sur chaque pièce (sous le logo) : prix HT par pièce, proposé au-delà de NAMES_MIN pièces. */

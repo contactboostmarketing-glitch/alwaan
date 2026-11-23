@@ -177,7 +177,7 @@ Dès 1 pièce, sans minimum · Votre logo posé en direct · Prix calculé en di
 | Haute visibilité | Gilet de sécurité à votre logo · Gilet jaune + logo dès 1 pièce · Gilets EN ISO 20471 + logo · Gilet fluo personnalisé · Gilet orange fluo à logo | « Gilets EN ISO 20471 à votre logo, placé sans recouvrir les bandes. Dès 1 pièce. » (79) · « Gilets jaunes ou orange fluo, classe 2, à votre logo. Maquette en direct, dès 1 pièce. » (86) |
 | T-shirts entreprise et assos | T-shirt entreprise à logo · Textile publicitaire à logo · T-shirts pour assos et clubs · Marquage -40 % dès 30 pièces · Livré en France et Belgique | « T-shirts à votre logo pour salariés, bénévoles et clubs. Marquage dégressif dès 5 pièces. » (89) · « Lien d'équipe : chacun saisit sa taille en ligne, vous validez une seule commande. » (82) |
 | Sweats et vestes | Sweat entreprise dès 1 pièce · Softshell et polaire à logo · Tenues d'hiver pour l'équipe · Express : 4 j ouvrés (option) · Marquage -40 % dès 30 pièces | « Sweats, softshells et polaires à votre logo pour l'hiver. Logo cœur et grand dos. » (81) · « Devis PDF immédiat, paiement par carte ou virement pour les pros. Atelier sur WhatsApp. » (87) |
-| Casquettes entreprise | Casquette logo entreprise · Casquette à votre logo · Casquette dès 3 € HT, 100 pcs · Taille unique réglable · Livré en France et Belgique (pas de « Marquage -40 % » : les casquettes ont leur propre grille de prix) | « Casquettes réglables à votre logo, taille unique pour toute l'équipe. Dès 1 pièce. » (82) · « Pas de minimum ni de frais de préparation. Prix logo compris dégressif dès 10 pièces. » (85) |
+| Casquettes entreprise | Casquette logo entreprise · Casquette à votre logo · Casquette dès 3,50 € HT, 100 pcs · Taille unique réglable · Livré en France et Belgique (pas de « Marquage -40 % » : les casquettes ont leur propre grille de prix) | « Casquettes réglables à votre logo, taille unique pour toute l'équipe. Dès 1 pièce. » (82) · « Pas de minimum ni de frais de préparation. Prix logo compris dégressif dès 10 pièces. » (85) |
 | Tabliers professionnels | Tablier pro à votre logo · Tablier serveur personnalisé · Tablier restaurant à logo · Polos, tabliers et casquettes · Livré en France et Belgique | « Tabliers bavette, mi-longs et denim à votre logo, pour salle, bar et cuisine. Dès 1 pièce. » (90) · « Tabliers et polos à votre logo pour serveurs, bar et cuisine. Horeca, dès 1 pièce. » (82) |
 | Génériques (une annonce par groupe produit) | titre du produit (« Polo personnalisé à votre logo », « Casquette à votre logo », « Sweat personnalisé à logo », « Softshell et polaire à logo ») + 4 titres communs | D1 + D2 |
 
@@ -189,7 +189,7 @@ Dès 1 pièce, sans minimum · Votre logo posé en direct · Prix calculé en di
   - titres « Nouvelles tenues pour 2027 », « Équipez vos nouveaux arrivants » ;
   - description « Nouvelles recrues, tenues usées : équipez l'équipe dès 1 pièce, maquette en direct. » (81).
 
-« Casquette dès 3 € HT, 100 pcs » et « Polos dès 12 € HT (30 pièces) » reprennent les prix « dès » affichés sur les pages catégorie, avec leur condition de quantité.
+« Casquette dès 3,50 € HT, 100 pcs » et « Polos dès 12 € HT (30 pièces) » reprennent les prix « dès » affichés sur les pages catégorie, avec leur condition de quantité.
 
 ---
 

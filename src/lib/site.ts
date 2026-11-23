@@ -22,7 +22,9 @@ export const COMPANY = {
   rcs: process.env.COMPANY_RCS || 'RCS Lille 990 444 291',
   capital: process.env.COMPANY_CAPITAL || '1 000 €',
   email: process.env.COMPANY_EMAIL || 'contact@alwaan.fr',
-  phone: process.env.NEXT_PUBLIC_PHONE || '',
+  phone: process.env.NEXT_PUBLIC_PHONE || '+33 6 08 89 72 82',
+  /** Horaires d'ouverture (téléphone et atelier). */
+  hours: { fr: 'du lundi au vendredi, 9 h 30 – 18 h', en: 'Monday to Friday, 9:30 am – 6 pm', schema: { days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], opens: '09:30', closes: '18:00' } },
   // Coordonnées bancaires (Qonto), affichées pour les virements et sur les devis.
   iban: process.env.COMPANY_IBAN || 'FR76 1695 8000 0194 8869 7526 491',
   bic: process.env.COMPANY_BIC || 'QNTOFRP1XXX',
@@ -52,7 +54,7 @@ export const LEGAL_PAGES: Record<string, { title: string; body: string[]; final?
   ] },
   livraison: { title: 'Livraison et délais', final: true, body: [
     'Délais indicatifs : production en 7 jours ouvrés après la commande, ou 4 jours ouvrés en production express (option payante : 15 € jusqu\'à 10 pièces, 20 € jusqu\'à 20, 30 € jusqu\'à 30, 60 € au-delà). Livraison en France et en Belgique.',
-    'Livraison offerte dès 150 € HT d\'articles. Sinon : 9,90 € HT à domicile ou en entreprise (Colissimo), ou 4,90 € HT en point relais Mondial Relay (point choisi juste après le paiement). Suivi par email.'] },
+    'Livraison offerte dès 120 € HT d\'articles. Sinon : 9,90 € HT à domicile ou en entreprise (Colissimo), ou 4,90 € HT en point relais Mondial Relay (point choisi juste après le paiement). Suivi par email.'] },
   retours: { title: 'Retours, SAV et garanties', final: true, body: [
     'Articles personnalisés : fabriqués à votre logo, ils ne bénéficient pas du droit de rétractation (art. L221-28 3° du Code de la consommation). Les garanties légales de conformité et des vices cachés s\'appliquent toujours.',
     'Textile vierge (vendu sans aucun marquage) : les particuliers disposent d\'un délai de rétractation de 14 jours à compter de la réception, sans avoir à se justifier. Prévenez-nous par email à ' + COMPANY.email + ' (ou avec le formulaire ci-dessous), puis renvoyez les articles neufs, non portés, non lavés et dans leur emballage d\'origine, sous 14 jours. Les frais de retour sont à votre charge. Nous vous remboursons sous 14 jours après réception du retour, frais de livraison initiaux compris (au tarif standard), par le même moyen de paiement. Cette possibilité ne concerne pas les clients professionnels ni les articles personnalisés.',

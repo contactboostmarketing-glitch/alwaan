@@ -122,7 +122,7 @@ export const EN: Record<string, string> = {
   'Livraison': 'Delivery',
   'Livraison et délais': 'Delivery and lead times',
   'Livraison offerte': 'Free delivery',
-  'Livraison offerte dès 150 € HT · Maquette en direct avec votre logo · Dès 1 pièce': 'Free delivery from €150 excl. VAT · Live mock-up with your logo · From 1 piece',
+  'Livraison offerte dès 120 € HT · Maquette en direct avec votre logo · Dès 1 pièce': 'Free delivery from €120 excl. VAT · Live mock-up with your logo · From 1 piece',
   'WhatsApp {n}': 'WhatsApp {n}',
   'Contact': 'Contact',
   '+ taille': '+ size',

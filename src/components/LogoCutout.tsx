@@ -127,7 +127,7 @@ export function ReworkOption({ logo, on, set }: { logo: LogoState | null; on: bo
   return (
     <label className={`rework ${on ? 'on' : ''} ${hint ? 'hint' : ''}`}>
       <input type="checkbox" checked={on} onChange={(e) => set(e.target.checked)} />
-      <span><b>{t('Logo pas net ? Notre graphiste le retravaille')}</b><small>+{eur(REWORK_FEE, lang)} {t('HT')} · {t('maquette renvoyée avant impression')}</small></span>
+      <span><b>{t('Logo pas net ? Notre graphiste le retravaille')}</b><small>{REWORK_FEE ? <>+{eur(REWORK_FEE, lang)} {t('HT')}</> : t('Offert')} · {t('maquette renvoyée avant impression')}</small></span>
     </label>
   );
 }

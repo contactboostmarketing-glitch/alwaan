@@ -7,7 +7,7 @@ import { useT } from '@/i18n/client';
 import { I } from './Icons';
 
 const WA = process.env.NEXT_PUBLIC_WHATSAPP || '33608897282';
-export const PHONE = process.env.NEXT_PUBLIC_PHONE;
+export const PHONE = process.env.NEXT_PUBLIC_PHONE || '+33 6 08 89 72 82';
 type Msg = { role: 'user' | 'assistant'; content: string };
 
 export function ContactFloat() {

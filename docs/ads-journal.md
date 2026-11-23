@@ -194,3 +194,11 @@ Aucun.
 - Règles automatiques (exécution unique, e-mail à chaque exécution) : 21/12 0 h → 6 € / 3 € / 1 € (10 €/j) ; 04/01 6 h → 30 € / 8 € / 2 €.
 - Point de contrôle obligatoire le **10/12** : à 40 €/j, le seuil de 400 € sans commande payée peut être atteint ce jour-là.
 - Livraison : point relais Mondial Relay 4,90 € HT (5,88 € TTC dans Merchant, prix le plus bas affiché par Shopping), domicile 9,90 € HT, offerts dès 150 € HT, France et Belgique. Expédition depuis l'atelier, 121 rue Léon Gambetta, Haubourdin (Sendcloud).
+
+**23/11 (nuit) : décisions prix du gérant après l'audit concurrents**
+- Casquettes : Mercury 6,00 € HT tout compris (logo face) → 5,20 (10+) → 4,50 (30+) → 4,00 (50+) → **3,50 € dès 100** ; Wizer et Barny en proportion. **Annonces à mettre à jour** : « Casquette dès 3,50 € HT, 100 pcs » / « Casquette + logo 6 € HT » (et extension de prix 3,50 €).
+- Parka HV Epsilon : 50 € HT le vêtement (55 € HT avec logo cœur).
+- Retouche du logo par le graphiste : **offerte** (argument d'annonce possible : « Retouche du logo offerte »).
+- Livraison offerte dès **120 € HT** (Merchant : seuil 144 € TTC ; Shopify : règles 119,99 / 120).
+- Téléphone affiché : 06 08 89 72 82, du lundi au vendredi 9 h 30 – 18 h (extension d'appel possible aux mêmes horaires).
+- Palier 100 pièces : non retenu (prix actuels conservés).
