@@ -30,6 +30,10 @@ export async function conversionsCsv() {
     if (!o || !gclid || !at || new Date(at).getTime() < since) continue;
     rows.push([gclid, paris(at), (o.value || 0).toFixed(2), 'EUR', o.name || k].map(cell).join(','));
   }
+  // Fichier sans vente : le Gestionnaire de données de Google exige une ligne pour reconnaître le format des colonnes.
+  // Ligne d'exemple avec un identifiant de clic invalide : rejetée à l'import, aucune conversion n'est comptée.
+  // Elle disparaît dès la première vraie vente issue d'une annonce.
+  if (!rows.length) rows.push(['EXEMPLE-ALWAAN-NON-VALIDE', paris(new Date().toISOString()), '0.01', 'EUR', 'EXEMPLE'].join(','));
   // Première ligne = titres des colonnes (le Gestionnaire de données de Google les propose à la correspondance).
   const csv = ['Google Click ID,Conversion Time,Conversion Value,Conversion Currency,Order ID', ...rows].join('\n');
   return new Response(csv + '\n', { headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Cache-Control': 'no-store' } });
