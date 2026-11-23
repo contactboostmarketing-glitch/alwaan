@@ -1,6 +1,6 @@
 import { ROLY_PHOTOS } from '@/lib/rolyPhotos';
 import { rolyColor } from '@/lib/rolyMatch';
-import { COLOR_NAMES, PRODUCTS, defaultZone, VAT, getCategory } from '@/lib/catalog';
+import { CAP_TOP, COLOR_NAMES, PRODUCTS, capPrice, defaultZone, VAT, getCategory } from '@/lib/catalog';
 import { unitAt } from '@/lib/pricing';
 import { SITE_URL } from '@/lib/site';
 
@@ -13,6 +13,11 @@ export const revalidate = 86400; // Merchant Center lit le flux une fois par jou
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const money = (n: number) => `${(Math.round(n * 100) / 100).toFixed(2)} EUR`;
+
+// Étiquettes pour piloter les campagnes Shopping (stratégie Ads) : marge, saison, cible.
+const MARGIN: Record<string, string> = { 'casquettes-personnalisees': 'haute', 'haute-visibilite-personnalisee': 'haute', 'vestes-personnalisees': 'haute', 'sweats-personnalises': 'haute', 'polos-personnalises': 'moyenne', 'tabliers-personnalises': 'moyenne', 'chemises-personnalisees': 'moyenne', 't-shirts-personnalises': 'basse' };
+const SEASON: Record<string, string> = { 'sweats-personnalises': 'hiver', 'vestes-personnalisees': 'hiver', 't-shirts-personnalises': 'ete', 'polos-personnalises': 'printemps', 'tabliers-personnalises': 'printemps' };
+const TARGET: Record<string, string> = { 'casquettes-personnalisees': 'mixte', 't-shirts-personnalises': 'mixte', 'sweats-personnalises': 'mixte' };
 
 export function GET() {
   const items: string[] = [];
@@ -28,7 +33,7 @@ export function GET() {
 <g:id>${esc(`${p.slug}-${h}`)}</g:id>
 <g:item_group_id>${esc(p.slug)}</g:item_group_id>
 <g:title>${esc(`${p.name} personnalisable à votre logo · ${color}`)}</g:title>
-<g:description>${esc(`${p.type}. ${p.composition}. Impression DTF de votre logo, maquette en direct, dès 1 pièce. Marquage -40 % dès 30 pièces. ${c.intro}`)}</g:description>
+<g:description>${esc(`${p.type}. ${p.composition}. Impression DTF de votre logo, maquette en direct, dès 1 pièce. ${CAP_TOP[p.slug] ? `Prix dégressif, logo compris : ${capPrice(p.slug, Infinity)!.toFixed(2).replace('.', ',')} € HT dès 100 pièces.` : 'Marquage -40 % dès 30 pièces.'} ${c.intro}`)}</g:description>
 <g:link>${SITE_URL}/produits/${p.slug}?couleur=${h}</g:link>
 <g:image_link>${esc(rp?.images[0] || p.photos?.[hex] || `${SITE_URL}/images/produits/${p.slug}-${h}.png`)}</g:image_link>
 ${(rp?.images.slice(1, 6) || []).map((u) => `<g:additional_image_link>${esc(u)}</g:additional_image_link>`).join('\n')}
@@ -46,7 +51,9 @@ ${(rp?.images.slice(1, 6) || []).map((u) => `<g:additional_image_link>${esc(u)}<
 <g:is_bundle>no</g:is_bundle>
 <g:custom_label_0>${esc(c.name)}</g:custom_label_0>
 <g:return_policy_label>personnalise</g:return_policy_label>
-${p.bestseller ? '<g:custom_label_1>best-seller</g:custom_label_1>\n' : ''}
+${p.bestseller ? '<g:custom_label_1>best-seller</g:custom_label_1>\n' : ''}<g:custom_label_2>${MARGIN[p.category] || 'moyenne'}</g:custom_label_2>
+<g:custom_label_3>${SEASON[p.category] || 'toute-annee'}</g:custom_label_3>
+<g:custom_label_4>${TARGET[p.category] || 'pro'}</g:custom_label_4>
 </item>`);
     }
   }

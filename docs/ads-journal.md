@@ -54,3 +54,30 @@ Aucun.
 **Apprentissages** : aucun pour l'instant (pas de données).
 
 **Prochaine étape** : vérifier l'avancement des P0 et l'achat test ; contrôler les CPC estimés du Planificateur de mots-clés ; lancement possible le lundi 30/11 si tout est validé.
+
+---
+
+## 23/11/2026 (suite) : validations du gérant
+
+**Validé par écrit par le gérant**
+- Budgets du plan : décembre, janvier et février **validés**.
+- **Décembre relevé** : Search pro à **30 €/j** (au lieu de 15 €/j). Budget de décembre recalculé :
+  - du 30/11 au 20/12 (21 jours) : marque 2 €/j + Search pro 30 €/j + Shopping 8 €/j = 40 €/j, soit **840 €** ;
+  - du 21/12 au 03/01 (14 jours) : 10 €/j au total, soit **140 €** ;
+  - **total décembre ≈ 980 €** (au lieu de 630 €). Janvier 1 050 €, février 1 225 € inchangés. Total 12 semaines ≈ **3 255 €**.
+- **Coût réel marquage** : environ **4 € HT** de main-d'œuvre + impression pour un **cœur + dos** (≈ 2 € par zone). Remplace les hypothèses DTF + main-d'œuvre de la section 2.1 (plus favorable sur les grands visuels).
+- Casquette Mercury : coût réel **1,12 € HT avec marquage**.
+- Part de la marge accordée à la pub : 35 % (cible), équilibre accepté pendant l'apprentissage de décembre.
+
+**Mis en place sur le site (P0/P1, 23/11)**
+- Conversion « Achat » côté serveur : chaque commande payée (carte ou virement pro reçu) enregistre gclid/gbraid/wbraid et la date de paiement. Fichier d'import planifié pour Google Ads : `/api/ads/conversions?k=…` (adresse complète : `GET /api/ads/conversions?url` avec la clé de synchro). Commandes annulées exclues automatiquement (webhook orders/cancelled).
+- Flux Merchant : `custom_label_2` marge (haute / moyenne / basse), `custom_label_3` saison, `custom_label_4` cible (pro / mixte) ; description des casquettes avec le prix dégressif.
+- Données structurées produit : `Offer` au prix TTC du flux (1 pièce, logo à l'emplacement par défaut), fin de l'écart avec Merchant Center.
+
+**Reste à faire avant la première dépense (côté gérant, dans les comptes)**
+- Google Ads : créer l'action « Achat (serveur) » (Importer > Clics, principale), passer « Achat » (pixel Shopify) en secondaire, programmer l'import quotidien depuis l'URL HTTPS.
+- Shopify : activer la bannière de confidentialité (France, Belgique) et vérifier que le pixel « Google Ads alwaan » est « Connecté ».
+- Achat test après clic sur annonce, puis vérification dans Google Ads (jusqu'à 24 h).
+- Création des campagnes selon la section 6, réactivation de « Marque alwaan » à 2 €/j.
+
+**Seuils d'arrêt** : inchangés (400 € sans commande → pause sauf marque ; 60 € par groupe sans commande ni devis → pause ; ROAS 14 j < 1,0 → −50 %). Avec 30 €/j sur le Search pro, le seuil de 400 € peut être atteint vers le 10/12 : point obligatoire à cette date.

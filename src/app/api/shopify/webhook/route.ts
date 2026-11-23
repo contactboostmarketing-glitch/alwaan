@@ -110,6 +110,8 @@ export async function POST(req: Request) {
   await putJSON('commandes', key, {
     id: key, gid: o.admin_graphql_api_id, name: o.name, createdAt: o.created_at, value: sale.value, email: sale.email,
     panier: attr.panier, source: attr.utm_source, campaign: attr.utm_campaign, gclid: !!attr.gclid, fbclid: !!attr.fbclid,
+    // Identifiants de clic publicitaire (déposés seulement avec le consentement publicité) : import des conversions dans Google Ads.
+    ads: { gclid: attr.gclid, gbraid: attr.gbraid, wbraid: attr.wbraid }, paidAt: new Date().toISOString(),
     retouches: [...reworkIds], conversions: [ga, meta], parrainage, boutique, stock,
     // Pour les emails après achat (bienvenue, avis, renouvellement) : produits commandés et langue.
     slugs: [...new Set(o.line_items.flatMap((l) => (l.properties || []).filter((p) => p.name === '_stock').map((p) => String(p.value).split('|')[0])))],

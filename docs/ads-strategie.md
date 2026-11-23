@@ -1,6 +1,8 @@
 # Stratégie d'acquisition payante alwaan.fr (lancement)
 
-Premier passage du 23/11/2026. Rien n'est activé, rien n'est dépensé : tout ce qui suit est une **proposition** à valider par écrit par le gérant.
+Premier passage du 23/11/2026. Rien n'est activé, rien n'est dépensé.
+
+> **Mise à jour 23/11 : budgets validés par le gérant**, décembre relevé à 30 €/j sur le Search pro (≈ 980 € en décembre, ≈ 3 255 € sur 12 semaines). Coût réel du marquage : ≈ 4 € HT pour cœur + dos. Détail dans `docs/ads-journal.md`.
 Journal des décisions : `docs/ads-journal.md`.
 
 ## 0. En une minute

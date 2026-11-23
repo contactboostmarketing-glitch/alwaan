@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { CATEGORIES, GENERAL_FAQ, PRODUCTS, SECTORS, defaultColor, fromPrice, getCategory, getProduct, topPrice, customName } from '@/lib/catalog';
+import { CATEGORIES, GENERAL_FAQ, PRODUCTS, SECTORS, defaultColor, defaultZone, fromPrice, getCategory, getProduct, customName } from '@/lib/catalog';
+import { unitAt } from '@/lib/pricing';
 import { Configurator } from '@/components/Configurator';
 import { Garment } from '@/components/Garment';
 import { Price } from '@/components/Price';
@@ -91,7 +92,8 @@ export async function ProductView({ lang, slug }: { lang: Lang; slug: string }) 
           aggregateRating: { '@type': 'AggregateRating', ratingValue: rs.avg, reviewCount: rs.count, bestRating: 5, worstRating: 1 },
           review: rs.list.slice(0, 5).map((r) => ({ '@type': 'Review', author: { '@type': 'Person', name: r.name }, datePublished: r.createdAt.slice(0, 10), reviewBody: r.text, reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5 } })),
         } : {}),
-        offers: { '@type': 'AggregateOffer', priceCurrency: 'EUR', lowPrice: (fromPrice(p) * 1.2).toFixed(2), highPrice: (topPrice(p) * 1.2).toFixed(2), availability: 'https://schema.org/InStock', url: `${SITE_URL}${href(lang, `/produits/${p.slug}`)}` },
+        // Prix déclaré = celui du flux Merchant Center (1 pièce, logo à l'emplacement par défaut, TTC) : pas d'écart signalé par Google.
+        offers: { '@type': 'Offer', priceCurrency: 'EUR', price: (unitAt({ slug: p.slug, zones: [defaultZone(p)] }, 1) * 1.2).toFixed(2), availability: 'https://schema.org/InStock', itemCondition: 'https://schema.org/NewCondition', url: `${SITE_URL}${href(lang, `/produits/${p.slug}`)}` },
       }} />
     </>
   );
