@@ -149,8 +149,8 @@ export async function createShopifyCheckout(lines: LineConfig[], opts: { promo?:
   }
 
   const d = await storefront<{ cartCreate: { cart: { checkoutUrl: string; discountCodes: { code: string; applicable: boolean }[]; cost: { subtotalAmount: { amount: string } }; discountAllocations: { discountedAmount: { amount: string } }[] } | null; userErrors: { message: string }[] } }>(
-    // Paiement en anglais pour /en (la langue anglaise doit être activée dans Shopify, sinon le paiement reste en français).
-    `mutation($input: CartInput!) ${opts.lang === 'en' ? '@inContext(language: EN) ' : ''}{ cartCreate(input: $input) { cart { checkoutUrl discountCodes { code applicable } cost { subtotalAmount { amount } } discountAllocations { discountedAmount { amount } } } userErrors { message } } }`,
+    // Langue du paiement : français par défaut, anglais pour /en (la langue doit être publiée dans Shopify > Langues).
+    `mutation($input: CartInput!) @inContext(language: ${opts.lang === 'en' ? 'EN' : 'FR'}, country: FR) { cartCreate(input: $input) { cart { checkoutUrl discountCodes { code applicable } cost { subtotalAmount { amount } } discountAllocations { discountedAmount { amount } } } userErrors { message } } }`,
     { input: { lines: shopLines, discountCodes: codes, note: opts.note, buyerIdentity: { countryCode: 'FR' }, attributes: Object.entries(opts.attributes || {}).map(([key, value]) => ({ key, value })) } },
   );
   const cart = d.cartCreate.cart;
