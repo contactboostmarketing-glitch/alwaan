@@ -131,7 +131,7 @@ export const PRODUCTS: Product[] = [
   p('tablier-benoit', 'tabliers-personnalises', 'Tablier Benoit', 'Bavette réglable', 'TU', 3.68, 'apron', ['#151a2d', '#8b1e2d', '#1d2a5c', '#b8a98d', '#ffffff'], '65 % polyester, 35 % coton · 210 g/m²', true),
   p('tablier-mini', 'tabliers-personnalises', 'Tablier Mini', 'Mi-long de service', 'TU', 1.84, 'apron', ['#151a2d'], '65 % polyester, 35 % coton'),
   p('tablier-batali', 'tabliers-personnalises', 'Tablier Batali', 'Denim, poche centrale', 'TU', 8.35, 'apron', ['#1d2a5c', '#151a2d'], '100 % coton denim · 250 g/m²'),
-  p('casquette-mercury', 'casquettes-personnalisees', 'Casquette Mercury', '6 pans technique', 'TU', 4.2, 'cap', ['#151a2d', '#ffffff', '#3a5bd0', '#d7f22c'], '90 % polyester, 10 % élasthanne', true),
+  p('casquette-mercury', 'casquettes-personnalisees', 'Casquette Mercury', '6 pans technique', 'TU', 1.12, 'cap', ['#151a2d', '#ffffff', '#3a5bd0', '#d7f22c'], '90 % polyester, 10 % élasthanne', true),
   p('casquette-wizer', 'casquettes-personnalisees', 'Visière Wizer', 'Visière sport, bandeau éponge', 'TU', 5.1, 'cap', ['#ffffff', '#151a2d', '#3a5bd0', '#e8892b', '#c8302f'], '100 % polyester'),
   p('casquette-barny', 'casquettes-personnalisees', 'Casquette Barny', 'Trucker filet', 'TU', 3.9, 'cap', ['#151a2d', '#c8302f', '#f2d33b', '#3a5bd0', '#2f8a4d'], 'Polyester, filet arrière'),
   p('gilet-hv-beta', 'haute-visibilite-personnalisee', 'Gilet HV Beta', 'Multipoches, EN ISO 20471 classe 2', 'S–3XL', 11.5, 'hv', ['#d7f22c', '#ff7a1a'], '100 % polyester', true),
