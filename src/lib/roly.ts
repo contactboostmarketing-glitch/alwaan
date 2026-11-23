@@ -46,18 +46,20 @@ export type RolyItem = {
   description?: string; composition?: string; observations?: string; moq?: number; stepqty?: number;
   familycode: string; family: string; gender?: string; sizecode: string; sizename: string; colorcode: string; colorname: string;
   productimage?: string; modelimage?: string; detailsimages?: string; viewsimages?: string; otherimages?: string;
-  weight?: number; isnovelty?: boolean; categories?: string; colordata?: { hexcode?: string; comphexcode?: string; url?: string };
+  measures?: string; weight?: number; isnovelty?: boolean; categories?: string; colordata?: { hexcode?: string; comphexcode?: string; url?: string };
 };
 export type RolyPrice = { productcode?: string; model?: string; size?: string; color?: string; price_unit?: number; price_pack?: number; price_box?: number; price_unit_pvp?: number; currency?: string };
 export type RolyStock = { sku: string; description?: string; onhand: number; incoming?: string; canteco?: number; state?: string };
 
+/** L'API renvoie soit une liste, soit un objet qui contient la liste (ex. { item: [...] }). */
+const list = <T>(v: unknown): T[] => (Array.isArray(v) ? v : v && typeof v === 'object' ? ((Object.values(v).find(Array.isArray) as T[]) || []) : []);
 export const rolyVersion = () => call<{ version: string }>('/api/v1.1/version');
 /** Catalogue filtré par modèles (identifiants numériques, ex. 6502). */
 export const rolyCatalog = (models: string[], lang = 'fr-FR') =>
-  call<RolyItem[]>('/api/v2.3/item/getcatalog', { query: { lang, brand: 'roly', modelList: models.join(';') } });
+  call<unknown>('/api/v2.3/item/getcatalog', { query: { lang, brand: 'roly', modelList: models.join(';') } }).then((v) => list<RolyItem>(v));
 /** Tarif client (prix d'achat) d'un modèle, ex. CA6502. */
 export const rolyPrices = (model: string) =>
-  call<RolyPrice[]>('/api/v1.0/item/pricelist', { method: 'POST', form: { brand: 'roly', model, includeoutlet: '0' } });
+  call<unknown>('/api/v1.0/item/pricelist', { method: 'POST', form: { brand: 'roly', model, includeoutlet: '0' } }).then((v) => list<RolyPrice>(v));
 /** Stock disponible (entrepôt 2010 = Murcie, par défaut). */
 export const rolyStock = (whscode = '2010') =>
-  call<RolyStock[]>('/api/v1.0/stock/getuserstock', { method: 'POST', form: { whscode, brand: 'roly' } });
+  call<unknown>('/api/v1.0/stock/getuserstock', { method: 'POST', form: { whscode, brand: 'roly' } }).then((v) => list<RolyStock>(v));
