@@ -348,7 +348,9 @@ export function Configurator({ slug }: { slug: string }) {
         <div>
           <h1 className="pdp-title">{pL.name}</h1>
           <p className="muted">{pL.type} · {pL.composition}</p>
-          <p className="from">{t('dès')} <b><Price ht={at(tiers[tiers.length - 1][0])} /></b> {t(blank ? 'la pièce, sans marquage' : 'la pièce, logo compris')}</p>
+          {blank
+            ? <p className="from">{t('dès')} <b><Price ht={at(tiers[tiers.length - 1][0])} /></b> {t('la pièce, sans marquage')}</p>
+            : <p className="from">{t('dès')} <b><Price ht={at(tiers[tiers.length - 1][0])} /></b> {t('la pièce à partir de {n} pièces, logo compris', { n: tiers[tiers.length - 1][0] })} <span className="muted">· <Price ht={at(1)} /> {t('à l\'unité')}</span></p>}
         </div>
 
         <div className="blk">

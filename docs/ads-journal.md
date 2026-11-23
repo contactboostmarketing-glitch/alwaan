@@ -141,3 +141,9 @@ Aucun.
 - Import planifié via le Gestionnaire de données : connexion HTTPS « alwaan - ventes (serveur) », fichier `/feeds/conversions/<clé>-ventes.csv`, chaque jour entre 3 h et 4 h (Paris). Colonnes : Google Click ID, Conversion Time (ISO avec fuseau), Conversion Value (HT), Conversion Currency, Order ID.
 - Tant qu'il n'y a aucune vente issue d'une annonce, le fichier contient une ligne d'exemple au GCLID invalide (rejetée chaque jour, aucune conversion comptée) : avertissement normal.
 - Campagne « Marque alwaan » toujours en pause. Reste : bannière de confidentialité Shopify, création des campagnes (section 6), lancement prévu le 30/11.
+
+**23/11 (soir) : demandes P0 de l'audit réalisées sur le site**
+- I1 : chaque commande enregistre ses UTM (source, medium, campagne, groupe = utm_content, mot-clé = utm_term). Insights : `commandes.parCampagne` (commandes, CA HT, avec / sans gclid). « google / cpc » compté en Google Ads même sans gclid. Suffixe d'URL finale à poser au niveau du compte : `utm_source=google&utm_medium=cpc&utm_campaign={campaignid}&utm_content={adgroupid}&utm_term={keyword}`.
+- I2 : fiche produit « dès X € HT la pièce à partir de N pièces, logo compris · Y € HT à l'unité » (aussi dans le rendu serveur) ; tableau des paliers inchangé.
+- I3 bis : bandeau « Noël : commandez avant le … pour être livré au plus tard le 24 décembre » sur les pages produits, catégories, métiers et villes (FR et EN), calculé à la date du jour ; disparaît après la date limite.
+- En attente du gérant : budget de décembre (800 € recommandé ou 980 €), seuils par groupe, hausses CPC Clubs / zones Nord-Belgique, bannière cookies Shopify.

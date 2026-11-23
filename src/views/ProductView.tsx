@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { CATEGORIES, GENERAL_FAQ, PRODUCTS, SECTORS, defaultColor, defaultZone, fromPrice, getCategory, getProduct, customName } from '@/lib/catalog';
+import { CATEGORIES, GENERAL_FAQ, PRODUCTS, SECTORS, defaultColor, defaultZone, fromPrice, fromQty, getCategory, getProduct, customName } from '@/lib/catalog';
 import { unitAt } from '@/lib/pricing';
 import { Configurator } from '@/components/Configurator';
 import { Garment } from '@/components/Garment';
@@ -50,7 +50,7 @@ export async function ProductView({ lang, slug }: { lang: Lang; slug: string }) 
               <div>
                 <h1 className="pdp-title">{p.name}</h1>
                 <p className="muted">{p.type} · {p.composition}</p>
-                <p className="from">{t('dès')} <b><Price ht={fromPrice(p0)} /></b> {t('la pièce, logo compris')}</p>
+                <p className="from">{t('dès')} <b><Price ht={fromPrice(p0)} /></b> {t('la pièce à partir de {n} pièces, logo compris', { n: fromQty(p0) })} <span className="muted">· <Price ht={unitAt({ slug: p0.slug, zones: [defaultZone(p0)] }, 1)} /> {t('à l\'unité')}</span></p>
               </div>
               <div className="skel-block" aria-hidden="true" />
             </div>

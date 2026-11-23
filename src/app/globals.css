@@ -841,3 +841,6 @@ main{min-height:calc(100vh - 340px)}
 .stage:has(image),.thumbs button:has(image){background:#fff}
 /* Photos Roly sur fond blanc : le blanc se fond dans la couleur du fond (cartes, maquette, vignettes). */
 svg image[href^="https://static.gorfactory.es"],img[src^="https://static.gorfactory.es"]{mix-blend-mode:multiply}
+
+.deadline-strip{display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 16px;background:#fdecec;color:#8a1f1d;font-size:14px;font-weight:600;text-align:center}
+.deadline-strip svg{flex:none}

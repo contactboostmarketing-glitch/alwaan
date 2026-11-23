@@ -7,6 +7,7 @@ import { ContactFloat } from '@/components/Contact';
 import { SignupNudge } from '@/components/SignupNudge';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { DeadlineStrip } from '@/components/DeadlineStrip';
 import { JsonLd } from '@/components/ui';
 import { INDEXABLE, SITE_NAME, SITE_URL, TAGLINE } from '@/lib/site';
 import './globals.css';
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <CartProvider>
           <Header />
+          <DeadlineStrip />
           <main>{children}</main>
           <Footer />
           <CookieBanner />

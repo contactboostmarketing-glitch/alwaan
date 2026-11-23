@@ -112,6 +112,8 @@ export async function POST(req: Request) {
     panier: attr.panier, source: attr.utm_source, campaign: attr.utm_campaign, gclid: !!attr.gclid, fbclid: !!attr.fbclid,
     // Identifiants de clic publicitaire (déposés seulement avec le consentement publicité) : import des conversions dans Google Ads.
     ads: { gclid: attr.gclid, gbraid: attr.gbraid, wbraid: attr.wbraid }, paidAt: new Date().toISOString(),
+    // Paramètres UTM (transmis même sans consentement publicité) : ROAS réel par campagne et groupe d'annonces.
+    utm: { source: attr.utm_source, medium: attr.utm_medium, campaign: attr.utm_campaign, content: attr.utm_content, term: attr.utm_term },
     retouches: [...reworkIds], conversions: [ga, meta], parrainage, boutique, stock,
     // Pour les emails après achat (bienvenue, avis, renouvellement) : produits commandés et langue.
     slugs: [...new Set(o.line_items.flatMap((l) => (l.properties || []).filter((p) => p.name === '_stock').map((p) => String(p.value).split('|')[0])))],

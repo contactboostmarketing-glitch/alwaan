@@ -8,6 +8,8 @@ export const EN: Record<string, string> = {
   'dès {n} pièces': 'from {n} pieces',
   'Meilleur prix atteint': 'Best price reached',
   'Payer': 'Pay',
+  'la pièce à partir de {n} pièces, logo compris': 'per piece from {n} pieces, logo included',
+  'à l\'unité': 'for a single piece',
   'dès 30 pièces': 'from 30 pieces',
   'par personne, dès 30 pièces': 'per person, from 30 pieces',
   'Expédié en 7 jours ouvrés': 'Shipped in 7 business days',
