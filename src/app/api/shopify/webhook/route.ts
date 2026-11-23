@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { NextResponse } from 'next/server';
-import { getJSON, putJSON } from '@/lib/blobStore';
+import { safeEqual } from '@/lib/secure';
+import { deleteJSON, getJSON, listKeys, putJSON } from '@/lib/blobStore';
 import { sendGA4, sendMeta, type Sale } from '@/lib/conversions';
 import { getRework, saveRework } from '@/lib/rework';
 import { tagOrder } from '@/lib/reworkOrders';
@@ -9,7 +10,7 @@ import { admin } from '@/lib/shopifyAdmin';
 import { REFERRAL_REWARD, issueBon, lookupCode, markBonUsed } from '@/lib/vouchers';
 import { getShop, saveShop } from '@/lib/shops';
 import { RELANCE_CODE, SHOP_COMMISSION } from '@/lib/catalog';
-import { decrementStock } from '@/lib/stock';
+import { decrementStock, restoreStock } from '@/lib/stock';
 import { closeRelance, useRelanceCode } from '@/lib/relance';
 
 /**
@@ -33,7 +34,10 @@ export async function POST(req: Request) {
   const sig = req.headers.get('x-shopify-hmac-sha256') || '';
   const calc = createHmac('sha256', secret.trim()).update(raw, 'utf8').digest('base64');
   if (!secret || sig.length !== calc.length || !timingSafeEqual(Buffer.from(sig), Buffer.from(calc))) return new Response('Signature invalide', { status: 401 });
-  if (req.headers.get('x-shopify-topic') !== 'orders/paid') return NextResponse.json({ ignored: true });
+  const topic = req.headers.get('x-shopify-topic');
+  // Commande annulée (test, erreur, remboursement) : retirée du suivi des ventes et des emails après achat, stock remis.
+  if (topic === 'orders/cancelled') return NextResponse.json(await forget(String((JSON.parse(raw) as { id: number | string }).id)));
+  if (topic !== 'orders/paid') return NextResponse.json({ ignored: true });
 
   const o = JSON.parse(raw) as ShopOrder;
   const key = String(o.id);
@@ -112,4 +116,24 @@ export async function POST(req: Request) {
     lang: attr.langue === 'en' ? 'en' : 'fr', recommander: attr.recommander,
   });
   return NextResponse.json({ ok: true });
+}
+
+async function forget(key: string) {
+  const rec = await getJSON<{ stock?: string; name?: string }>('commandes', key);
+  if (!rec) return { cancelled: key, found: false };
+  const stock = rec.stock ? await restoreStock(rec.stock).catch((e) => `erreur ${(e as Error).message}`) : 'rien';
+  await deleteJSON('commandes', key);
+  return { cancelled: rec.name || key, stock };
+}
+
+/** Retrait manuel d'une commande du suivi (atelier, clé de synchro) : DELETE ?commande=#1001 ou identifiant Shopify. */
+export async function DELETE(req: Request) {
+  const sync = process.env.SYNC_KEY || process.env.ROLY_SYNC_KEY;
+  if (!sync || !safeEqual(req.headers.get('x-sync-key'), sync)) return new Response('Non autorisé', { status: 401 });
+  const q = new URL(req.url).searchParams.get('commande') || '';
+  let key = q;
+  if (q.startsWith('#')) {
+    for (const k of await listKeys('commandes')) { const o = await getJSON<{ name?: string }>('commandes', k); if (o?.name === q) { key = k; break; } }
+  }
+  return NextResponse.json(await forget(key));
 }

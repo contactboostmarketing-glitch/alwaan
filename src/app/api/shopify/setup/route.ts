@@ -148,13 +148,18 @@ async function ensureWebhook(origin: string): Promise<string> {
   const uri = `${origin}/api/shopify/webhook`;
   const list = await admin<{ webhookSubscriptions: { nodes: { id: string; topic: string; uri?: string }[] } }>(
     `{ webhookSubscriptions(first: 50) { nodes { id topic uri } } }`, {});
-  if (list.webhookSubscriptions.nodes.some((w) => w.topic === 'ORDERS_PAID' && w.uri === uri)) return `déjà actif (${uri})`;
-  const r = await admin<{ webhookSubscriptionCreate: { userErrors: UserError[] } }>(
-    `mutation($s: WebhookSubscriptionInput!) { webhookSubscriptionCreate(topic: ORDERS_PAID, webhookSubscription: $s) { userErrors { field message } } }`,
-    { s: { uri, format: 'JSON' } },
-  );
-  const e = r.webhookSubscriptionCreate.userErrors;
-  return e.length ? `erreur : ${e.map((x) => x.message).join(', ')}` : `créé (${uri})`;
+  const out: string[] = [];
+  // Commande payée (production, conversions…) et commande annulée (retrait du suivi, stock remis).
+  for (const topic of ['ORDERS_PAID', 'ORDERS_CANCELLED']) {
+    if (list.webhookSubscriptions.nodes.some((w) => w.topic === topic && w.uri === uri)) { out.push(`${topic} déjà actif`); continue; }
+    const r = await admin<{ webhookSubscriptionCreate: { userErrors: UserError[] } }>(
+      `mutation($s: WebhookSubscriptionInput!) { webhookSubscriptionCreate(topic: ${topic}, webhookSubscription: $s) { userErrors { field message } } }`,
+      { s: { uri, format: 'JSON' } },
+    );
+    const e = r.webhookSubscriptionCreate.userErrors;
+    out.push(e.length ? `${topic} erreur : ${e.map((x) => x.message).join(', ')}` : `${topic} créé`);
+  }
+  return `${out.join(' · ')} (${uri})`;
 }
 
 export async function POST(req: Request) {

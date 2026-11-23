@@ -30,3 +30,9 @@ export async function listKeys(store: string): Promise<string[]> {
   }
   try { return (await fs.readdir(path.join(process.cwd(), '.data', store))).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)); } catch { return []; }
 }
+
+/** Supprime une clé (commande annulée…). */
+export async function deleteJSON(store: string, key: string) {
+  if (onNetlify()) { await (await netlifyStore(store)).delete(key); return; }
+  await fs.rm(path.join(process.cwd(), '.data', store, `${key}.json`), { force: true });
+}

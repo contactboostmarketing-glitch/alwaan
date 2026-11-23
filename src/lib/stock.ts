@@ -50,6 +50,16 @@ export async function decrementStock(items: { key: string; quantity: number }[])
   }).catch((e) => `erreur ${(e as Error).message}`);
   return (done.join(', ') || 'rien à déduire') + (alert ? ` · alerte ${alert}` : '');
 }
+/** Commande annulée : remet en stock ce qui avait été déduit (texte « clé -n, … » enregistré avec la commande). */
+export async function restoreStock(taken: string): Promise<string> {
+  const back = [...taken.matchAll(/([^,\s][^,]*?) -(\d+)(?=,|$| ·)/g)].map((m) => ({ key: m[1].trim(), quantity: Number(m[2]) }));
+  if (!back.length) return 'rien à remettre';
+  const s = await getStock();
+  const done: string[] = [];
+  for (const { key, quantity } of back) if (key in s.q) { s.q[key] += quantity; done.push(`${key} +${quantity}`); }
+  if (done.length) await putJSON(STORE, KEY, { q: s.q, updatedAt: new Date().toISOString() });
+  return done.join(', ') || 'rien à remettre';
+}
 export { skey };
 
 const label = (key: string) => { const [slug, color, size] = key.split('|'); return `${getProduct(slug)?.name || slug} ${COLOR_NAMES[color] || color} ${size}`; };
