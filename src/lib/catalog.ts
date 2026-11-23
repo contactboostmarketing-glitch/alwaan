@@ -309,8 +309,11 @@ export const defaultZone = (prod: Product) => zonesFor(prod)[0].id;
 
 export function sizesFor(prod: Product): string[] {
   if (prod.sizes === 'TU') return ['Taille unique'];
-  const all = ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'];
-  return all.slice(0, all.indexOf(prod.sizes.split('–')[1]) + 1);
+  const [from, to] = prod.sizes.split('–').map((s) => s.trim().replace(/^2XL$/, 'XXL'));
+  // Tailles doubles (gilets HV : « M/L–XL/2XL ») : les deux tailles telles quelles.
+  if (from.includes('/')) return [from, to];
+  const all = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'];
+  return all.slice(Math.max(0, all.indexOf(from)), all.indexOf(to) + 1);
 }
 export function tierFor(q: number): [number, number] {
   let t = TIERS[0];

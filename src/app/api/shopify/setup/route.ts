@@ -116,21 +116,24 @@ async function syncGarment(slug: string, price: number, dry: boolean, pubs: stri
     return dry ? { handle: slug, action: `à créer à ${price.toFixed(2)}` } : createGarment(g, price.toFixed(2), pubs);
   }
   const target = price.toFixed(2);
-  // Couleurs ajoutées au catalogue depuis la création du produit : variantes Couleur × Taille à créer.
+  // Couleurs ou tailles ajoutées au catalogue depuis la création du produit : variantes Couleur × Taille manquantes à créer.
   const g = PRODUCTS.find((x) => x.slug === slug)!;
-  const has = new Set(p.variants.nodes.map((v) => v.selectedOptions.find((o) => o.name === 'Couleur')?.value));
-  const missing = has.has(undefined) ? [] : g.colors.map((c) => COLOR_NAMES[c] || c).filter((c) => !has.has(c));
+  const opt = (v: { selectedOptions: { name: string; value: string }[] }, n: string) => v.selectedOptions.find((o) => o.name === n)?.value;
+  const hasOptions = p.variants.nodes.every((v) => opt(v, 'Couleur') !== undefined);
+  const have = new Set(p.variants.nodes.map((v) => `${opt(v, 'Couleur')}|${opt(v, 'Taille')}`));
+  const sizes = sizesFor(g);
+  const missing = hasOptions ? g.colors.map((c) => COLOR_NAMES[c] || c).flatMap((c) => sizes.map((s) => [c, s] as const)).filter(([c, s]) => !have.has(`${c}|${s}`)) : [];
   let added = '';
   if (missing.length) {
-    if (dry) added = `couleurs à ajouter : ${missing.join(', ')} · `;
+    const label = `${missing.length} variante(s) : ${[...new Set(missing.map(([c, s]) => `${c} ${s}`))].slice(0, 6).join(', ')}${missing.length > 6 ? '…' : ''}`;
+    if (dry) added = `à ajouter ${label} · `;
     else {
-      const sizes = sizesFor(g);
       const r = await admin<{ productVariantsBulkCreate: { userErrors: UserError[] } }>(
         `mutation($p: ID!, $v: [ProductVariantsBulkInput!]!) { productVariantsBulkCreate(productId: $p, variants: $v) { userErrors { field message } } }`,
-        { p: p.id, v: missing.flatMap((c) => sizes.map((s) => ({ optionValues: [{ optionName: 'Couleur', name: c }, { optionName: 'Taille', name: s }], price: target, inventoryPolicy: 'CONTINUE', taxable: true }))) },
+        { p: p.id, v: missing.map(([c, s]) => ({ optionValues: [{ optionName: 'Couleur', name: c }, { optionName: 'Taille', name: s }], price: target, inventoryPolicy: 'CONTINUE', taxable: true })) },
       );
       const e = r.productVariantsBulkCreate.userErrors;
-      added = e.length ? `erreur couleurs : ${e.map((x) => x.message).join(', ')} · ` : `couleurs ajoutées : ${missing.join(', ')} · `;
+      added = e.length ? `erreur variantes : ${e.map((x) => x.message).join(', ')} · ` : `ajouté ${label} · `;
     }
   }
   const wrong = p.variants.nodes.filter((v) => v.price !== target);
