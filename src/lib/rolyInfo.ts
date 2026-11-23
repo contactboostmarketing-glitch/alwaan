@@ -832,5 +832,515 @@ export const ROLY_INFO: Record<string, { composition: string; description: strin
     "83"
    ]
   }
+ },
+ "t-shirt-kutta": {
+  "composition": "60% coton, 40% polyester, 170 g/m².",
+  "description": "T-shirt à manches courtes.· Col rond côtelé 1x1.· Coutures de même couleur.",
+  "measures": {
+   "XS": [
+    "46",
+    "66"
+   ],
+   "S": [
+    "49",
+    "69"
+   ],
+   "M": [
+    "52",
+    "71"
+   ],
+   "L": [
+    "55",
+    "73"
+   ],
+   "XL": [
+    "58",
+    "75"
+   ],
+   "XXL": [
+    "62",
+    "77"
+   ],
+   "XXXL": [
+    "66",
+    "79"
+   ],
+   "XXXXL": [
+    "70",
+    "81"
+   ],
+   "XXXXXL": [
+    "74",
+    "84"
+   ]
+  }
+ },
+ "gilet-hv-polux": {
+  "composition": "100% Polyester, 135 g/m².",
+  "description": "Veste haute visibilité.· Deux bandes réfléchissantes sur le corps et deux sur l'épaule.· Sans coutures latérales.· Poche pour porte-carte d'identification.· Fermeture à glissière sur le devant.· Différentes couleurs disponibles.· Étiquette extérieure Roly WRK.· Cycles de lavage : x25.",
+  "measures": {
+   "M-L": [
+    "65",
+    "72"
+   ],
+   "XL-XXL": [
+    "69",
+    "74"
+   ]
+  }
+ },
+ "t-shirt-hv-delta": {
+  "composition": "100% polyester bird's eye, 130 g/m².",
+  "description": "T-shirt à manches courtes haute visibilité.· Tissu technique respirant.· Deux bandes réfléchissantes sur le corps et une sur chaque manche.· Col en tissu assorti.· Bande de propreté à l'encolure.· Disponible en couleurs unies ou contrastées.· Étiquette extérieure Roly WRK.· Cycles de lavage : x25.",
+  "measures": {
+   "S": [
+    "48",
+    "71"
+   ],
+   "M": [
+    "51",
+    "72"
+   ],
+   "L": [
+    "54",
+    "73"
+   ],
+   "XL": [
+    "58",
+    "75"
+   ],
+   "XXL": [
+    "62",
+    "77"
+   ],
+   "XXXL": [
+    "66",
+    "79"
+   ],
+   "XXXXL": [
+    "70",
+    "81"
+   ]
+  }
+ },
+ "polo-hv-polaris": {
+  "composition": "100% polyester, maille piquée, 170 g/m².",
+  "description": "Polo à manches courtes bicolore haute visibilité.· Tissu technique respirant.· Deux bandes réfléchissantes sur le corps et une sur les manches.· Col côtelé 1x1.· Bande de propreté à l'encolure.· Disponible en couleurs unies ou contrastées.· Étiquette extérieure Roly WRK.· Cycles de lavage : x25.",
+  "measures": {
+   "S": [
+    "51",
+    "69"
+   ],
+   "M": [
+    "54",
+    "71"
+   ],
+   "L": [
+    "57",
+    "73"
+   ],
+   "XL": [
+    "60",
+    "75"
+   ],
+   "XXL": [
+    "64",
+    "77"
+   ],
+   "XXXL": [
+    "68",
+    "79"
+   ],
+   "XXXXL": [
+    "72",
+    "80"
+   ]
+  }
+ },
+ "softshell-antartida": {
+  "composition": "Deux couches.Extérieur: 100% polyester.Intérieur 100% polyester micropolaire.300 g/m².",
+  "description": "Veste softshell 2 couches avec fermeture à glissière sur le devant inversée contrastée. Déperlante et coupe-vent. Doublée de tissu micropolaire. Deux poches latérales et une poche poitrine gauche avec fermetures à glissière inversées contrastées. Protège-menton dans le même tissu inversé. Ajusteurs latéraux intérieurs en tailles adultes.",
+  "measures": {
+   "S": [
+    "53",
+    "74"
+   ],
+   "M": [
+    "55",
+    "75"
+   ],
+   "L": [
+    "58",
+    "76"
+   ],
+   "XL": [
+    "62",
+    "77"
+   ],
+   "XXL": [
+    "65",
+    "78"
+   ],
+   "XXXL": [
+    "67",
+    "79"
+   ]
+  }
+ },
+ "softshell-antartida-femme": {
+  "composition": "Deux couches.Extérieur: 100% polyester.Intérieur 100% polyester micropolaire.300 g/m².",
+  "description": "Veste softshell 2 couches avec fermeture à glissière sur le devant inversée contrastée. Déperlante et coupe-vent. Ajustée à la taille. Doublée de tissu micropolaire. Deux poches latérales et une poche poitrine gauche avec fermetures à glissière inversées contrastées. Protège-menton dans le même tissu inversé. Ajusteurs latéraux internes.",
+  "measures": {
+   "S": [
+    "48",
+    "64"
+   ],
+   "M": [
+    "50",
+    "66"
+   ],
+   "L": [
+    "53",
+    "68"
+   ],
+   "XL": [
+    "55",
+    "69"
+   ],
+   "XXL": [
+    "58",
+    "70"
+   ],
+   "XXXL": [
+    "60",
+    "72"
+   ]
+  }
+ },
+ "softshell-nebraska-femme": {
+  "composition": "Deux couches.Extérieur : 100% polyester.Intérieur : 100% polyester micropolaire. 300 g/m².",
+  "description": "Veste softshell 2 couches avec fermeture à glissière sur le devant. Déperlante et coupe-vent. Ajustée à la taille. Doublée de tissu micropolaire. Deux poches latérales et une poche poitrine droite avec fermetures à glissière inversées. Protège-menton dans le même tissu inversé. Ajusteurs latéraux internes.",
+  "measures": {
+   "S": [
+    "48",
+    "64"
+   ],
+   "M": [
+    "50",
+    "66"
+   ],
+   "L": [
+    "53",
+    "68"
+   ],
+   "XL": [
+    "55",
+    "69"
+   ],
+   "XXL": [
+    "58",
+    "70"
+   ],
+   "XXXL": [
+    "60",
+    "72"
+   ]
+  }
+ },
+ "softshell-rudolph": {
+  "composition": "Trois couches.Extérieur : 100% polyester.Intérieur : 100% polyester micropolaire. 300 g/m².",
+  "description": "Veste softshell 3 couches avec fermeture à glissière sur le devant, déperlante et coupe-vent. Doublée de tissu micropolaire. Deux poches latérales et une poche poitrine droite avec fermetures à glissière et garnies du même tissu. Protège-menton dans le même tissu. Ajusteurs latéraux internes.",
+  "measures": {
+   "S": [
+    "53",
+    "74"
+   ],
+   "M": [
+    "55",
+    "75"
+   ],
+   "L": [
+    "58",
+    "76"
+   ],
+   "XL": [
+    "62",
+    "77"
+   ],
+   "XXL": [
+    "65",
+    "78"
+   ],
+   "XXXL": [
+    "67",
+    "79"
+   ]
+  }
+ },
+ "polaire-luciane": {
+  "composition": "100% polyester micropolaire, 300 g/m².",
+  "description": "Veste polaire avec fermeture à glissière sur le devant. Col montant et poignets avec ceinture élastique. Poche de manche gauche avec fermeture à glissière.",
+  "measures": {
+   "XS": [
+    "49",
+    "67"
+   ],
+   "S": [
+    "52",
+    "69"
+   ],
+   "M": [
+    "55",
+    "71"
+   ],
+   "L": [
+    "58",
+    "5"
+   ],
+   "XL": [
+    "61",
+    "76"
+   ],
+   "XXL": [
+    "64",
+    "5"
+   ],
+   "XXXL": [
+    "67",
+    "81"
+   ]
+  }
+ },
+ "gilet-nevada": {
+  "composition": "Deux couches. Extérieur: 100% polyester. Intérieur: 100% polyester micropolaire extra-chaud, 300 g/m².",
+  "description": "Gilet softshell 2 couches avec fermeture à glissière contrastée sur le devant. Doublé de tissu micropolaire. Déperlant. Deux poches latérales et une poche poitrine gauche avec fermetures à glissière inversées contrastées. Protège-menton dans le même tissu inversé. Ajusteurs latéraux internes.",
+  "measures": {
+   "S": [
+    "52",
+    "72"
+   ],
+   "M": [
+    "55",
+    "74"
+   ],
+   "L": [
+    "58",
+    "76"
+   ],
+   "XL": [
+    "62",
+    "77"
+   ],
+   "XXL": [
+    "65",
+    "78"
+   ],
+   "XXXL": [
+    "69",
+    "79"
+   ]
+  }
+ },
+ "gilet-quebec": {
+  "composition": "Deux couches. Extérieur: 100% polyester.Intérieur 100% polyester micropolaire extra-chaud. 300 g/m².",
+  "description": "Gilet softshell 2 couches avec fermeture à glissière sur le devant. Doublé de tissu micropolaire. Deux poches latérales et une poche poitrine droite avec fermetures à glissière inversées. Protège-menton dans le même tissu inversé. Ajusteurs latéraux internes.",
+  "measures": {
+   "XS": [
+    "49",
+    "73"
+   ],
+   "S": [
+    "52",
+    "74"
+   ],
+   "M": [
+    "55",
+    "75"
+   ],
+   "L": [
+    "58",
+    "76"
+   ],
+   "XL": [
+    "62",
+    "77"
+   ],
+   "XXL": [
+    "66",
+    "78"
+   ],
+   "XXXL": [
+    "70",
+    "79"
+   ]
+  }
+ },
+ "gilet-oslo-femme": {
+  "composition": "Extérieur: 100% polyester, 300T. Doublure: 100% polyester. Ouate: 100% polyester, touché plume. 290 g/m².",
+  "description": "Gilet rembourré imperméable. Coupe-vent et déperlant. Fermeture à glissière avant inversée ton sur ton avec mentonnière du même tissu. Poches latérales avec fermetures à glissière inversées placées dans des empiècements latéraux façonnés pour un ajustement plus ajusté sur la poitrine. Passepoil élastique inversé dans les emmanchures et l'ourlet. Options de doublure de couleur unie ou contrastée.",
+  "measures": {
+   "S": [
+    "49",
+    "59"
+   ],
+   "M": [
+    "51",
+    "61"
+   ],
+   "L": [
+    "53",
+    "63"
+   ],
+   "XL": [
+    "56",
+    "64"
+   ],
+   "XXL": [
+    "59",
+    "65"
+   ]
+  }
+ },
+ "doudoune-finland": {
+  "composition": "Exterieur: 100% polyester, 300T. Rembourrage : 100% polyester Ouate: 100% polyester, touché plume. 290 g/m².",
+  "description": "Veste matelassée imperméable. Déperlante et résistante au vent. Fermeture à glissière avant inversée ton sur ton avec protège-menton du même tissu. Poches latérales avec fermetures à glissière à couleur inversée insérées dans les empiècements latéraux. Poignets et ourlet élastiqués ton sur ton. Option de couleurs unies ou contrastées pour la doublure.",
+  "measures": {
+   "S": [
+    "53",
+    "66"
+   ],
+   "M": [
+    "55",
+    "68"
+   ],
+   "L": [
+    "58",
+    "70"
+   ],
+   "XL": [
+    "5",
+    "72"
+   ],
+   "XXL": [
+    "65",
+    "74"
+   ],
+   "XXXL": [
+    "69",
+    "75"
+   ]
+  }
+ },
+ "doudoune-finland-femme": {
+  "composition": "Exterieur : 100% polyester, 300T. Rembourrage : 100% polyester. Ouate : 100% polyester, touché plume. 290 g/m².",
+  "description": "Veste matelassée imperméable. Déperlante et résistante au vent. Fermeture à glissière avant inversée ton sur ton avec protège-menton du même tissu. Poches latérales avec fermetures à glissière inversées placées dans des empiècements latéraux façonnés pour un ajustement plus ajusté sur la poitrine. Poignets et ourlet élastiqués ton sur ton. Option de couleurs unies ou contrastées pour la doublure.",
+  "measures": {
+   "S": [
+    "49",
+    "59"
+   ],
+   "M": [
+    "51",
+    "61"
+   ],
+   "L": [
+    "53",
+    "63"
+   ],
+   "XL": [
+    "56",
+    "64"
+   ],
+   "XXL": [
+    "59",
+    "65"
+   ]
+  }
+ },
+ "doudoune-norway": {
+  "composition": "Extérieur: 100% polyester, 300T. Doublure: 100% polyester. Ouate: 100% polyester, touché plume. 290 g/m².",
+  "description": "Veste matelassée imperméable, déperlante et coupe-vent à capuche. Fermeture à glissière avant inversée ton sur ton avec protège-menton du même tissu. Poches latérales avec fermetures à glissière à couleur inversée insérées dans les empiècements latéraux. Capuche, poignets et ourlet avec bordure élastique assortie. Option de couleurs unies ou contrastées pour la doublure.",
+  "measures": {
+   "S": [
+    "53",
+    "66"
+   ],
+   "M": [
+    "5",
+    "68"
+   ],
+   "L": [
+    "58",
+    "70"
+   ],
+   "XL": [
+    "5",
+    "72"
+   ],
+   "XXL": [
+    "65",
+    "74"
+   ],
+   "XXXL": [
+    "69",
+    "75"
+   ]
+  }
+ },
+ "doudoune-norway-femme": {
+  "composition": "Extérieur: 100% polyester, 300T. Doublure: 100% polyester. Ouate: 100% polyester, touché plume. 290 g/m².",
+  "description": "Veste matelassée imperméable, déperlante et coupe-vent à capuche. Fermeture à glissière avant inversée ton sur ton avec protège-menton du même tissu. Poches latérales avec fermetures à glissière inversées placées dans des empiècements latéraux façonnés pour une coupe plus ajustée sur la poitrine. Capuche, poignets et ourlet avec bordure élastique assortie. Option de couleurs unies ou contrastées pour la doublure.",
+  "measures": {
+   "S": [
+    "49",
+    "59"
+   ],
+   "M": [
+    "51",
+    "61"
+   ],
+   "L": [
+    "53",
+    "63"
+   ],
+   "XL": [
+    "56",
+    "64"
+   ],
+   "XXL": [
+    "59",
+    "65"
+   ]
+  }
+ },
+ "veste-makalu": {
+  "composition": "Tissu extérieur : 100 % polyester. 240T.Rembourrage : 100 % polyester.Interieur : 100% polyester, micropolaire.330 g/m².",
+  "description": "Veste légère avec fermeture à glissière sur le devant. Déperlante et résistante au vent. Protège-menton. Capuche amovible avec fermeture à glissière et réglages élastiques. Poignets caoutchoutés. Poches latérales avec fermeture à glissière et garnies du même tissu. Poche intérieure sur la poitrine gauche. Doublure intérieure en micropolaire assortie.",
+  "measures": {
+   "S": [
+    "60",
+    "70"
+   ],
+   "M": [
+    "62",
+    "72"
+   ],
+   "L": [
+    "65",
+    "75"
+   ],
+   "XL": [
+    "68",
+    "78"
+   ],
+   "XXL": [
+    "72",
+    "81"
+   ],
+   "XXXL": [
+    "76",
+    "84"
+   ]
+  }
  }
 };

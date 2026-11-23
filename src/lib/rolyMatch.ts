@@ -2,10 +2,11 @@
 import { COLOR_NAMES } from './catalog';
 
 const NAMES: Record<string, string[]> = {
-  Blanc: ['BLANC'], Jaune: ['JAUNE'], Orange: ['ORANGE', 'ORANGE (FEU)'], Rouge: ['ROUGE', 'ROUGE/BLANC'], Bordeaux: ['GRENAT', 'GRENAT CHINÉ'],
-  Royal: ['BLEU ROYAL', 'BLEU ROYAL/BLANC'], Marine: ['MARINE', 'MARINE/BLANC', 'DENIM CHINÉ'], Turquoise: ['TURQUOISE', 'TURQUOISE CHINÉ'],
+  Blanc: ['BLANC', 'BLANC PERLE'], Jaune: ['JAUNE'], Orange: ['ORANGE', 'ORANGE (FEU)'], Rouge: ['ROUGE', 'ROUGE/BLANC'], Bordeaux: ['GRENAT', 'GRENAT CHINÉ'],
+  Royal: ['BLEU ROYAL', 'BLEU ROYAL/BLANC', 'BLEU ÉLECTRIQUE'], Marine: ['MARINE', 'MARINE/BLANC', 'DENIM CHINÉ'], Turquoise: ['TURQUOISE', 'TURQUOISE CHINÉ'],
   Vert: ['VERT BOUTEILLE', 'VERT KELLY', 'VERT BOUTEILLE CHINÉ', 'VERT FOUGÈRE'], 'Gris chiné': ['GRIS CHINÉ'], Noir: ['NOIR', 'NOIR/BLANC', 'NOIR CHINÉ'],
-  Sable: ['SABLE', 'SABLE FONCÉ'], 'Jaune fluo': ['MARINE/JAUNE FLUO', 'JAUNE FLUO'], 'Orange fluo': ['MARINE/ORANGE FLUO'],
+  Sable: ['SABLE', 'SABLE FONCÉ'], 'Jaune fluo': ['JAUNE FLUO', 'MARINE/JAUNE FLUO'], 'Orange fluo': ['ORANGE FLUO', 'MARINE/ORANGE FLUO'],
+  Kaki: ['VERT MILITAIRE', 'VERT MILITAIRE FONCÉ'], Anthracite: ['PLOMB FONCÉ', 'ÉBÈNE', 'PLOMB'], Fuchsia: ['FUCHSIA'],
 };
 const dist = (a: string, b?: string) => {
   if (!b) return 1e9;

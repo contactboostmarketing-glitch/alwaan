@@ -105,7 +105,7 @@ export const PRODUCTS_EN: Record<string, Pick<Product, 'name' | 'type' | 'compos
   'sweat-zippe-montblanc': { name: 'Montblanc zip hoodie', type: 'Full zip, hood', composition: 'Cotton and polyester fleece' },
   'polaire-himalaya': { name: 'Himalaya fleece', type: 'Zip fleece', composition: 'Polyester fleece' },
   'softshell-nebraska': { name: 'Nebraska softshell', type: 'Water-repellent windbreaker', composition: 'Polyester and elastane softshell' },
-  'veste-oslo': { name: 'Oslo jacket', type: 'Warm hooded jacket', composition: 'Polyester, lined' },
+  'veste-oslo': { name: 'Oslo bodywarmer', type: 'Padded sleeveless vest', composition: 'Padded polyester, lined' },
   'parka-hv-epsilon': { name: 'Epsilon hi-vis parka', type: 'Waterproof, hood, class 3', composition: 'PU-coated polyester' },
 };
 

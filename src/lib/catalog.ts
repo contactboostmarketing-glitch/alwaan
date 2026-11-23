@@ -2,7 +2,7 @@ import { ROLY_INFO } from './rolyInfo';
 // Catalogue, zones de marquage et grille de prix.
 // Source unique : utilisée par les pages, le configurateur ET le calcul serveur du paiement.
 
-export type Shape = 'tee' | 'polo' | 'polols' | 'shirt' | 'hv' | 'hvjacket' | 'apron' | 'cap' | 'sweat' | 'hoodie' | 'zipjacket' | 'jacket';
+export type Shape = 'tee' | 'polo' | 'polols' | 'shirt' | 'hv' | 'hvjacket' | 'apron' | 'cap' | 'sweat' | 'hoodie' | 'zipjacket' | 'jacket' | 'vest';
 
 export type Category = {
   slug: string;
@@ -43,6 +43,7 @@ export const COLOR_NAMES: Record<string, string> = {
   '#ffffff': 'Blanc', '#f2d33b': 'Jaune', '#e8892b': 'Orange', '#c8302f': 'Rouge', '#8b1e2d': 'Bordeaux',
   '#d43f8d': 'Fuchsia', '#3a5bd0': 'Royal', '#1d2a5c': 'Marine', '#2fb3d6': 'Turquoise', '#2f8a4d': 'Vert',
   '#9aa0a6': 'Gris chiné', '#151a2d': 'Noir', '#b8a98d': 'Sable', '#d7f22c': 'Jaune fluo', '#ff7a1a': 'Orange fluo',
+  '#55613f': 'Kaki', '#3d4046': 'Anthracite',
 };
 const ALL = ['#ffffff', '#f2d33b', '#e8892b', '#c8302f', '#8b1e2d', '#d43f8d', '#3a5bd0', '#1d2a5c', '#2fb3d6', '#2f8a4d', '#9aa0a6', '#151a2d'];
 
@@ -76,7 +77,7 @@ export const CATEGORIES: Category[] = [
     intro: 'Sweats col rond, sweats à capuche et sweats zippés à votre logo, imprimés en DTF. Chauds et confortables pour l\'hiver, en équipe, en club ou en cadeau.',
     faq: [['Peut-on imprimer sur la capuche ou la poche ?', 'Nous imprimons au cœur, à l\'anti-cœur, au dos, sur les épaules et au grand devant (sauf sur les sweats zippés, à cause du zip). La capuche et la poche ne sont pas imprimées.']] },
   { slug: 'vestes-personnalisees', name: 'Vestes et polaires', singular: 'veste', shape: 'jacket', title: 'Vestes, polaires et softshells personnalisées',
-    intro: 'Polaires, softshells et vestes chaudes à votre logo pour vos équipes en extérieur : chantier, livraison, événements, clubs.',
+    intro: 'Softshells, polaires, doudounes et gilets sans manches à votre logo, en coupe homme et femme, pour vos équipes en extérieur : chantier, livraison, événements, clubs.',
     faq: [['Le logo tient-il sur une softshell ou une polaire ?', 'Oui, l\'impression DTF adhère sur les polaires et les softshells. Lavez à l\'envers, à 30 °C, sans sèche-linge, pour la faire durer.']] },
   { slug: 'haute-visibilite-personnalisee', name: 'Haute visibilité', singular: 'vêtement haute visibilité', shape: 'hv', title: 'Vêtements haute visibilité personnalisés EN ISO 20471',
     intro: 'Gilets, vestes et parkas haute visibilité conformes EN ISO 20471, marqués à votre logo pour le BTP, la logistique et la voirie.',
@@ -121,7 +122,7 @@ export const capPrice = (slug: string, q: number) => {
 };
 
 /** Référence du modèle chez Roly (photos, stock, tarifs). */
-export const ROLY_MODEL: Record<string, string> = {"polo-pegaso": "6609", "polo-montreal": "6629", "polo-estrella": "6635", "t-shirt-dogo": "6502", "t-shirt-atomic-150": "6424", "t-shirt-fox": "6660", "chemise-moscu-homme": "5506", "chemise-moscu-femme": "5505", "tablier-benoit": "9125", "tablier-mini": "9124", "tablier-batali": "9126", "casquette-mercury": "GO7020", "casquette-wizer": "CP7048", "casquette-barny": "GO1283", "parka-hv-epsilon": "HV9304", "gilet-hv-beta": "9323", "veste-hv-persei": "9313", "sweat-clasica": "1070", "sweat-capuche-urban": "1067", "sweat-zippe-montblanc": "6421", "polaire-himalaya": "1095", "softshell-nebraska": "6436", "veste-oslo": "5092"};
+export const ROLY_MODEL: Record<string, string> = {"polo-pegaso": "6609", "polo-montreal": "6629", "polo-estrella": "6635", "t-shirt-dogo": "6502", "t-shirt-atomic-150": "6424", "t-shirt-fox": "6660", "chemise-moscu-homme": "5506", "chemise-moscu-femme": "5505", "tablier-benoit": "9125", "tablier-mini": "9124", "tablier-batali": "9126", "casquette-mercury": "GO7020", "casquette-wizer": "CP7048", "casquette-barny": "GO1283", "parka-hv-epsilon": "HV9304", "gilet-hv-beta": "9323", "veste-hv-persei": "9313", "sweat-clasica": "1070", "sweat-capuche-urban": "1067", "sweat-zippe-montblanc": "6421", "polaire-himalaya": "1095", "softshell-nebraska": "6436", "t-shirt-kutta": "9327", "gilet-hv-polux": "9311", "t-shirt-hv-delta": "9310", "polo-hv-polaris": "9302", "softshell-antartida": "6432", "softshell-antartida-femme": "6433", "softshell-nebraska-femme": "6437", "softshell-rudolph": "6435", "polaire-luciane": "1195", "gilet-nevada": "1199", "gilet-quebec": "6438", "gilet-oslo-femme": "5093", "doudoune-finland": "5094", "doudoune-finland-femme": "5095", "doudoune-norway": "5090", "doudoune-norway-femme": "5091", "veste-makalu": "5079", "veste-oslo": "5092"};
 
 export const PRODUCTS: Product[] = [
   p('polo-pegaso', 'polos-personnalises', 'Polo Pegaso', 'Polo piqué premium', 'S–5XL', 4.8, 'polo', ALL.filter((c) => c !== '#d43f8d' && c !== '#9aa0a6'), '65 % polyester, 35 % coton · 210 g/m²', true),
@@ -130,6 +131,7 @@ export const PRODUCTS: Product[] = [
   p('t-shirt-dogo', 't-shirts-personnalises', 'T-shirt Dogo', 'Coton premium col rond', 'S–5XL', 2.39, 'tee', ALL.filter((c) => c !== '#d43f8d'), '100 % coton · 165 g/m²', true),
   p('t-shirt-atomic-150', 't-shirts-personnalises', 'T-shirt Atomic 150', 'Le plus économique', 'S–5XL', 1.5, 'tee', ['#ffffff', '#f2d33b', '#c8302f', '#3a5bd0', '#2f8a4d', '#151a2d'], '100 % coton · 150 g/m²'),
   p('t-shirt-fox', 't-shirts-personnalises', 'T-shirt Fox', 'T-shirt chiné', 'S–3XL', 2.7, 'tee', ['#1d2a5c', '#c8302f', '#2f8a4d'], '65 % polyester, 35 % coton · 150 g/m²'),
+  p('t-shirt-kutta', 't-shirts-personnalises', 'T-shirt Kutta', 'T-shirt de travail 170 g', 'XS–5XL', 2.08, 'tee', ['#ffffff', '#151a2d', '#1d2a5c', '#3a5bd0', '#c8302f', '#2f8a4d', '#9aa0a6', '#3d4046'], '60 % coton, 40 % polyester · 170 g/m²'),
   p('chemise-moscu-homme', 'chemises-personnalisees', 'Chemise Moscu homme', 'Manches longues', 'S–3XL', 10.45, 'shirt', ['#ffffff', '#151a2d'], '97 % coton, 3 % élasthanne', true),
   p('chemise-moscu-femme', 'chemises-personnalisees', 'Chemise Moscu femme', 'Coupe cintrée', 'S–3XL', 10.45, 'shirt', ['#ffffff', '#151a2d'], '97 % coton, 3 % élasthanne'),
   p('tablier-benoit', 'tabliers-personnalises', 'Tablier Benoit', 'Bavette réglable', 'TU', 3.68, 'apron', ['#151a2d', '#8b1e2d', '#1d2a5c', '#b8a98d', '#ffffff'], '65 % polyester, 35 % coton · 210 g/m²', true),
@@ -139,6 +141,9 @@ export const PRODUCTS: Product[] = [
   p('casquette-wizer', 'casquettes-personnalisees', 'Visière Wizer', 'Visière sport, bandeau éponge', 'TU', 5.1, 'cap', ['#ffffff', '#151a2d', '#3a5bd0', '#e8892b', '#c8302f'], '100 % polyester'),
   p('casquette-barny', 'casquettes-personnalisees', 'Casquette Barny', 'Trucker filet', 'TU', 3.9, 'cap', ['#151a2d', '#c8302f', '#f2d33b', '#3a5bd0', '#2f8a4d'], 'Polyester, filet arrière'),
   p('gilet-hv-beta', 'haute-visibilite-personnalisee', 'Gilet HV Beta', 'Multipoches, EN ISO 20471 classe 2', 'S–3XL', 11.5, 'hv', ['#d7f22c', '#ff7a1a'], '100 % polyester', true),
+  p('gilet-hv-polux', 'haute-visibilite-personnalisee', 'Gilet HV Polux', 'Gilet haute visibilité, porte-badge', 'M/L–XL/2XL', 3.1, 'hv', ['#d7f22c', '#ff7a1a'], '100 % polyester · 135 g/m²'),
+  p('t-shirt-hv-delta', 'haute-visibilite-personnalisee', 'T-shirt HV Delta', 'T-shirt haute visibilité respirant', 'S–4XL', 4.88, 'tee', ['#d7f22c', '#ff7a1a'], '100 % polyester · 130 g/m²'),
+  p('polo-hv-polaris', 'haute-visibilite-personnalisee', 'Polo HV Polaris', 'Polo haute visibilité bandes réfléchissantes', 'S–4XL', 5.2, 'polo', ['#d7f22c', '#ff7a1a'], '100 % polyester piqué · 170 g/m²'),
   p('veste-hv-persei', 'haute-visibilite-personnalisee', 'Veste HV Persei', 'Réversible, doublée, classe 3', 'S–4XL', 14.65, 'hvjacket', ['#d7f22c'], '100 % polyester'),
   p('parka-hv-epsilon', 'haute-visibilite-personnalisee', 'Parka HV Epsilon', 'Imperméable, capuche, EN ISO 20471 classe 2', 'S–4XL', 25.15, 'hvjacket', ['#d7f22c', '#ff7a1a'], 'Polyester enduit PU'),
   // Gamme hiver (Roly 2026, prix d'achat à l'unité, ou au blister quand Roly ne vend pas à l'unité ; couleur, S–2XL). Coloris à confirmer avec le stock Roly.
@@ -147,7 +152,21 @@ export const PRODUCTS: Product[] = [
   p('sweat-zippe-montblanc', 'sweats-personnalises', 'Sweat zippé Montblanc', 'Zip intégral, capuche', 'S–3XL', 10.45, 'zipjacket', ['#151a2d', '#1d2a5c', '#9aa0a6', '#c8302f'], 'Molleton coton et polyester'),
   p('polaire-himalaya', 'vestes-personnalisees', 'Polaire Himalaya', 'Polaire zippée', 'S–3XL', 4.57, 'jacket', ['#151a2d', '#1d2a5c', '#c8302f'], 'Polaire polyester'),
   p('softshell-nebraska', 'vestes-personnalisees', 'Softshell Nebraska', 'Coupe-vent déperlant', 'S–4XL', 13.44, 'jacket', ['#151a2d', '#1d2a5c', '#c8302f'], 'Softshell polyester et élasthanne', true),
-  p('veste-oslo', 'vestes-personnalisees', 'Veste Oslo', 'Veste chaude à capuche', 'S–4XL', 10.45, 'jacket', ['#151a2d', '#1d2a5c', '#c8302f'], 'Polyester, doublée'),
+  p('veste-oslo', 'vestes-personnalisees', 'Gilet Oslo', 'Gilet sans manches matelassé', 'S–4XL', 10.45, 'vest', ['#151a2d', '#1d2a5c', '#c8302f'], 'Polyester, doublée'),
+  // Gamme hiver élargie (Roly 2026, prix d'achat unitaires) : 3 choix au moins par type, versions femme.
+  p('softshell-antartida', 'vestes-personnalisees', 'Softshell Antartida', 'Softshell 2 couches, zip contrasté', 'S–3XL', 12.55, 'jacket', ['#151a2d', '#1d2a5c', '#3a5bd0', '#2f8a4d', '#c8302f', '#ffffff'], 'Softshell 2 couches, doublé micropolaire'),
+  p('softshell-antartida-femme', 'vestes-personnalisees', 'Softshell Antartida Femme', 'Softshell 2 couches, coupe femme', 'S–3XL', 12.55, 'jacket', ['#151a2d', '#1d2a5c', '#3a5bd0', '#c8302f', '#ffffff'], 'Softshell 2 couches, doublé micropolaire'),
+  p('softshell-nebraska-femme', 'vestes-personnalisees', 'Softshell Nebraska Femme', 'Coupe-vent déperlant, coupe femme', 'S–3XL', 13.44, 'jacket', ['#151a2d', '#1d2a5c', '#3a5bd0', '#2f8a4d', '#c8302f', '#b8a98d'], 'Softshell 2 couches, doublé micropolaire'),
+  p('softshell-rudolph', 'vestes-personnalisees', 'Softshell Rudolph', 'Softshell 3 couches, la plus chaude', 'S–3XL', 14.6, 'jacket', ['#151a2d', '#1d2a5c', '#3a5bd0', '#c8302f', '#3d4046', '#55613f'], 'Softshell 3 couches, doublé micropolaire'),
+  p('polaire-luciane', 'vestes-personnalisees', 'Polaire Luciane', 'Micropolaire zippée 300 g', 'XS–3XL', 10.45, 'jacket', ['#151a2d', '#1d2a5c', '#8b1e2d'], 'Micropolaire 100 % polyester, 300 g/m²'),
+  p('gilet-nevada', 'vestes-personnalisees', 'Gilet Nevada', 'Gilet softshell sans manches', 'S–3XL', 9.35, 'vest', ['#151a2d', '#1d2a5c', '#c8302f'], 'Softshell 2 couches, doublé micropolaire'),
+  p('gilet-quebec', 'vestes-personnalisees', 'Gilet Quebec', 'Gilet softshell sans manches', 'XS–3XL', 9.92, 'vest', ['#151a2d', '#1d2a5c', '#c8302f', '#3d4046', '#b8a98d'], 'Softshell 2 couches, doublé micropolaire'),
+  p('gilet-oslo-femme', 'vestes-personnalisees', 'Gilet Oslo Femme', 'Gilet sans manches matelassé, coupe femme', 'S–2XL', 10.45, 'vest', ['#151a2d', '#1d2a5c', '#c8302f', '#8b1e2d', '#55613f', '#3d4046', '#3a5bd0'], 'Polyester matelassé, doublé'),
+  p('doudoune-finland', 'vestes-personnalisees', 'Doudoune Finland', 'Veste matelassée imperméable', 'S–3XL', 13.55, 'jacket', ['#151a2d', '#1d2a5c', '#c8302f', '#55613f', '#3d4046', '#3a5bd0'], 'Polyester matelassé, imperméable'),
+  p('doudoune-finland-femme', 'vestes-personnalisees', 'Doudoune Finland Femme', 'Veste matelassée, coupe femme', 'S–2XL', 13.55, 'jacket', ['#151a2d', '#1d2a5c', '#c8302f', '#8b1e2d', '#55613f', '#3d4046', '#3a5bd0'], 'Polyester matelassé, imperméable'),
+  p('doudoune-norway', 'vestes-personnalisees', 'Doudoune Norway', 'Veste matelassée à capuche', 'S–3XL', 14.18, 'jacket', ['#151a2d', '#1d2a5c', '#3a5bd0'], 'Polyester matelassé, imperméable'),
+  p('doudoune-norway-femme', 'vestes-personnalisees', 'Doudoune Norway Femme', 'Veste matelassée à capuche, coupe femme', 'S–2XL', 14.18, 'jacket', ['#151a2d', '#1d2a5c', '#d43f8d'], 'Polyester matelassé, imperméable'),
+  p('veste-makalu', 'vestes-personnalisees', 'Veste Makalu', 'Veste légère, capuche amovible', 'S–3XL', 12.55, 'jacket', ['#151a2d', '#1d2a5c', '#55613f'], 'Polyester déperlant, rembourré'),
 ];
 // Composition exacte du fabricant (Roly) quand elle est connue.
 for (const p of PRODUCTS) if (ROLY_INFO[p.slug]?.composition) p.composition = ROLY_INFO[p.slug].composition;
@@ -278,6 +297,8 @@ export function zonesFor(prod: Product): Zone[] {
   // Tablier : poche ou grand devant, l'un ou l'autre (la poche en premier : c'est le prix « dès »).
   else if (prod.shape === 'apron') list = ['pocket', 'chest'].map((id) => ZONES.find((z) => z.id === id)!);
   else if (prod.shape === 'hv') list = notApron.filter((z) => !shoulders.includes(z.id)); // gilet sans manches
+  // Gilet sans manches zippé : ni épaules, ni grand devant (zip), ni nuque.
+  else if (prod.shape === 'vest') list = notApron.filter((z) => !shoulders.includes(z.id) && z.id !== 'chest' && z.id !== 'neck');
   else if (prod.shape === 'shirt' || prod.shape === 'zipjacket' || prod.shape === 'jacket') list = notApron.filter((z) => z.id !== 'chest' && (prod.shape === 'shirt' || z.id !== 'neck')); // boutonnage ou zip : pas de grand devant ; capuche/col : pas de nuque
   else if (prod.shape === 'hoodie') list = notApron.filter((z) => z.id !== 'neck'); // capuche : pas de nuque
   else list = notApron;
