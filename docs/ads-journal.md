@@ -8,18 +8,72 @@ Aucun.
 ## Demandes en attente
 | Date | Pour | Demande | Priorité | État |
 |---|---|---|---|---|
-| 23/11/2026 | Informaticien | Conversion « Achat (serveur) » vers Google Ads depuis le webhook (gclid, valeur HT, n° de commande, virements compris, rétractations) ; pixel Shopify en secondaire | P0 | Ouvert |
+| 23/11/2026 | Informaticien | Conversion « Achat (serveur) » vers Google Ads depuis le webhook (gclid, valeur HT, n° de commande, virements compris, rétractations) ; pixel Shopify en secondaire | P0 | Fait le 23/11 (import planifié). Restent les rétractations (I8) et gbraid/wbraid (I3) |
 | 23/11/2026 | Informaticien | GA4 : identifiants + API secret, vérification des événements | P0 | Ouvert |
 | 23/11/2026 | Informaticien / gérant | Bannière de confidentialité Shopify active sur le checkout (FR, BE) ; pixel « Google Ads alwaan » connecté | P0 | Ouvert |
 | 23/11/2026 | Informaticien | Conversion Stripe de secours : ajouter la valeur HT | P0 | Ouvert |
 | 23/11/2026 | Informaticien + gérant | Achat test réel visible dans Google Ads, puis remboursement et rétractation | P0 | Ouvert |
-| 23/11/2026 | Informaticien | Flux : custom_label 2/3/4 (marge, saison, cible), taille valide, images sur alwaan.fr, Offer au prix du flux (lowPrice 14,40 contre 16,32), diffusion BE | P1 | Ouvert |
+| 23/11/2026 | Informaticien | Flux : custom_label 2/3/4 (marge, saison, cible), taille valide, images sur alwaan.fr, Offer au prix du flux (lowPrice 14,40 contre 16,32), diffusion BE | P1 | Labels et Offer faits le 23/11 ; restent taille (I9) et images (I6) |
 | 23/11/2026 | Informaticien | Micro-conversions : devis /devis, lien d'équipe, boutique club, clic WhatsApp | P1 | Ouvert |
 | 23/11/2026 | Informaticien | Pages : « Nouvelles tenues 2027 » (04/01), « Restauration printemps » (09/02) | P1 | Ouvert |
-| 23/11/2026 | Gérant | Coût réel du marquage DTF et de la main-d'œuvre (hypothèses : 0,40 € / 1,50 € par zone, 1,00 € + 0,40 € par zone) ; port réel ; coûts Wizer et Barny ; tarifs Roly définitifs | — | Ouvert |
-| 23/11/2026 | Gérant | Part acceptable de la marge pour la pub (35 % proposé ; équilibre accepté pendant l'apprentissage déc.–janv.) | — | Ouvert |
-| 23/11/2026 | Gérant | Validation écrite du budget de décembre : 630 € (30/11 → 03/01) | — | Ouvert |
+| 23/11/2026 | Gérant | Coût réel du marquage DTF et de la main-d'œuvre (hypothèses : 0,40 € / 1,50 € par zone, 1,00 € + 0,40 € par zone) ; port réel ; coûts Wizer et Barny ; tarifs Roly définitifs | — | Marquage reçu (≈ 2 € par zone) ; restent port réel, Wizer, Barny, tarifs Roly |
+| 23/11/2026 | Gérant | Part acceptable de la marge pour la pub (35 % proposé ; équilibre accepté pendant l'apprentissage déc.–janv.) | — | Validé le 23/11 |
+| 23/11/2026 | Gérant | Validation écrite du budget de décembre : 630 € (30/11 → 03/01) | — | Validé le 23/11, relevé à 30 €/j sur Search pro ; total 800 ou 980 € à confirmer (audit B3) |
 | 23/11/2026 | Gérant | Accord de principe pour créer le compte Meta Business (reciblage en janvier, 70 €) | — | Ouvert |
+| 23/11/2026 | Informaticien | I1 : ventes par utm_campaign / utm_content / utm_term, avec ou sans gclid (ROAS réel malgré le refus de consentement) | P0 | Ouvert |
+| 23/11/2026 | Informaticien | I2 : fiche produit, « dès … la pièce » avec la quantité + prix à 1 pièce et paliers visibles sans interaction | P0 | Ouvert |
+| 23/11/2026 | Informaticien | I3 bis : bandeau date limite de Noël sur les pages catégorie, métiers et villes jusqu'au 10/12 | P0 | Ouvert |
+| 23/11/2026 | Informaticien | I3 : colonnes GBRAID / WBRAID dans l'export des conversions (ou API) | P1 | Ouvert |
+| 23/11/2026 | Informaticien | I4 : conversion secondaire « Demande de devis » + attribution jointe aux demandes de devis | P1 | Ouvert |
+| 23/11/2026 | Informaticien | I6 à I11 : images via le CDN, page hub travail, rétractations, tailles, TVA B2B Belgique, réassurance (voir `docs/ads-audit-prelancement.md`) | P2 | Ouvert |
+| 23/11/2026 | Agent navigateur | Check-list C1 à C12 de `docs/ads-audit-prelancement.md` avant le 30/11 (campagnes en pause) | — | Ouvert |
+| 23/11/2026 | Gérant | Décisions audit : budget décembre 800 ou 980 € ; seuils par groupe à 1,5 × CPA d'équilibre ; CPC Clubs 1,20 € ; « Maximiser la valeur » au lieu de « Maximiser les conversions » ; pixel Shopify déconnecté si la bannière n'est pas prête | — | Ouvert |
+
+---
+
+## 23/11/2026 (soir) : audit pré-lancement des campagnes Google Ads
+
+**Données lues** : `docs/ads-campagnes-google.md` (décisions validées) ; état rapporté par l'agent navigateur (3 campagnes en pause, « Achat (serveur) » principale en import planifié, Merchant « compte pas encore configuré », extrait « Types », plus de ciblage par langue, brouillon à supprimer, bannière Shopify non confirmée) ; `src/lib/adsConversions.ts`, `track.ts`, `CookieBanner.tsx`, `QuoteForm.tsx`, `Configurator.tsx` ; flux relu (labels 2/3/4 présents, une seule valeur de marge par catégorie, tailles encore en plages) ; 16 pages d'atterrissage (200, 0,2 à 0,36 s ; accueil 0,75 s ; `/metiers` et `/vetements-personnalises` en 404).
+
+**Marges recalculées** avec le coût réel du marquage (≈ 2 € par zone ; Mercury 1,12 € tout compris) : taux moyen ≈ 43 % ; ROAS d'équilibre ≈ 2,3, cible (35 %) ≈ 6,6. Casquettes de 57 à 65 % ; t-shirts Atomic à 50 pièces : 29 %.
+
+**Constats principaux** (détail et check-list dans `docs/ads-audit-prelancement.md`)
+- Mesure : le gclid n'est transmis qu'avec l'accord publicité, donc 30 à 45 % des ventes payantes sont attendues hors de « Achat (serveur) ». Correctif : suffixe UTM au niveau du compte + ventilation UTM dans les insights (I1). gbraid et wbraid ne sont pas exportés (I3). Aucun test de bout en bout : prévu le 30/11 avec une commande réelle utile.
+- Mots-clés génériques à forte part de particuliers ([polo personnalisé], casquette personnalisée, tablier personnalisé, tablier logo, sweat personnalisé logo noël) : estimés à 30 à 40 % de la dépense Search pro en décembre, pour un ROAS d'environ 0,4.
+- Négatif « 1 € » : risque de bloquer « 1 pièce ». À supprimer.
+- Automatismes Google (recommandations auto, ressources générées, AI Max) à désactiver.
+- Règle Noël : passer de 14 h à 12 h (exécution possible jusqu'à 1 h après l'heure prévue). Baisses de budget à automatiser par des règles.
+- Prix d'annonce non visibles sur les pages (13,60 €, 5,50 €, 8,78 €) : à remplacer par des prix « dès … (quantité) » visibles. Fiche produit : « dès … la pièce » sans quantité (I2, promesse).
+- Le groupe Noël pointe vers une page sans la date limite : URL → accueil.
+- Shopping : bloqué par Merchant. Les étiquettes de marge n'ont qu'une valeur par catégorie, donc les « +20 % / −20 % » sont sans effet : enchères par catégorie à la place.
+- Seuil « 60 € par groupe » trop serré : environ 50 % de chances de couper un groupe rentable à l'équilibre. Proposé : 1,5 × CPA d'équilibre par groupe ; le seuil de compte de 400 € reste inchangé.
+- « Maximiser les conversions » favoriserait les petites commandes de particuliers. Proposé : « Maximiser la valeur de conversion », puis un ROAS cible de 250 % à partir de 30 conversions.
+- Écart de budget de décembre : 800 € (fiche) contre 980 € (journal).
+
+**Décisions prises (baisses autorisées, à appliquer par l'agent navigateur, campagnes toujours en pause)** :
+- CPC max : Tenue 1,20 ; Polos 1,00 ; Restauration 1,00 ; Casquettes 0,70 ; Janvier 1,20 ; [polo personnalisé] et « casquette personnalisée » 0,55 ;
+- pause de « tablier personnalisé » et « tablier logo » jusqu'au 15/01 ;
+- enchères Shopping par catégorie (0,20 à 0,50 €) ;
+- mobile −20 %, week-end −30 %, nuit exclue ;
+- zones Nord, Pas-de-Calais, Hainaut et Bruxelles à +15 % (ajustement géographique à confirmer par le gérant, car c'est une hausse ciblée).
+
+**En attente de validation du gérant** :
+- budget de décembre, 800 ou 980 € ;
+- seuils révisés ;
+- CPC Clubs 1,20 € ;
+- stratégie « Maximiser la valeur » ;
+- +15 % géographique ;
+- pixel Shopify déconnecté si la bannière n'est pas prête lundi.
+
+**Impact estimé des correctifs (30/11 → 20/12)** : ROAS d'environ 1,45 à environ 1,85 ; marge nette d'environ −235 € à environ −115 €, soit environ +120 €.
+
+**Budgets validés** : inchangés (rien n'est dépensé, campagnes en pause).
+
+**Prochaine étape** :
+- vérifier la check-list C1 à C12 ;
+- le 30/11 : activation, puis test de bout en bout ;
+- du 01 au 02/12 : contrôle de l'import ;
+- le 04/12 : 1er bilan hebdomadaire.
 
 ---
 
