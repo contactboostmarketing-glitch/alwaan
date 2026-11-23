@@ -798,5 +798,39 @@ export const ROLY_INFO: Record<string, { composition: string; description: strin
     "76"
    ]
   }
+ },
+ "parka-hv-epsilon": {
+  "composition": "Polyester imperméable, doublure et ouatine polyester, 400 g/m²",
+  "description": "Veste matelassée bicolore haute visibilité.· Tissu imperméable avec coutures thermosoudées, résistant au vent et à la pluie.· Manches amovibles pour utilisation en gilet.· Capuche enroulable.· Fermeture à glissière frontale et rabat avec fermetures à Velcro.· Deux bandes réfléchissantes horizontales sur le corps.· Deux bandes segmentées sur les manches.· Poignets avec fermeture velcro et partie caoutchoutée.· Deux poches latérales à fermeture à glissière.· Poche poitrine droite.· Poche intérieure à glissière.· Ouverture arrière pour le retraitement.· Ceinture élastiquée.· Étiquette extérieure Roly WRK.· Cycles de lavage : x25.",
+  "measures": {
+   "S": [
+    "57",
+    "74"
+   ],
+   "M": [
+    "60",
+    "76"
+   ],
+   "L": [
+    "63",
+    "78"
+   ],
+   "XL": [
+    "66",
+    "80"
+   ],
+   "XXL": [
+    "69",
+    "81"
+   ],
+   "XXXL": [
+    "72",
+    "82"
+   ],
+   "XXXXL": [
+    "76",
+    "83"
+   ]
+  }
  }
 };

@@ -41,6 +41,10 @@ type Props = {
  * Vêtement avec les marquages : vraie photo à plat Roly (face / dos) dans la couleur choisie quand elle existe,
  * sinon dessin vectoriel. Sur photo, le logo est mis à l'échelle réelle (≈ 3,4 unités par cm, d'après les mesures Roly).
  */
+const CAP_PHOTO: Record<string, { k: number; y: number; x?: number }> = {
+  'casquette-mercury': { k: 10, y: 92 }, 'casquette-barny': { k: 8, y: 118 }, 'casquette-wizer': { k: 5, y: 146 },
+};
+
 export function Garment({ slug, color, view = 'front', zones = [], logo, text, text2, textFont, textColor, zoneText, className, width, height }: Props) {
   const prod = getProduct(slug);
   if (!prod) return null;
@@ -50,6 +54,8 @@ export function Garment({ slug, color, view = 'front', zones = [], logo, text, t
   const marks = zonesFor(prod).filter((z) => zones.includes(z.id) && z.view === view);
   const v = ROLY_VIEWS[slug]?.[color];
   const photo = view === 'back' ? v?.b : v?.f;
+  // Casquettes : la photo est cadrée plus serré qu'un vêtement (échelle et hauteur du logo propres à chaque modèle).
+  const cap = photo ? CAP_PHOTO[slug] : undefined;
 
   return (
     <svg viewBox="0 0 260 250" width={width} height={height} className={className} role="img" aria-label={`${prod.name}, aperçu`}>
@@ -69,7 +75,7 @@ export function Garment({ slug, color, view = 'front', zones = [], logo, text, t
       {marks.map((z) => {
         // Photo : taille réelle (largeur du gabarit en cm × 3,4) ; la nuque est plus haute sur la photo.
         const cmW = Number(z.size.match(/[\d.,]+/)?.[0].replace(',', '.') || 0);
-        const cx = z.x * 2.6, cy = (photo && z.id === 'neck' ? 15 : z.y) * 2.5, w = photo && cmW ? cmW * 3.4 : z.w * 2.6;
+        const cx = (cap?.x ?? z.x * 2.6), cy = cap?.y ?? (photo && z.id === 'neck' ? 15 : z.y) * 2.5, w = photo && cmW ? cmW * (cap?.k ?? 3.4) : z.w * 2.6;
         const zt = zoneText?.[z.id];
         if (zt) return (
           <text key={z.id} x={cx} y={cy + w * 0.06} textAnchor="middle" fontFamily={fontCss(textFont)} fontWeight={700} fontSize={Math.max(7, Math.min(w * 0.22, (w * 1.6) / Math.max(4, zt.length)))} fill={textColor || ink}>{zt}</text>
