@@ -18,7 +18,9 @@ export async function GET(req: Request) {
   // Diagnostic atelier (clé de synchro) : ?test envoie un email à l'atelier et renvoie la réponse exacte de Resend.
   const sync = process.env.SYNC_KEY || process.env.ROLY_SYNC_KEY;
   if (new URL(req.url).searchParams.has('test') && sync && safeEqual(req.headers.get('x-sync-key'), sync)) {
-    const r = await sendMail({ to: atelierEmail(), subject: 'Test d\'envoi alwaan', html: layout({ title: 'Test d\'envoi', intro: 'Les emails du site fonctionnent.' }) }).catch((e) => String((e as Error).message));
+    const to = new URL(req.url).searchParams.get('to') || atelierEmail();
+    if (!EMAIL.test(to)) return NextResponse.json({ error: 'Adresse invalide' }, { status: 400 });
+    const r = await sendMail({ to, subject: 'Test d\'envoi alwaan', html: layout({ title: 'Test d\'envoi', intro: 'Les emails du site fonctionnent.' }) }).catch((e) => String((e as Error).message));
     return NextResponse.json({ enabled: mailEnabled(), from: process.env.MAIL_FROM ? 'MAIL_FROM' : 'défaut (COMPANY_EMAIL)', result: r });
   }
   return NextResponse.json({ enabled: mailEnabled() });
