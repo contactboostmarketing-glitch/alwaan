@@ -844,3 +844,18 @@ svg image[href^="https://static.gorfactory.es"],img[src^="https://static.gorfact
 
 .deadline-strip{display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 16px;background:#fdecec;color:#8a1f1d;font-size:14px;font-weight:600;text-align:center}
 .deadline-strip svg{flex:none}
+
+/* Page hub « Vêtements de travail personnalisés » et tableaux d'exemples de prix */
+.workwear .lead{font-size:18px;color:var(--muted);max-width:760px;margin-top:10px}
+.workwear .perks{margin-top:14px}
+.workwear-cats{margin-top:12px}
+.workwear a.adv{text-decoration:none;color:inherit}
+.workwear a.adv:hover{background:#eaf0fb}
+.price-ex{overflow-x:auto;margin:12px 0}
+.price-ex th:not(:first-child),.price-ex td:not(:first-child){white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:560px){
+  .price-ex thead tr,.price-ex tbody tr{display:grid;grid-template-columns:repeat(3,1fr)}
+  .price-ex thead th:first-child{display:none}
+  .price-ex tbody td:first-child{grid-column:1/-1;border-bottom:0;padding-bottom:0;font-weight:600}
+  .price-ex th,.price-ex td{padding-left:6px;padding-right:6px}
+}

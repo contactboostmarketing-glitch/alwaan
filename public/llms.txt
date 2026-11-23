@@ -4,16 +4,19 @@
 
 - Clients : entreprises, artisans, commerçants, restaurants, hôtels, BTP et logistique, associations, clubs, particuliers.
 - Technique : impression DTF (Direct To Film), toutes couleurs, tous textiles, sans minimum ni frais de préparation.
-- Marquage DTF, prix HT par pièce : cœur ou anti-cœur (10 × 10 cm) 4 €, dos (26 × 26 cm) 6 €, grand devant (28 × 30 cm) 8 € à prix fixe, nuque ou épaule droite / gauche 2,50 €. Sur les textiles vendus plus de 25 € HT, cœur et dos à 5 €. Remise automatique sur le marquage (hors grand devant) : -15 % dès 5 pièces, -20 % dès 10, -40 % dès 30 ; les pièces au même logo se cumulent, tous vêtements confondus.
+- Marquage DTF, prix HT par pièce : cœur ou anti-cœur (jusqu'à 10 × 10 cm) 4 €, dos (jusqu'à 27 × 27 cm) 6 €, grand devant (jusqu'à 27 × 27 cm) 8 € à prix fixe, nuque ou épaule droite / gauche 2,50 €. Sur les textiles vendus plus de 25 € HT, cœur et dos à 5 €. Remise automatique sur le marquage (hors grand devant) : -15 % dès 5 pièces, -20 % dès 10, -40 % dès 30 ; les pièces au même logo se cumulent, tous vêtements confondus.
 - La maquette validée par le client sur le site sert de bon à tirer.
 
 ## Vêtements
+- [Vêtements de travail personnalisés (tous les modèles, prix, délais)](https://alwaan.fr/vetements-de-travail-personnalises)
 - [Polos personnalisés](https://alwaan.fr/vetements/polos-personnalises)
 - [T-shirts personnalisés](https://alwaan.fr/vetements/t-shirts-personnalises)
 - [Chemises personnalisées](https://alwaan.fr/vetements/chemises-personnalisees)
 - [Tabliers personnalisés](https://alwaan.fr/vetements/tabliers-personnalises)
 - [Casquettes personnalisées](https://alwaan.fr/vetements/casquettes-personnalisees)
-- [Vêtements haute visibilité personnalisés](https://alwaan.fr/vetements/haute-visibilite-personnalisee)
+- [Gilets de sécurité et vêtements haute visibilité personnalisés](https://alwaan.fr/vetements/haute-visibilite-personnalisee)
+- [Sweats personnalisés](https://alwaan.fr/vetements/sweats-personnalises)
+- [Vestes, polaires et softshells personnalisées](https://alwaan.fr/vetements/vestes-personnalisees)
 
 ## Métiers
 - [Restauration](https://alwaan.fr/metiers/restauration)

@@ -15,6 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   };
   return [
     ...both('/', 1),
+    ...both('/vetements-de-travail-personnalises', 0.9),
     ...CATEGORIES.flatMap((c) => both(`/vetements/${c.slug}`, 0.9)),
     ...SECTORS.flatMap((s) => both(`/metiers/${s.slug}`, 0.8)),
     ...PRODUCTS.flatMap((p) => both(`/produits/${p.slug}`, 0.7)),

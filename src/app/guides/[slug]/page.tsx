@@ -32,6 +32,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
         <Faq items={g.faq} />
         <nav className="guide-links" aria-label="Pour aller plus loin">
           <b>Nos vêtements</b>
+          <Link href="/vetements-de-travail-personnalises">Vêtements de travail personnalisés</Link>
           {g.categories.map((c) => <Link key={c} href={`/vetements/${c}`}>{customName(getCategory(c)!)}</Link>)}
           {(g.sectors || []).map((s) => <Link key={s} href={`/metiers/${s}`}>{getSector(s)!.h1}</Link>)}
           <b>À lire aussi</b>

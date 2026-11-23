@@ -617,6 +617,8 @@ export const EN: Record<string, string> = {
   'La photo de contrôle de vos pièces avant expédition.': 'A quality-check photo of your pieces before shipping.',
   'Un échantillon offert avant la série dès 150 pièces.': 'A free sample before the run from 150 pieces.',
   'Voir notre atelier': 'See our workshop',
+  'Vêtements de travail personnalisés': 'Custom workwear',
+  'Tous les vêtements de travail': 'All workwear',
   'Un seul avantage par commande : nous appliquons automatiquement le plus intéressant pour vous.': 'One offer per order: we automatically apply the best one for you.',
   'Votre code -10 % personnel vient de partir : pensez à vérifier les indésirables. Valable 30 jours.': 'Your personal -10% code is on its way: check your spam folder. Valid 30 days.',
   'En vous inscrivant, vous acceptez de recevoir nos offres. Désinscription en 1 clic.': 'By signing up you agree to receive our offers. Unsubscribe in 1 click.',

@@ -4,17 +4,22 @@ Règle de maillage : chaque page fille renvoie vers sa page mère et vers 2-3 pa
 chaque page mère renvoie vers ses filles. Les produits renvoient vers leur catégorie et leurs métiers.
 
 ## Niveau 1 : accueil
-« Vêtements personnalisés pour professionnels » → catégories, métiers, assistant, guides.
+« Vêtements personnalisés pour professionnels » → page hub, catégories, métiers, assistant, guides.
+
+## Niveau 1 bis : page hub (en ligne depuis le 23/11/2026)
+| Page | Requêtes visées (Semrush, volume/mois) | Liens |
+|---|---|---|
+| /vetements-de-travail-personnalises (+ /en/custom-workwear) | vetement de travail personnalisé 480, vêtement personnalisé entreprise 590, personnalisation / personnalisable 210 + 210, tenue de travail personnalisée 110, vêtement logo entreprise 70 | Reçoit : accueil, pied de page, fil d'Ariane des catégories (« Vêtements »), guides, pages villes. Donne : 8 catégories, 4 métiers + clubs, 6 guides |
 
 ## Niveau 2 : pages mères (en ligne)
 | Page | Requête principale visée | Guides rattachés |
 |---|---|---|
-| /vetements/polos-personnalises | polo personnalisé | grammage-polo-travail, dtf-ou-broderie, taille-vetement-equipe, prix-… |
+| /vetements/polos-personnalises | polo personnalisé ; à viser : polo entreprise 390, polo personnalisé entreprise 390 (décembre) | grammage-polo-travail, dtf-ou-broderie, taille-vetement-equipe, prix-… |
 | /vetements/t-shirts-personnalises | t-shirt personnalisé | t-shirt-personnalise-association-evenement, impression-dtf-avantages, prix-… |
-| /vetements/chemises-personnalisees | chemise personnalisée logo | dtf-ou-broderie |
-| /vetements/tabliers-personnalises | tablier personnalisé | tablier-personnalise-quel-modele, tenue-restaurant-personnalisee, preparer-logo-impression |
+| /vetements/chemises-personnalisees | chemise personnalisée logo ; à viser : chemise personnalisée entreprise 210 (décembre) | dtf-ou-broderie |
+| /vetements/tabliers-personnalises | tablier personnalisé professionnel 320, tablier serveur personnalisé 170 (janvier) ; pas « tablier personnalisé » seul (cadeaux) | tablier-personnalise-quel-modele, tenue-restaurant-personnalisee, preparer-logo-impression |
 | /vetements/casquettes-personnalisees | casquette personnalisée | impression-dtf-avantages, dtf-ou-broderie, t-shirt-… |
-| /vetements/haute-visibilite-personnalisee | gilet haute visibilité personnalisé | norme-en-iso-20471-haute-visibilite, taille-vetement-equipe |
+| /vetements/haute-visibilite-personnalisee | gilet de sécurité personnalisé 720, gilet jaune personnalisé 590, gilet haute visibilité personnalisé 260 (enrichie le 23/11/2026) | norme-en-iso-20471-haute-visibilite, taille-vetement-equipe |
 | /metiers/restauration | tenue restaurant personnalisée | tenue-restaurant-personnalisee, grammage-polo-travail, tablier-… |
 | /metiers/hotellerie | tenue hôtellerie personnalisée | grammage-polo-travail, tablier-… |
 | /metiers/btp-logistique | vêtement de chantier personnalisé | norme-en-iso-20471-haute-visibilite |
@@ -26,6 +31,8 @@ norme-en-iso-20471-haute-visibilite · tenue-restaurant-personnalisee · tablier
 t-shirt-personnalise-association-evenement · prix-vetement-personnalise-quantite · taille-vetement-equipe
 
 ## À créer (après validation des volumes de recherche)
+- Ordre et volumes : voir « Priorités issues de Semrush » dans docs/seo-calendrier.md (textile publicitaire, Belgique, guides grammage t-shirt, « pas cher », DTF / flocage / sérigraphie).
+- Pages catégories enrichies : `src/lib/categorySeo.ts` (title, H1, sections, prix calculés, FAQ).
 - Nouvelles catégories quand la sélection Roly sera importée : sweats, vestes et gilets (gilet sans manches personnalisé, softshell personnalisée, polaire personnalisée).
 - Métiers : boulangerie, artisans (plombier, électricien), auto-école, club sportif, mariage et EVJF, commerce, nettoyage, santé et esthétique.
 - Guides : polo pas cher pour entreprise, sweat à capuche entreprise, vêtement de travail personnalisé petite quantité, entretien d'un vêtement imprimé, cadeau d'entreprise textile.

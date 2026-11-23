@@ -70,7 +70,7 @@ export function HomeView({ lang }: { lang: Lang }) {
       </div></section>
 
       <section className="section"><div className="wrap">
-        <div className="sec-head"><h2>{t('Nos vêtements personnalisables')}</h2></div>
+        <div className="sec-head"><h2>{t('Nos vêtements personnalisables')}</h2><Link className="link" href={href(lang, '/vetements-de-travail-personnalises')}>{t('Tous les vêtements de travail')}</Link></div>
         <div className="cats">
           {seasonalSort(CATEGORIES, (c) => c.slug, season).map((c0) => {
             const c = categoryL(lang, c0), list = productsIn(c.slug), first = list[0];
