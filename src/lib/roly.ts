@@ -8,13 +8,22 @@ export const rolyEnabled = () => !!(process.env.ROLY_USERNAME && process.env.ROL
 
 async function login(): Promise<string> {
   if (token && token.expires > Date.now() + 10 * 60_000) return token.value;
-  const body = new FormData();
-  body.append('username', process.env.ROLY_USERNAME!);
-  body.append('password', process.env.ROLY_PASSWORD!);
-  const r = await fetch(`${BASE}/api/v1.0/login`, { method: 'POST', body, cache: 'no-store' });
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok || !j.token) throw new Error(`Connexion Roly refusée (${r.status})`);
-  token = { value: j.token, expires: Date.now() + 23 * 3600_000 };
+  const user = process.env.ROLY_USERNAME!, pass = process.env.ROLY_PASSWORD!;
+  // Documentation Swagger : /api/v1.1/login (JSON), /api/v1/login (formulaire) ; /api/v1.0/login gardé en dernier recours.
+  const tries: [string, () => RequestInit][] = [
+    ['/api/v1.1/login', () => ({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: user, password: pass }) })],
+    ['/api/v1/login', () => { const f = new FormData(); f.append('username', user); f.append('password', pass); return { method: 'POST', body: f }; }],
+    ['/api/v1.0/login', () => { const f = new FormData(); f.append('username', user); f.append('password', pass); return { method: 'POST', body: f }; }],
+  ];
+  let j: { token?: string } = {}, status = 0;
+  for (const [path, init] of tries) {
+    const r = await fetch(`${BASE}${path}`, { ...init(), cache: 'no-store' }).catch(() => null);
+    status = r?.status || 0;
+    j = r ? await r.json().catch(() => ({})) : {};
+    if (r?.ok && j.token) break;
+  }
+  if (!j.token) throw new Error(`Connexion Roly refusée (${status})`);
+  token = { value: j.token!, expires: Date.now() + 23 * 3600_000 };
   return token.value;
 }
 
