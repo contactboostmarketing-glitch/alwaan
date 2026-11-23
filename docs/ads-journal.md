@@ -28,6 +28,47 @@ Aucun.
 | 23/11/2026 | Informaticien | I6 à I11 : images via le CDN, page hub travail, rétractations, tailles, TVA B2B Belgique, réassurance (voir `docs/ads-audit-prelancement.md`) | P2 | Ouvert |
 | 23/11/2026 | Agent navigateur | Check-list C1 à C12 de `docs/ads-audit-prelancement.md` avant le 30/11 (campagnes en pause) | — | Ouvert |
 | 23/11/2026 | Gérant | Décisions audit : budget décembre 800 ou 980 € ; seuils par groupe à 1,5 × CPA d'équilibre ; CPC Clubs 1,20 € ; « Maximiser la valeur » au lieu de « Maximiser les conversions » ; pixel Shopify déconnecté si la bannière n'est pas prête | — | Ouvert |
+| 23/11/2026 | Agent navigateur | Check-list C13 à C22 de `docs/ads-recalage-semrush.md` (restructuration en 7 groupes, campagne Génériques à 3 €/j, nouveaux mots-clés, négatifs, annonces, règles), après C1 à C12 | — | Ouvert |
+| 23/11/2026 | Gérant | Décisions recalage : 7 groupes + suppression de Local, Noël et Janvier ; option Noël par annonces ; Génériques 3 €/j (Search pro 27 €/j, total inchangé) ; CPC T-shirts 1,50 € ; polos 1,30 puis 1,50 € | — | Ouvert |
+| 23/11/2026 | Agent SEO | 13 opportunités SEO (section 8 de `docs/ads-recalage-semrush.md`), en priorité la page hub vêtements de travail, la page HV « gilet de sécurité / gilet jaune » et la page polos « entreprise » | — | Ouvert |
+
+---
+
+## 23/11/2026 (nuit) : recalage sur les données Semrush
+
+**Données lues (Semrush, environ 7 700 unités consommées sur ce passage, 40 150 restantes)** : volumes Belgique sur 36 mots-clés ; concurrents payants de maboutiquepro.com ; mots-clés achetés par th4.com, teamshirts.fr et vetementpro.com (30 chacun) ; variantes en requête large de « vetement de travail personnalisé », « polo entreprise », « gilet personnalisé », « logo entreprise vetement », « tablier personnalisé » ; volumes FR de 42 mots-clés candidats ; 10 textes d'annonces de maboutiquepro.com. Plus les données du coordinateur (57 mots-clés FR, annonceurs, maboutiquepro et graphywest). Bruts dans `docs/semrush/`.
+
+**Constats**
+- Groupes sans volume : Restauration (sauf tabliers pros), Clubs, Local Nord/BE, Noël pro, Janvier B2B. Ils n'auraient reçu aucun clic.
+- Vraie demande pro ≈ 13 000 recherches/mois (FR + BE) :
+  - HV ≈ 4 200 (gilet de sécurité 720, gilet jaune 590) ;
+  - vêtements de travail personnalisés ≈ 2 600 ;
+  - polos « entreprise » ≈ 2 400 ;
+  - t-shirts entreprise et textile publicitaire ≈ 2 000 ;
+  - tabliers pros ≈ 860 ; sweats et vestes ≈ 800.
+- Belgique : demande pro faible (de 20 à 50 par terme), terme local « horeca ». Pas de groupe dédié.
+- Génériques « vêtement de travail / vêtement pro » : achats de vêtements non marqués (vetementpro.com), à exclure en exact.
+- « tablier personnalisé » (5 400) = cadeaux de particuliers, confirmé par les variantes (homme, photo, barbecue).
+- La demande pro solvable ne consomme qu'environ **14 à 18 €/j** sur les 30 €/j de Search. Décembre réel probable ≈ 550 à 650 €.
+- Concurrents :
+  - maboutiquepro : « dès 1 pièce, sans frais fixes, imprimé en France » ;
+  - graphywest : « N°1, dès 10 pièces » ;
+  - th4 et teamshirts : marques concurrentes, transferts DTF, maillots.
+  - Nos angles : maquette et prix en direct, lien d'équipe, sans frais de préparation, atelier à Haubourdin, devis PDF, express en 4 jours ouvrés (option).
+
+**Décisions proposées (campagnes toujours en pause)**
+- Search pro en 7 groupes ; Local, Noël et Janvier supprimés ; Noël et Janvier passent par des annonces étiquetées avec des règles.
+- Campagne « Search – Génériques », en exact, plafonnée à 3 €/j : [polo personnalisé], [casquette personnalisée], [sweat personnalisé], [polaire personnalisée], [casquette logo].
+- CPC max : HV 1,50 ; Vêtements de travail 1,40 ; Polos entreprise 1,30 ; T-shirts 1,50 (à valider) ; Sweats et vestes 1,50 ; Casquettes 0,90 ; Tabliers 0,90. Ces valeurs remplacent l'audit.
+- Négatifs : sérigraphie, transferts, gilets hors sujet, polo automobile, sport, 18 marques concurrentes, vêtements de travail génériques en exact.
+
+**Budgets validés** : inchangés. Le total Search reste à 30 €/j (27 + 3), et rien n'est dépensé.
+
+**Prochaine étape** :
+- validation du gérant (section 9 de `docs/ads-recalage-semrush.md`) ;
+- l'agent navigateur applique C1 à C22 ;
+- le 30/11 : activation et test de bout en bout ;
+- après 7 jours : comparer les clics réels aux estimations de la section 6.
 
 ---
 
