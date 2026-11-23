@@ -9,7 +9,7 @@ import { SITE_URL } from '@/lib/site';
  * Prix = 1 pièce avec logo au cœur, TTC (prix affiché sur la page produit avant choix des quantités).
  * À déclarer dans Merchant Center : Produits → Flux → URL planifiée : https://alwaan.fr/feeds/google.xml
  */
-export const revalidate = 3600;
+export const revalidate = 86400; // Merchant Center lit le flux une fois par jour : une régénération par jour suffit (économise les crédits Netlify).
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const money = (n: number) => `${(Math.round(n * 100) / 100).toFixed(2)} EUR`;
@@ -55,5 +55,5 @@ ${p.bestseller ? '<g:custom_label_1>best-seller</g:custom_label_1>\n' : ''}
 <title>alwaan · vêtements personnalisés</title><link>${SITE_URL}</link><description>Tenues professionnelles personnalisées à votre logo</description>
 ${items.join('\n')}
 </channel></rss>`;
-  return new Response(xml, { headers: { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' } });
+  return new Response(xml, { headers: { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600, s-maxage=86400' } });
 }
