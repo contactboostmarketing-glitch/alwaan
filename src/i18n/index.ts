@@ -1,3 +1,4 @@
+import { ROLY_INFO } from '@/lib/rolyInfo';
 // Langues du site : français (par défaut, à la racine) et anglais (/en).
 // Les textes sont écrits en français dans le code ; t() renvoie la traduction anglaise du dictionnaire.
 import { COLOR_NAMES, getCategory, getSector, zonesFor, type Category, type Product, type Sector, type Zone } from '@/lib/catalog';
@@ -30,7 +31,14 @@ export function frPath(en: string): string {
 }
 
 export const colorName = (lang: Lang, hex: string) => (lang === 'en' ? COLOR_EN[hex] : COLOR_NAMES[hex]) || hex;
-export const productL = (lang: Lang, p: Product): Product => (lang === 'en' && PRODUCTS_EN[p.slug] ? { ...p, ...PRODUCTS_EN[p.slug] } : p);
+// Composition Roly (en français) traduite mot à mot pour la version anglaise.
+const COMP_EN: [RegExp, string][] = [[/coton peigné/g, 'combed cotton'], [/coton biologique|coton bio/g, 'organic cotton'], [/coton/g, 'cotton'], [/polyester recyclé/g, 'recycled polyester'], [/élasthanne/g, 'elastane'], [/viscose/g, 'viscose'], [/maille piquée/g, 'piqué knit'], [/maille single jersey|maille single/g, 'single jersey knit'], [/molleton gratté|molleton/g, 'fleece'], [/polaire/g, 'fleece'], [/Couleur(s)?/g, 'Colours'], [/Blanc/g, 'White'], [/gris chiné/gi, 'heather grey'], [/ et /g, ' and '], [/tissu/g, 'fabric'], [/doublure/g, 'lining']];
+const compEn = (c: string) => COMP_EN.reduce((s, [r, v]) => s.replace(r, v), c);
+export const productL = (lang: Lang, p: Product): Product => {
+  if (lang !== 'en' || !PRODUCTS_EN[p.slug]) return p;
+  const en = { ...p, ...PRODUCTS_EN[p.slug] };
+  return ROLY_INFO[p.slug]?.composition ? { ...en, composition: compEn(ROLY_INFO[p.slug].composition) } : en;
+};
 export const categoryL = (lang: Lang, c: Category): Category => (lang === 'en' && CATEGORIES_EN[c.slug] ? { ...c, ...CATEGORIES_EN[c.slug] } : c);
 export const categoryBySlug = (lang: Lang, slug: string) => { const c = getCategory(slug); return c && categoryL(lang, c); };
 export const sectorL = (lang: Lang, s: Sector): Sector => (lang === 'en' && SECTORS_EN[s.slug] ? { ...s, ...SECTORS_EN[s.slug] } : s);

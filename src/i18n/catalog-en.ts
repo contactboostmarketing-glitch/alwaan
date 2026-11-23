@@ -88,7 +88,7 @@ export const PRODUCTS_EN: Record<string, Pick<Product, 'name' | 'type' | 'compos
   'polo-estrella': { name: 'Estrella polo shirt', type: 'Long sleeves', composition: '100% cotton · 210 g/m²' },
   't-shirt-dogo': { name: 'Dogo t-shirt', type: 'Premium cotton crew neck', composition: '100% combed cotton · 180 g/m²' },
   't-shirt-atomic-150': { name: 'Atomic 150 t-shirt', type: 'Best value', composition: '100% cotton · 150 g/m²' },
-  't-shirt-fox': { name: 'Fox t-shirt', type: 'Organic heather cotton', composition: '85% organic cotton, 15% viscose · 160 g/m²' },
+  't-shirt-fox': { name: 'Fox t-shirt', type: 'Heather t-shirt', composition: '85% organic cotton, 15% viscose · 160 g/m²' },
   'chemise-moscu-homme': { name: 'Moscu shirt, men', type: 'Long sleeves', composition: '97% cotton, 3% elastane' },
   'chemise-moscu-femme': { name: 'Moscu shirt, women', type: 'Fitted cut', composition: '97% cotton, 3% elastane' },
   'tablier-benoit': { name: 'Benoit apron', type: 'Adjustable bib', composition: '65% polyester, 35% cotton · 210 g/m²' },

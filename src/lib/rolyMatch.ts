@@ -1,0 +1,19 @@
+// Correspondance entre une couleur du site et un coloris Roly : par le nom d'abord, puis par la teinte la plus proche.
+import { COLOR_NAMES } from './catalog';
+
+const NAMES: Record<string, string[]> = {
+  Blanc: ['BLANC'], Jaune: ['JAUNE'], Orange: ['ORANGE', 'ORANGE (FEU)'], Rouge: ['ROUGE', 'ROUGE/BLANC'], Bordeaux: ['GRENAT', 'GRENAT CHINÉ'],
+  Royal: ['BLEU ROYAL', 'BLEU ROYAL/BLANC'], Marine: ['MARINE', 'MARINE/BLANC', 'DENIM CHINÉ'], Turquoise: ['TURQUOISE', 'TURQUOISE CHINÉ'],
+  Vert: ['VERT BOUTEILLE', 'VERT KELLY', 'VERT BOUTEILLE CHINÉ'], 'Gris chiné': ['GRIS CHINÉ'], Noir: ['NOIR', 'NOIR/BLANC', 'NOIR CHINÉ'],
+  Sable: ['SABLE', 'SABLE FONCÉ'], 'Jaune fluo': ['MARINE/JAUNE FLUO'], 'Orange fluo': ['MARINE/ORANGE FLUO'],
+};
+const dist = (a: string, b?: string) => {
+  if (!b) return 1e9;
+  const x = parseInt(a.slice(1), 16), y = parseInt(b.replace('#', ''), 16);
+  return Math.abs((x >> 16) - (y >> 16)) + Math.abs(((x >> 8) & 255) - ((y >> 8) & 255)) + Math.abs((x & 255) - (y & 255));
+};
+export function rolyColor<T extends { name: string; hex?: string }>(colors: T[], siteHex: string): T | undefined {
+  if (!colors.length) return undefined;
+  for (const n of NAMES[COLOR_NAMES[siteHex]] || []) { const c = colors.find((x) => x.name.trim() === n); if (c) return c; }
+  return [...colors].sort((a, b) => dist(siteHex, a.hex) - dist(siteHex, b.hex))[0];
+}

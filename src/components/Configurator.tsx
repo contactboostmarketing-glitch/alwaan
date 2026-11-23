@@ -14,6 +14,8 @@ import { categoryL, colorName, productL, zonesL } from '@/i18n';
 import { snapshot, toDataUrl, uploadMockup } from '@/lib/mockup';
 import { uploadFile } from '@/lib/cutout';
 import { contrast, logoAverage, monochrome } from '@/lib/logoInk';
+import { rolyColor } from '@/lib/rolyMatch';
+import { ROLY_INFO } from '@/lib/rolyInfo';
 import { track } from '@/lib/track';
 import { deliveryDate, fmtDay } from '@/lib/delivery';
 import { ON_ORDER_DAYS, available, colorStocked, shortSizes } from '@/lib/stockTypes';
@@ -309,10 +311,7 @@ export function Configurator({ slug }: { slug: string }) {
   const [photo, setPhoto] = useState<string | null>(null);
   useEffect(() => { fetch(`/api/photos/${slug}`).then((r) => r.json()).then(setPhotos).catch(() => {}); }, [slug]);
   useEffect(() => { setPhoto(null); }, [cfg.color, cfg.logo, cfg.zones]);
-  const near = (a: string, b?: string) => { if (!b) return 1e9; const x = parseInt(a.slice(1), 16), y = parseInt(b.replace('#', ''), 16); return Math.abs((x >> 16) - (y >> 16)) + Math.abs(((x >> 8) & 255) - ((y >> 8) & 255)) + Math.abs((x & 255) - (y & 255)); };
-  const nameKey = (n?: string) => (n || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace('GRIS CHINE', 'GRIS VIGORE');
-  const byName = photos?.colors.find((c) => nameKey(c.name) === nameKey(COLOR_NAMES[cfg.color]));
-  const colorPhotos = byName ? byName.images : photos?.colors.length ? [...photos.colors].sort((a, b) => near(cfg.color, a.hex) - near(cfg.color, b.hex))[0].images : [];
+  const colorPhotos = photos ? rolyColor(photos.colors, cfg.color)?.images || [] : [];
   const thumbs = [...colorPhotos, ...(photos?.model || [])].slice(0, 6);
   const hasBack = zones.some((z) => z.view === 'back');
   const err = (at: 'logo' | 'zones' | 'qty' | 'bat') => (fieldErr?.at === at ? <p className="err small field-err" role="alert">{fieldErr.msg}</p> : null);
@@ -509,7 +508,7 @@ export function Configurator({ slug }: { slug: string }) {
         <Perks items={[['eye', t('Imprimé comme la maquette')], ['lock', t('Paiement sécurisé')], ['redo', t('Défaut refait')], ['truck', t('Expédié en 7 jours ouvrés')], ['home', t('Imprimé dans le Nord')]]} />
       </div>
       {added && !blank && <SameLogo current={p.category} logo={cfg.logo} />}
-      {sizeGuide && <SizeGuide sizes={sizesFor(p)} onClose={() => setSizeGuide(false)} />}
+      {sizeGuide && <SizeGuide sizes={sizesFor(p)} measures={ROLY_INFO[slug]?.measures} onClose={() => setSizeGuide(false)} />}
       {toast && !justAdded && <div className="toast" role="status">{toast}</div>}
       {justAdded && (() => { const ct = cartTotals(lines); return (
         <div className="minicart" role="status">
@@ -548,10 +547,11 @@ function SameLogo({ current, logo }: { current: string; logo?: string }) {
 
 /** Guide des tailles Roly (mesures du corps, tour de poitrine), ouvert par-dessus la fiche sans perdre la saisie (A02). */
 const CHEST: Record<string, string> = { XS: '87–90', S: '91–94', M: '95–98', L: '99–106', XL: '107–114', XXL: '115–122', '3XL': '123–130', '4XL': '131–138', '5XL': '139–146' };
-function SizeGuide({ sizes, onClose }: { sizes: string[]; onClose: () => void }) {
+function SizeGuide({ sizes, measures, onClose }: { sizes: string[]; measures?: Record<string, [string, string]>; onClose: () => void }) {
   const { t } = useT();
   useEffect(() => { const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose(); window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k); }, [onClose]);
-  const rows = sizes.filter((s) => CHEST[s]);
+  const rows = sizes.filter((s) => CHEST[s] || measures?.[s]);
+  const hasM = rows.some((s) => measures?.[s]);
   return (
     <div className="modal-bg" onClick={onClose}>
       <div className="modal" role="dialog" aria-modal="true" aria-label={t('Guide des tailles')} onClick={(e) => e.stopPropagation()}>
@@ -559,8 +559,9 @@ function SizeGuide({ sizes, onClose }: { sizes: string[]; onClose: () => void })
         <h2>{t('Guide des tailles')}</h2>
         {rows.length ? (<>
           <p className="muted small">{t('Mesurez votre tour de poitrine, à l\'horizontale, sous les bras, sans serrer. Ce sont des mesures du corps, pas du vêtement.')}</p>
-          <table className="size-tbl"><thead><tr><th>{t('Taille')}</th><th>{t('Tour de poitrine (cm)')}</th></tr></thead>
-            <tbody>{rows.map((s) => <tr key={s}><td>{s}</td><td>{CHEST[s]}</td></tr>)}</tbody></table>
+          <table className="size-tbl"><thead><tr><th>{t('Taille')}</th><th>{t('Tour de poitrine (cm)')}</th>{hasM && <><th>{t('Largeur à plat (cm)')}</th><th>{t('Longueur (cm)')}</th></>}</tr></thead>
+            <tbody>{rows.map((s) => <tr key={s}><td>{s}</td><td>{CHEST[s] || '–'}</td>{hasM && <><td>{measures?.[s]?.[0] || '–'}</td><td>{measures?.[s]?.[1] || '–'}</td></>}</tr>)}</tbody></table>
+          {hasM && <p className="muted small">{t('Largeur : d\'une aisselle à l\'autre, vêtement posé à plat (le tour du vêtement fait le double). Longueur : du haut de l\'épaule au bas.')}</p>}
           <p className="muted small">{t('Source : guide des tailles du fabricant Roly. La coupe varie légèrement selon le modèle : entre deux tailles, prenez la plus grande.')}</p>
         </>) : <p>{t('Taille unique, réglable : convient à toute l\'équipe.')}</p>}
       </div>

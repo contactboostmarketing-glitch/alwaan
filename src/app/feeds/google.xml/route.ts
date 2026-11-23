@@ -1,3 +1,5 @@
+import { ROLY_PHOTOS } from '@/lib/rolyPhotos';
+import { rolyColor } from '@/lib/rolyMatch';
 import { COLOR_NAMES, PRODUCTS, defaultZone, VAT, getCategory } from '@/lib/catalog';
 import { unitAt } from '@/lib/pricing';
 import { SITE_URL } from '@/lib/site';
@@ -20,13 +22,16 @@ export function GET() {
     for (const hex of p.colors) {
       const color = COLOR_NAMES[hex] || hex;
       const h = hex.slice(1);
+      // Vraie photo du vêtement (Roly) dans la couleur : Google Shopping préfère les photos aux dessins.
+      const rp = ROLY_PHOTOS[p.slug] ? rolyColor(ROLY_PHOTOS[p.slug].colors, hex) : undefined;
       items.push(`<item>
 <g:id>${esc(`${p.slug}-${h}`)}</g:id>
 <g:item_group_id>${esc(p.slug)}</g:item_group_id>
 <g:title>${esc(`${p.name} personnalisable à votre logo · ${color}`)}</g:title>
 <g:description>${esc(`${p.type}. ${p.composition}. Impression DTF de votre logo, maquette en direct, dès 1 pièce. Marquage -40 % dès 30 pièces. ${c.intro}`)}</g:description>
 <g:link>${SITE_URL}/produits/${p.slug}?couleur=${h}</g:link>
-<g:image_link>${esc(p.photos?.[hex] || `${SITE_URL}/images/produits/${p.slug}-${h}.png`)}</g:image_link>
+<g:image_link>${esc(rp?.images[0] || p.photos?.[hex] || `${SITE_URL}/images/produits/${p.slug}-${h}.png`)}</g:image_link>
+${(rp?.images.slice(1, 6) || []).map((u) => `<g:additional_image_link>${esc(u)}</g:additional_image_link>`).join('\n')}
 <g:availability>in_stock</g:availability>
 <g:price>${money(price)}</g:price>
 <g:brand>alwaan</g:brand>
