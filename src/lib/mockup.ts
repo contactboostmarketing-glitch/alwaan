@@ -14,6 +14,11 @@ export async function snapshot(svgs: SVGSVGElement[], caption: string): Promise<
     const clone = svg.cloneNode(true) as SVGSVGElement;
     clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
     clone.setAttribute('width', String(W)); clone.setAttribute('height', String(H));
+    // Photo du vêtement (lien externe) : intégrée en data URL, sinon elle n'apparaît pas dans l'image figée.
+    for (const im of Array.from(clone.querySelectorAll('image'))) {
+      const href = im.getAttribute('href') || '';
+      if (/^https?:/.test(href)) { const data = await toDataUrl(href); if (data) im.setAttribute('href', data); }
+    }
     const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml' }));
     const img = new Image();
     await new Promise((ok, ko) => { img.onload = ok; img.onerror = ko; img.src = url; });

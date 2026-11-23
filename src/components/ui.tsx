@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { defaultColor, fromPrice, type Product } from '@/lib/catalog';
 import { colorName, href, productL, tr, type Lang } from '@/i18n';
 import { SITE_URL } from '@/lib/site';
+import { ROLY_WORN } from '@/lib/rolyViews';
 import { Garment } from './Garment';
 import { Price } from './Price';
 import { I } from './Icons';
@@ -48,7 +49,10 @@ export function ProductCard({ p: base, lang = 'fr', blank = false }: { p: Produc
   return (
     <Link className="pcard" href={`${href(lang, `/produits/${p.slug}`)}${blank ? '?vierge=1' : ''}`}>
       {p.bestseller && <span className="flag">Best-seller</span>}
-      <div className="img"><Garment slug={p.slug} color={defaultColor(p)} /></div>
+      {/* Photo portée (mannequin, Roly) quand elle existe : plus parlante qu'une vue à plat. */}
+      <div className="img">{ROLY_WORN[p.slug]?.[0] && !blank
+        ? <img src={ROLY_WORN[p.slug][0]} alt={`${p.name} porté`} loading="lazy" decoding="async" />
+        : <Garment slug={p.slug} color={defaultColor(p)} />}</div>
       <strong>{p.name}</strong>
       <small>{p.type}</small>
       <span className="price">{tr(lang, 'dès')} <Price ht={blank ? base.price : fromPrice(p)} />{!blank && <small> {tr(lang, 'dès 30 pièces')}</small>}</span>

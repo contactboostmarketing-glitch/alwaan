@@ -1,4 +1,5 @@
 import { fontCss, getProduct, zonesFor, type Shape } from '@/lib/catalog';
+import { ROLY_VIEWS } from '@/lib/rolyViews';
 
 const PATHS: Record<Shape, string> = {
   tee: 'M70 40 L112 25 Q130 45 148 25 L190 40 L235 80 L210 115 L185 100 L185 230 L75 230 L75 100 L50 115 L25 80 Z',
@@ -36,7 +37,10 @@ type Props = {
   height?: number;
 };
 
-/** Dessin vectoriel du vêtement avec les marquages. À remplacer par les photos détourées de chaque coloris. */
+/**
+ * Vêtement avec les marquages : vraie photo à plat Roly (face / dos) dans la couleur choisie quand elle existe,
+ * sinon dessin vectoriel. Sur photo, le logo est mis à l'échelle réelle (≈ 3,4 unités par cm, d'après les mesures Roly).
+ */
 export function Garment({ slug, color, view = 'front', zones = [], logo, text, text2, textFont, textColor, zoneText, className, width, height }: Props) {
   const prod = getProduct(slug);
   if (!prod) return null;
@@ -44,9 +48,12 @@ export function Garment({ slug, color, view = 'front', zones = [], logo, text, t
   const shade = isDark(color) ? 'rgba(255,255,255,.18)' : 'rgba(0,0,0,.12)';
   const ink = isDark(color) ? '#ffffff' : '#14213f';
   const marks = zonesFor(prod).filter((z) => zones.includes(z.id) && z.view === view);
+  const v = ROLY_VIEWS[slug]?.[color];
+  const photo = view === 'back' ? v?.b : v?.f;
 
   return (
     <svg viewBox="0 0 260 250" width={width} height={height} className={className} role="img" aria-label={`${prod.name}, aperçu`}>
+      {photo ? <image href={photo} x="0" y="0" width="260" height="250" preserveAspectRatio="xMidYMid meet" crossOrigin="anonymous" /> : (<>
       <path d={PATHS[s]} fill={color} stroke="rgba(20,33,63,.35)" strokeWidth="2" strokeLinejoin="round" />
       {(s === 'hv' || s === 'hvjacket') && (<><rect x="68" y="160" width="124" height="10" fill="#c9ccd2" /><rect x="68" y="188" width="124" height="10" fill="#c9ccd2" /></>)}
       {s === 'cap' && <path d="M40 150 Q130 175 225 150 Q240 158 225 166 Q130 190 40 166 Z" fill={color} stroke="rgba(0,0,0,.3)" strokeWidth="2" />}
@@ -58,8 +65,11 @@ export function Garment({ slug, color, view = 'front', zones = [], logo, text, t
       {(s === 'zipjacket' || s === 'jacket') && view === 'front' && <path d="M130 50 L130 230" stroke={shade} strokeWidth="2.5" />}
       {(s === 'sweat' || s === 'hoodie' || s === 'zipjacket') && <path d="M75 220 L185 220 M42 196 L64 198 M196 198 L218 196" stroke={shade} strokeWidth="3" fill="none" />}
       {s === 'jacket' && <path d="M110 22 L130 46 L150 22" stroke={shade} strokeWidth="3" fill="none" />}
+      </>)}
       {marks.map((z) => {
-        const cx = z.x * 2.6, cy = z.y * 2.5, w = z.w * 2.6;
+        // Photo : taille réelle (largeur du gabarit en cm × 3,4) ; la nuque est plus haute sur la photo.
+        const cmW = Number(z.size.match(/[\d.,]+/)?.[0].replace(',', '.') || 0);
+        const cx = z.x * 2.6, cy = (photo && z.id === 'neck' ? 15 : z.y) * 2.5, w = photo && cmW ? cmW * 3.4 : z.w * 2.6;
         const zt = zoneText?.[z.id];
         if (zt) return (
           <text key={z.id} x={cx} y={cy + w * 0.06} textAnchor="middle" fontFamily={fontCss(textFont)} fontWeight={700} fontSize={Math.max(7, Math.min(w * 0.22, (w * 1.6) / Math.max(4, zt.length)))} fill={textColor || ink}>{zt}</text>
