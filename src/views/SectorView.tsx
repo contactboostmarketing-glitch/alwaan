@@ -31,7 +31,7 @@ export function SectorView({ lang, slug }: { lang: Lang; slug: string }) {
           const c = categoryBySlug(lang, ck)!;
           return (
             <div key={ck}>
-              <div className="sec-head mt"><h2>{c.name}</h2><Link className="link" href={href(lang, `/vetements/${ck}`)}>{lang === 'en' ? `All ${c.name.toLowerCase()}` : `Tous les ${c.name.toLowerCase()}`}</Link></div>
+              <div className="sec-head mt"><h2>{c.name}</h2><Link className="link" href={href(lang, `/vetements/${ck}`)}>{lang === 'en' ? `All ${c.name.toLowerCase()}` : `Toute la gamme ${c.name.toLowerCase()}`}</Link></div>
               <div className="grid">{productsIn(ck).map((p) => <ProductCard key={p.slug} p={p} lang={lang} />)}</div>
             </div>
           );

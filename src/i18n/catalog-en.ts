@@ -5,11 +5,12 @@ export const COLOR_EN: Record<string, string> = {
   '#ffffff': 'White', '#f2d33b': 'Yellow', '#e8892b': 'Orange', '#c8302f': 'Red', '#8b1e2d': 'Burgundy',
   '#d43f8d': 'Fuchsia', '#3a5bd0': 'Royal blue', '#1d2a5c': 'Navy', '#2fb3d6': 'Turquoise', '#2f8a4d': 'Green',
   '#9aa0a6': 'Heather grey', '#151a2d': 'Black', '#b8a98d': 'Sand', '#d7f22c': 'Fluo yellow', '#ff7a1a': 'Fluo orange',
+  '#55613f': 'Khaki', '#3d4046': 'Anthracite', '#d6c6a8': 'Beige',
 };
 
 export const ZONE_EN: Record<string, string> = {
   heart: 'Left chest', antiheart: 'Right chest', chest: 'Large front', 'shoulder-right': 'Right sleeve',
-  'shoulder-left': 'Left sleeve', back: 'Back', neck: 'Nape', face: 'Front', pocket: 'Pocket',
+  'shoulder-left': 'Left sleeve', back: 'Back', neck: 'Nape', face: 'Front', cuff: 'Cuff', pocket: 'Pocket',
 };
 
 export const GENERAL_FAQ_EN: [string, string][] = [
@@ -52,13 +53,15 @@ export const CATEGORIES_EN: Record<string, CatEn> = {
       'The apron is often the most visible part of a restaurant, bakery, bar or café outfit. It protects clothes and carries your logo at the customer’s eye level.',
       'Bib aprons suit the kitchen and counter, waist aprons the dining room, denim aprons trendier venues.',
       'All our aprons are one size with adjustable ties: one reference for the whole team.'] },
-  'casquettes-personnalisees': { name: 'Caps', singular: 'cap', title: 'Custom caps with your logo',
-    intro: '6-panel, trucker and technical caps with your logo, DTF printed. Adjustable, ideal in the kitchen, at trade shows and outdoors.',
-    faq: [['Are the caps adjustable?', 'Yes, all our caps have an adjustable strap: one size fits the whole team.']],
+  'casquettes-personnalisees': { name: 'Caps & beanies', singular: 'cap', title: 'Custom caps and beanies with your logo',
+    intro: '6-panel, trucker and technical caps, plus a cuffed beanie, with your logo, DTF printed. One size, ideal in the kitchen, at trade shows, on site and outdoors.',
+    faq: [['Are the caps adjustable?', 'Yes, all our caps have an adjustable strap: one size fits the whole team.'],
+      ['Where does the logo go on a beanie?', 'On the front of the cuff, up to 7 × 4 cm. The Rosmal beanie is one size, double layer, in recycled polyester.']],
     details: [
       'A custom cap is a simple, affordable visibility item: in the kitchen, for take-away, at a trade show, on a building site or an outdoor event.',
       'All our caps are adjustable: one size fits everyone, which makes ordering easy.',
-      'The logo goes on the front, the most visible area. Light technical caps suit sport and summer, cotton caps everyday wear.'] },
+      'The logo goes on the front, the most visible area. Light technical caps suit sport and summer, cotton caps everyday wear.',
+      'For winter, the Rosmal beanie (double layer, recycled polyester) takes your logo on the cuff: ideal for outdoor crews, building sites and end-of-year gifts.'] },
   'sweats-personnalises': { name: 'Sweatshirts', singular: 'sweatshirt', title: 'Custom sweatshirts and hoodies',
     intro: 'Crew-neck sweatshirts, hoodies and zip hoodies with your logo, DTF printed. Warm and comfortable for winter, for teams, clubs or gifts.',
     faq: [['Can you print on the hood or pocket?', 'We print on the chest, left chest, back, shoulders and large front (except zip hoodies, because of the zip). The hood and pocket are not printed.']],
@@ -98,6 +101,7 @@ export const PRODUCTS_EN: Record<string, Pick<Product, 'name' | 'type' | 'compos
   'casquette-mercury': { name: 'Mercury cap', type: 'Technical 6-panel', composition: '90% polyester, 10% elastane' },
   'casquette-wizer': { name: 'Wizer cap', type: 'Light microfibre', composition: '100% polyester' },
   'casquette-barny': { name: 'Barny cap', type: 'Mesh trucker', composition: 'Polyester, mesh back' },
+  'bonnet-rosmal': { name: 'Rosmal beanie', type: 'Cuffed beanie, double layer', composition: 'Recycled polyester (RPET), 230 g/m², double layer' },
   'gilet-hv-beta': { name: 'Beta hi-vis vest', type: 'Multi-pocket, EN ISO 20471 class 2', composition: '100% polyester' },
   'veste-hv-persei': { name: 'Persei hi-vis jacket', type: 'Reversible, lined, class 3', composition: '100% polyester' },
   'sweat-clasica': { name: 'Clasica sweatshirt', type: 'Crew neck sweatshirt', composition: 'Cotton and polyester fleece' },

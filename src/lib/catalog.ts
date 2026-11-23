@@ -43,7 +43,7 @@ export const COLOR_NAMES: Record<string, string> = {
   '#ffffff': 'Blanc', '#f2d33b': 'Jaune', '#e8892b': 'Orange', '#c8302f': 'Rouge', '#8b1e2d': 'Bordeaux',
   '#d43f8d': 'Fuchsia', '#3a5bd0': 'Royal', '#1d2a5c': 'Marine', '#2fb3d6': 'Turquoise', '#2f8a4d': 'Vert',
   '#9aa0a6': 'Gris chiné', '#151a2d': 'Noir', '#b8a98d': 'Sable', '#d7f22c': 'Jaune fluo', '#ff7a1a': 'Orange fluo',
-  '#55613f': 'Kaki', '#3d4046': 'Anthracite',
+  '#55613f': 'Kaki', '#3d4046': 'Anthracite', '#d6c6a8': 'Beige',
 };
 const ALL = ['#ffffff', '#f2d33b', '#e8892b', '#c8302f', '#8b1e2d', '#d43f8d', '#3a5bd0', '#1d2a5c', '#2fb3d6', '#2f8a4d', '#9aa0a6', '#151a2d'];
 
@@ -70,9 +70,10 @@ export const CATEGORIES: Category[] = [
   { slug: 'tabliers-personnalises', name: 'Tabliers', singular: 'tablier', shape: 'apron', title: 'Tabliers personnalisés pour restaurants',
     intro: 'Tabliers bavette, mi-longs et denim à votre logo pour restaurants, bars, boulangeries et cafés.',
     faq: [['Quelle taille de logo sur un tablier ?', 'Entre 8 et 12 cm de large sur la bavette pour rester lisible de loin.']] },
-  { slug: 'casquettes-personnalisees', name: 'Casquettes', singular: 'casquette', shape: 'cap', title: 'Casquettes personnalisées à votre logo',
-    intro: 'Casquettes 6 pans, trucker et techniques à votre logo, imprimées en DTF. Taille réglable, idéales en cuisine, sur les salons et en extérieur.',
-    faq: [['Les casquettes sont-elles réglables ?', 'Oui, tous nos modèles ont une fermeture réglable : une seule taille convient à toute l\'équipe.']] },
+  { slug: 'casquettes-personnalisees', name: 'Casquettes et bonnets', singular: 'casquette', shape: 'cap', title: 'Casquettes et bonnets personnalisés à votre logo',
+    intro: 'Casquettes 6 pans, trucker et techniques, et bonnet à revers, à votre logo imprimé en DTF. Taille unique, idéals en cuisine, sur les salons, les chantiers et en extérieur.',
+    faq: [['Les casquettes sont-elles réglables ?', 'Oui, tous nos modèles ont une fermeture réglable : une seule taille convient à toute l\'équipe.'],
+      ['Où se place le logo sur un bonnet ?', 'Sur le revers, à l\'avant, jusqu\'à 7 × 4 cm. Le bonnet Rosmal est en taille unique, double couche, en polyester recyclé.']] },
   { slug: 'sweats-personnalises', name: 'Sweats', singular: 'sweat', shape: 'hoodie', title: 'Sweats et sweats à capuche personnalisés',
     intro: 'Sweats col rond, sweats à capuche et sweats zippés à votre logo, imprimés en DTF. Chauds et confortables pour l\'hiver, en équipe, en club ou en cadeau.',
     faq: [['Peut-on imprimer sur la capuche ou la poche ?', 'Nous imprimons au cœur, à l\'anti-cœur, au dos, sur les épaules et au grand devant (sauf sur les sweats zippés, à cause du zip). La capuche et la poche ne sont pas imprimées.']] },
@@ -112,7 +113,8 @@ const PRICE_OVERRIDE: Record<string, number> = { 'parka-hv-epsilon': 50 };
  */
 export const CAP_MARK = 1.5;
 const capTop = (cost: number) => Math.round((6 * cost) / 4.2 * 100) / 100;
-export const CAP_TOP: Record<string, number> = { 'casquette-mercury': 6, 'casquette-wizer': capTop(5.1), 'casquette-barny': capTop(3.9) };
+// Bonnet Rosmal : proportionnel à la Mercury sur le prix d'achat réel (1,29 € contre 1,12 €) → 6,90 € puis 4,03 € à 100 pièces.
+export const CAP_TOP: Record<string, number> = { 'casquette-mercury': 6, 'casquette-wizer': capTop(5.1), 'casquette-barny': capTop(3.9), 'bonnet-rosmal': 6.9 };
 /** [pièces minimum, prix tout compris / prix à l'unité] */
 export const CAP_LADDER: [number, number][] = [[1, 1], [10, 5.2 / 6], [30, 4.5 / 6], [50, 4 / 6], [100, 3.5 / 6]];
 export const capPrice = (slug: string, q: number) => {
@@ -122,7 +124,7 @@ export const capPrice = (slug: string, q: number) => {
 };
 
 /** Référence du modèle chez Roly (photos, stock, tarifs). */
-export const ROLY_MODEL: Record<string, string> = {"polo-pegaso": "6609", "polo-montreal": "6629", "polo-estrella": "6635", "t-shirt-dogo": "6502", "t-shirt-atomic-150": "6424", "t-shirt-fox": "6660", "chemise-moscu-homme": "5506", "chemise-moscu-femme": "5505", "tablier-benoit": "9125", "tablier-mini": "9124", "tablier-batali": "9126", "casquette-mercury": "GO7020", "casquette-wizer": "CP7048", "casquette-barny": "GO1283", "parka-hv-epsilon": "HV9304", "gilet-hv-beta": "9323", "veste-hv-persei": "9313", "sweat-clasica": "1070", "sweat-capuche-urban": "1067", "sweat-zippe-montblanc": "6421", "polaire-himalaya": "1095", "softshell-nebraska": "6436", "t-shirt-kutta": "9327", "gilet-hv-polux": "9311", "t-shirt-hv-delta": "9310", "polo-hv-polaris": "9302", "softshell-antartida": "6432", "softshell-antartida-femme": "6433", "softshell-nebraska-femme": "6437", "softshell-rudolph": "6435", "polaire-luciane": "1195", "gilet-nevada": "1199", "gilet-quebec": "6438", "gilet-oslo-femme": "5093", "doudoune-finland": "5094", "doudoune-finland-femme": "5095", "doudoune-norway": "5090", "doudoune-norway-femme": "5091", "veste-makalu": "5079", "veste-oslo": "5092"};
+export const ROLY_MODEL: Record<string, string> = {"polo-pegaso": "6609", "polo-montreal": "6629", "polo-estrella": "6635", "t-shirt-dogo": "6502", "t-shirt-atomic-150": "6424", "t-shirt-fox": "6660", "chemise-moscu-homme": "5506", "chemise-moscu-femme": "5505", "tablier-benoit": "9125", "tablier-mini": "9124", "tablier-batali": "9126", "casquette-mercury": "GO7020", "casquette-wizer": "CP7048", "casquette-barny": "GO1283", "parka-hv-epsilon": "HV9304", "gilet-hv-beta": "9323", "veste-hv-persei": "9313", "sweat-clasica": "1070", "sweat-capuche-urban": "1067", "sweat-zippe-montblanc": "6421", "polaire-himalaya": "1095", "softshell-nebraska": "6436", "t-shirt-kutta": "9327", "gilet-hv-polux": "9311", "t-shirt-hv-delta": "9310", "polo-hv-polaris": "9302", "softshell-antartida": "6432", "softshell-antartida-femme": "6433", "softshell-nebraska-femme": "6437", "softshell-rudolph": "6435", "polaire-luciane": "1195", "gilet-nevada": "1199", "gilet-quebec": "6438", "gilet-oslo-femme": "5093", "doudoune-finland": "5094", "doudoune-finland-femme": "5095", "doudoune-norway": "5090", "doudoune-norway-femme": "5091", "veste-makalu": "5079", "veste-oslo": "5092", "bonnet-rosmal": "GR1631"};
 
 export const PRODUCTS: Product[] = [
   p('polo-pegaso', 'polos-personnalises', 'Polo Pegaso', 'Polo piqué premium', 'S–5XL', 4.8, 'polo', ALL.filter((c) => c !== '#d43f8d' && c !== '#9aa0a6'), '65 % polyester, 35 % coton · 210 g/m²', true),
@@ -140,6 +142,7 @@ export const PRODUCTS: Product[] = [
   p('casquette-mercury', 'casquettes-personnalisees', 'Casquette Mercury', '6 pans technique', 'TU', 1.12, 'cap', ['#151a2d', '#ffffff', '#3a5bd0', '#d7f22c'], '90 % polyester, 10 % élasthanne', true),
   p('casquette-wizer', 'casquettes-personnalisees', 'Visière Wizer', 'Visière sport, bandeau éponge', 'TU', 5.1, 'cap', ['#ffffff', '#151a2d', '#3a5bd0', '#e8892b', '#c8302f'], '100 % polyester'),
   p('casquette-barny', 'casquettes-personnalisees', 'Casquette Barny', 'Trucker filet', 'TU', 3.9, 'cap', ['#151a2d', '#c8302f', '#f2d33b', '#3a5bd0', '#2f8a4d'], 'Polyester, filet arrière'),
+  p('bonnet-rosmal', 'casquettes-personnalisees', 'Bonnet Rosmal', 'Bonnet à revers, double couche', 'TU', 1.29, 'cap', ['#151a2d', '#1d2a5c', '#9aa0a6', '#d6c6a8'], 'Polyester recyclé (RPET), 230 g/m², double couche'),
   p('gilet-hv-beta', 'haute-visibilite-personnalisee', 'Gilet HV Beta', 'Multipoches, EN ISO 20471 classe 2', 'S–3XL', 11.5, 'hv', ['#d7f22c', '#ff7a1a'], '100 % polyester', true),
   p('gilet-hv-polux', 'haute-visibilite-personnalisee', 'Gilet HV Polux', 'Gilet haute visibilité, porte-badge', 'M/L–XL/2XL', 3.1, 'hv', ['#d7f22c', '#ff7a1a'], '100 % polyester · 135 g/m²'),
   p('t-shirt-hv-delta', 'haute-visibilite-personnalisee', 'T-shirt HV Delta', 'T-shirt haute visibilité respirant', 'S–4XL', 4.88, 'tee', ['#d7f22c', '#ff7a1a'], '100 % polyester · 130 g/m²'),
@@ -265,7 +268,8 @@ const DETAILS: Record<string, string[]> = {
  "casquettes-personnalisees": [
   "La casquette personnalisée est un support de visibilité simple et économique : en cuisine, en vente à emporter, sur un salon, un chantier ou un événement en extérieur.",
   "Toutes nos casquettes sont réglables : une seule taille convient à toute l'équipe, ce qui simplifie la commande.",
-  "Le logo se place sur l'avant, la zone la plus visible. Les modèles techniques légers conviennent au sport et à l'été, les modèles en coton à un usage quotidien."
+  "Le logo se place sur l'avant, la zone la plus visible. Les modèles techniques légers conviennent au sport et à l'été, les modèles en coton à un usage quotidien.",
+  "Pour l'hiver, le bonnet Rosmal (double couche, polyester recyclé) reçoit votre logo sur le revers : idéal pour les équipes en extérieur, les chantiers et les cadeaux de fin d'année."
  ],
  "haute-visibilite-personnalisee": [
   "Les vêtements haute visibilité protègent les personnes exposées à la circulation ou aux engins : BTP, voirie, logistique, entrepôts, sécurité. Ils doivent être conformes à la norme EN ISO 20471.",
@@ -282,7 +286,8 @@ export const TEXT_COLORS = ['#ffffff', '#14213f', '#000000', '#c8302f', '#d4a017
 export const fontCss = (id?: string) => (TEXT_FONTS.find(([k]) => k === id) ?? TEXT_FONTS[0])[1];
 export const getCategory = (slug: string) => CATEGORIES.find((x) => x.slug === slug);
 /** « Polos personnalisés », « Casquettes personnalisées », « Haute visibilité personnalisée » : accord tiré du slug. */
-export const customName = (c: { slug: string; name: string }) => `${c.name} ${c.slug.endsWith('-personnalisees') ? 'personnalisées' : c.slug.endsWith('-personnalisee') ? 'personnalisée' : 'personnalisés'}`;
+// « Casquettes et bonnets » : masculin pluriel dès qu'un nom masculin est dans la liste.
+export const customName = (c: { slug: string; name: string }) => `${c.name} ${c.slug.endsWith('-personnalisees') && !/bonnets/i.test(c.name) ? 'personnalisées' : c.slug.endsWith('-personnalisee') ? 'personnalisée' : 'personnalisés'}`;
 export const getSector = (slug: string) => SECTORS.find((x) => x.slug === slug);
 export const productsIn = (cat: string) => PRODUCTS.filter((x) => x.category === cat);
 export const defaultColor = (prod: Product) => (prod.colors.includes('#1d2a5c') ? '#1d2a5c' : prod.colors[0]);
@@ -293,7 +298,8 @@ export function zonesFor(prod: Product): Zone[] {
   const shoulders = ['shoulder-right', 'shoulder-left'];
   let list: Zone[];
   const notApron = ZONES.filter((z) => z.id !== 'pocket');
-  if (prod.shape === 'cap') list = [{ ...ZONES[0], name: 'Face', x: 50, y: 45, w: 30, size: '6 × 6 cm', ...(CAP_TOP[prod.slug] ? { price: CAP_MARK } : {}) }]; // casquette (et bonnet) : 6 × 6 cm
+  // Casquette : face 6 × 6 cm ; bonnet : revers avant, 7 × 4 cm (le revers fait environ 5,5 cm de haut).
+  if (prod.shape === 'cap') list = [{ ...ZONES[0], ...(prod.slug.startsWith('bonnet') ? { name: 'Revers', y: 72, size: '7 × 4 cm' } : { name: 'Face', y: 45, size: '6 × 6 cm' }), x: 50, w: 30, ...(CAP_TOP[prod.slug] ? { price: CAP_MARK } : {}) }];
   // Tablier : poche ou grand devant, l'un ou l'autre (la poche en premier : c'est le prix « dès »).
   else if (prod.shape === 'apron') list = ['pocket', 'chest'].map((id) => ZONES.find((z) => z.id === id)!);
   else if (prod.shape === 'hv') list = notApron.filter((z) => !shoulders.includes(z.id)); // gilet sans manches
@@ -340,4 +346,6 @@ export const COMPLETE_THE_LOOK: Record<string, string[]> = {
   'tabliers-personnalises': ['polo-pegaso', 'casquette-mercury'],
   'casquettes-personnalisees': ['t-shirt-dogo', 'polo-pegaso'],
   'haute-visibilite-personnalisee': ['t-shirt-dogo', 'casquette-mercury'],
+  'vestes-personnalisees': ['bonnet-rosmal', 'sweat-capuche-urban'],
+  'sweats-personnalises': ['bonnet-rosmal', 'casquette-mercury'],
 };

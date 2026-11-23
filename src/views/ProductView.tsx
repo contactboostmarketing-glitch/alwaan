@@ -76,7 +76,7 @@ export async function ProductView({ lang, slug }: { lang: Lang; slug: string }) 
           <h2 className="mt">{t('Questions')}</h2>
           <Faq items={[...c.faq, generalFaq(lang, GENERAL_FAQ)[3]]} />
           <LinkChips title={t('Voir aussi')} links={[
-            [lang === 'en' ? `All ${c.name.toLowerCase()}` : `Tous les ${c.name.toLowerCase()}`, href(lang, `/vetements/${c.slug}`)],
+            [lang === 'en' ? `All ${c.name.toLowerCase()}` : `Toute la gamme ${c.name.toLowerCase()}`, href(lang, `/vetements/${c.slug}`)],
             ...SECTORS.filter((s) => s.categories.includes(c.slug)).map((s0): [string, string] => { const s = sectorL(lang, s0); return [lang === 'en' ? `${s.name} uniforms` : `Tenues ${s.name.toLowerCase()}`, href(lang, `/metiers/${s.slug}`)]; }),
             ...CATEGORIES.filter((o) => o.slug !== c.slug).slice(0, 3).map((o): [string, string] => { const x = categoryL(lang, o); return [lang === 'en' ? `Custom ${x.name.toLowerCase()}` : customName(x), href(lang, `/vetements/${o.slug}`)]; }),
           ]} />

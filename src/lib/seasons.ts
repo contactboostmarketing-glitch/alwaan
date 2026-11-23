@@ -38,7 +38,7 @@ export const SEASONS: Season[] = [
   { id: 'noel', from: [11, 1], to: [12, 25], icon: 'tree', accent: '#c8302f', soft: '#fdecec', deadline: [12, 24],
     fr: { kicker: 'Noël', title: 'Tenues de fêtes et cadeaux d\'équipe à votre logo', text: 'Marchés de Noël, service des fêtes, cadeaux pour vos salariés et clients.', cta: 'Préparer les fêtes' },
     en: { kicker: 'Christmas', title: 'Festive uniforms and team gifts with your logo', text: 'Christmas markets, holiday service, gifts for your staff and clients.', cta: 'Get ready for the holidays' },
-    featured: ['t-shirt-fox', 'casquette-mercury', 'tablier-batali', 'polo-pegaso'], categories: ['sweats-personnalises', 't-shirts-personnalises', 'casquettes-personnalisees', 'tabliers-personnalises'] },
+    featured: ['bonnet-rosmal', 'casquette-mercury', 'tablier-batali', 'polo-pegaso'], categories: ['sweats-personnalises', 't-shirts-personnalises', 'casquettes-personnalisees', 'tabliers-personnalises'] },
 ];
 
 const md = (d: Date) => (d.getMonth() + 1) * 100 + d.getDate();

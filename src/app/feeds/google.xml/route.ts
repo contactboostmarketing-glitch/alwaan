@@ -52,7 +52,7 @@ ${(rp?.images.slice(1, 6) || []).map((u) => `<g:additional_image_link>${esc(u)}<
 <g:custom_label_0>${esc(c.name)}</g:custom_label_0>
 <g:return_policy_label>personnalise</g:return_policy_label>
 ${p.bestseller ? '<g:custom_label_1>best-seller</g:custom_label_1>\n' : ''}<g:custom_label_2>${MARGIN[p.category] || 'moyenne'}</g:custom_label_2>
-<g:custom_label_3>${SEASON[p.category] || 'toute-annee'}</g:custom_label_3>
+<g:custom_label_3>${p.slug.startsWith('bonnet') ? 'hiver' : SEASON[p.category] || 'toute-annee'}</g:custom_label_3>
 <g:custom_label_4>${TARGET[p.category] || 'pro'}</g:custom_label_4>
 </item>`);
     }

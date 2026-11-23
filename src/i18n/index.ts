@@ -45,4 +45,4 @@ export const sectorL = (lang: Lang, s: Sector): Sector => (lang === 'en' && SECT
 export const sectorBySlug = (lang: Lang, slug: string) => { const s = getSector(slug); return s && sectorL(lang, s); };
 export const generalFaq = (lang: Lang, fr: [string, string][]) => (lang === 'en' ? GENERAL_FAQ_EN : fr);
 /** Zones d'un vêtement avec leur nom dans la langue. */
-export const zonesL = (lang: Lang, p: Product): Zone[] => zonesFor(p).map((z) => (lang === 'en' ? { ...z, name: p.shape === 'cap' && z.id === 'heart' ? ZONE_EN.face : ZONE_EN[z.id] || z.name } : z));
+export const zonesL = (lang: Lang, p: Product): Zone[] => zonesFor(p).map((z) => (lang === 'en' ? { ...z, name: p.shape === 'cap' && z.id === 'heart' ? (p.slug.startsWith('bonnet') ? ZONE_EN.cuff : ZONE_EN.face) : ZONE_EN[z.id] || z.name } : z));

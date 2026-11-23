@@ -44,6 +44,7 @@ type Props = {
  */
 const CAP_PHOTO: Record<string, { k: number; y: number; x?: number }> = {
   'casquette-mercury': { k: 10, y: 92 }, 'casquette-barny': { k: 8, y: 118 }, 'casquette-wizer': { k: 5, y: 146 },
+  'bonnet-rosmal': { k: 10, y: 188 }, // revers : ≈ 24 px/cm sur la photo 600 px, centre du revers à 452 px
 };
 
 export function Garment({ slug, color, view = 'front', zones = [], logo, text, text2, textFont, textColor, zoneText, className, width, height }: Props) {
