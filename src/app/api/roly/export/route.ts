@@ -13,7 +13,10 @@ export async function GET(req: Request) {
   const out: Record<string, unknown> = {};
   for (const [slug, model] of Object.entries(ROLY_MODEL)) {
     try {
-      const items = await rolyCatalog([model]);
+      // Identifiant numérique (6502) ou code complet (GO7020) : on essaie les deux formes.
+      let items = await rolyCatalog([model]);
+      if (!items.length && /^[A-Z]{2}\d+$/.test(model)) items = await rolyCatalog([model.slice(2)]);
+      if (!items.length && /^\d+$/.test(model)) items = await rolyCatalog([model]);
       const colors = new Map<string, { code: string; name: string; hex?: string; images: string[] }>();
       const sizes = new Map<string, string>();
       const modelImgs = new Set<string>();

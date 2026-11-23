@@ -101,7 +101,7 @@ const p = (slug: string, category: string, name: string, type: string, sizes: st
   ({ slug, category, name, type, sizes, cost, price: sellPrice(cost), shape, colors, composition, bestseller });
 
 /** Référence du modèle chez Roly (photos, stock, tarifs). */
-export const ROLY_MODEL: Record<string, string> = {"polo-pegaso": "6609", "polo-montreal": "6629", "polo-estrella": "6635", "t-shirt-dogo": "6502", "t-shirt-atomic-150": "6424", "t-shirt-fox": "6660", "chemise-moscu-homme": "5506", "chemise-moscu-femme": "5505", "tablier-benoit": "9125", "tablier-mini": "9124", "tablier-batali": "9126", "casquette-mercury": "7020", "gilet-hv-beta": "9323", "veste-hv-persei": "9313", "sweat-clasica": "1070", "sweat-capuche-urban": "1067", "sweat-zippe-montblanc": "6421", "polaire-himalaya": "1095", "softshell-nebraska": "6436", "veste-oslo": "5092"};
+export const ROLY_MODEL: Record<string, string> = {"polo-pegaso": "6609", "polo-montreal": "6629", "polo-estrella": "6635", "t-shirt-dogo": "6502", "t-shirt-atomic-150": "6424", "t-shirt-fox": "6660", "chemise-moscu-homme": "5506", "chemise-moscu-femme": "5505", "tablier-benoit": "9125", "tablier-mini": "9124", "tablier-batali": "9126", "casquette-mercury": "GO7020", "casquette-wizer": "CP7048", "casquette-barny": "GO1283", "parka-hv-epsilon": "HV9304", "gilet-hv-beta": "9323", "veste-hv-persei": "9313", "sweat-clasica": "1070", "sweat-capuche-urban": "1067", "sweat-zippe-montblanc": "6421", "polaire-himalaya": "1095", "softshell-nebraska": "6436", "veste-oslo": "5092"};
 
 export const PRODUCTS: Product[] = [
   p('polo-pegaso', 'polos-personnalises', 'Polo Pegaso', 'Polo piqué premium', 'S–5XL', 4.8, 'polo', ALL.filter((c) => c !== '#d43f8d' && c !== '#9aa0a6'), '65 % polyester, 35 % coton · 210 g/m²', true),
