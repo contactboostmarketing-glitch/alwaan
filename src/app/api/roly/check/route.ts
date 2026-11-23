@@ -17,10 +17,11 @@ export async function GET(req: Request) {
     const cat = await rolyCatalog(['6502']);
     out.catalogue = { variantes: cat.length, exemple: cat[0] && Object.fromEntries(Object.entries(cat[0]).filter(([k]) => ['itemcode', 'modelname', 'sizename', 'colorname', 'colordata', 'modelimage', 'detailsimages', 'viewsimages', 'otherimages', 'composition', 'weight', 'productimage', 'colordata', 'moq', 'stepqty'].includes(k))) };
   } catch (e) { out.catalogue = { erreur: String((e as Error).message).slice(0, 300) }; }
-  try { const p = await rolyPrices('CA6502'); out.tarifs = { lignes: p.length, exemple: p[0] }; } catch (e) { out.tarifs = { erreur: String((e as Error).message).slice(0, 300) }; }
+  // Tarifs : appel limité par jour chez Roly, testé seulement avec ?tarifs=1.
+  if (new URL(req.url).searchParams.get('tarifs')) try { const p = await rolyPrices('CA6502'); out.tarifs = { lignes: p.length, exemple: p[0] }; } catch (e) { out.tarifs = { erreur: String((e as Error).message).slice(0, 300) }; }
   try { const s = await rolyStock(); out.stock = { lignes: s.length, exemple: s[0] }; } catch (e) { out.stock = { erreur: String((e as Error).message).slice(0, 300) }; }
   // Aperçu brut (format de réponse réel de l'API), sans identifiants.
   const peek = (v: unknown) => (Array.isArray(v) ? `tableau(${v.length})` : JSON.stringify(v)?.slice(0, 600));
-  try { out.brut = { catalogue: peek(await rolyCatalog(['6502'])), tarifs: peek(await rolyPrices('CA6502')) }; } catch (e) { out.brut = String((e as Error).message).slice(0, 300); }
+  try { out.brut = peek(await rolyCatalog(['6502'])); } catch (e) { out.brut = String((e as Error).message).slice(0, 300); }
   return NextResponse.json({ ok: true, ...out });
 }
