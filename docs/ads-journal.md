@@ -81,3 +81,9 @@ Aucun.
 - Création des campagnes selon la section 6, réactivation de « Marque alwaan » à 2 €/j.
 
 **Seuils d'arrêt** : inchangés (400 € sans commande → pause sauf marque ; 60 € par groupe sans commande ni devis → pause ; ROAS 14 j < 1,0 → −50 %). Avec 30 €/j sur le Search pro, le seuil de 400 € peut être atteint vers le 10/12 : point obligatoire à cette date.
+
+**23/11 (fin de journée) : mesure serveur en place**
+- Google Ads : action « Achat (serveur) » créée (principale, hors ligne, valeurs différentes, toutes les conversions) ; « Achat » (balise / pixel Shopify) passée en secondaire.
+- Import planifié via le Gestionnaire de données : connexion HTTPS « alwaan - ventes (serveur) », fichier `/feeds/conversions/<clé>-ventes.csv`, chaque jour entre 3 h et 4 h (Paris). Colonnes : Google Click ID, Conversion Time (ISO avec fuseau), Conversion Value (HT), Conversion Currency, Order ID.
+- Tant qu'il n'y a aucune vente issue d'une annonce, le fichier contient une ligne d'exemple au GCLID invalide (rejetée chaque jour, aucune conversion comptée) : avertissement normal.
+- Campagne « Marque alwaan » toujours en pause. Reste : bannière de confidentialité Shopify, création des campagnes (section 6), lancement prévu le 30/11.
