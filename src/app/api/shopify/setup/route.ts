@@ -153,7 +153,7 @@ async function syncPolicies(dry: boolean) {
   const html = (lines: string[], path: string) => lines.map((b) => b.startsWith('## ') ? `<h2>${esc(b.slice(3))}</h2>` : b.startsWith('- ') ? `<p>• ${esc(b.slice(2))}</p>` : `<p>${esc(b)}</p>`).join('\n')
     + `\n<p><em>Version de référence : <a href="https://alwaan.fr${path}">https://alwaan.fr${path}</a></em></p>`;
   const list: [string, string][] = [
-    ['TERMS_OF_SERVICE', html(CGV, '/cgv')], ['PRIVACY_POLICY', html(PRIVACY, '/confidentialite')], ['SHIPPING_POLICY', html(LIVRAISON, '/livraison')],
+    ['TERMS_OF_SERVICE', html(CGV, '/cgv')], ['TERMS_OF_SALE', html(CGV, '/cgv')], ['PRIVACY_POLICY', html(PRIVACY, '/confidentialite')], ['SHIPPING_POLICY', html(LIVRAISON, '/livraison')],
     ['REFUND_POLICY', html(LEGAL_PAGES.retours.body, '/retours')], ['LEGAL_NOTICE', html(LEGAL_PAGES['mentions-legales'].body, '/mentions-legales')],
   ];
   if (dry) return list.map(([type]) => `${type} : à mettre à jour`);
