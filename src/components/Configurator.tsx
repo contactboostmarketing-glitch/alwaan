@@ -310,7 +310,9 @@ export function Configurator({ slug }: { slug: string }) {
   useEffect(() => { fetch(`/api/photos/${slug}`).then((r) => r.json()).then(setPhotos).catch(() => {}); }, [slug]);
   useEffect(() => { setPhoto(null); }, [cfg.color, cfg.logo, cfg.zones]);
   const near = (a: string, b?: string) => { if (!b) return 1e9; const x = parseInt(a.slice(1), 16), y = parseInt(b.replace('#', ''), 16); return Math.abs((x >> 16) - (y >> 16)) + Math.abs(((x >> 8) & 255) - ((y >> 8) & 255)) + Math.abs((x & 255) - (y & 255)); };
-  const colorPhotos = photos?.colors.length ? [...photos.colors].sort((a, b) => near(cfg.color, a.hex) - near(cfg.color, b.hex))[0].images : [];
+  const nameKey = (n?: string) => (n || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace('GRIS CHINE', 'GRIS VIGORE');
+  const byName = photos?.colors.find((c) => nameKey(c.name) === nameKey(COLOR_NAMES[cfg.color]));
+  const colorPhotos = byName ? byName.images : photos?.colors.length ? [...photos.colors].sort((a, b) => near(cfg.color, a.hex) - near(cfg.color, b.hex))[0].images : [];
   const thumbs = [...colorPhotos, ...(photos?.model || [])].slice(0, 6);
   const hasBack = zones.some((z) => z.view === 'back');
   const err = (at: 'logo' | 'zones' | 'qty' | 'bat') => (fieldErr?.at === at ? <p className="err small field-err" role="alert">{fieldErr.msg}</p> : null);
