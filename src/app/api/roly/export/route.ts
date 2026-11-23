@@ -11,7 +11,10 @@ export async function GET(req: Request) {
   if (![process.env.SYNC_KEY, process.env.ROLY_SYNC_KEY].some((k) => k && safeEqual(key, k))) return new Response('Non autorisé', { status: 401 });
   if (!rolyEnabled()) return NextResponse.json({ error: 'Roly non configuré' }, { status: 503 });
   const out: Record<string, unknown> = {};
-  for (const [slug, model] of Object.entries(ROLY_MODEL)) {
+  // ?models=9327,1199 : modèles hors catalogue (pour préparer l'ajout de nouveaux produits), clés = code modèle.
+  const extra = (new URL(req.url).searchParams.get('models') || '').split(',').map((s) => s.trim()).filter((s) => /^[A-Z]{0,2}\d{3,5}$/.test(s)).slice(0, 20);
+  const list: [string, string][] = extra.length ? extra.map((m) => [m, m]) : Object.entries(ROLY_MODEL);
+  for (const [slug, model] of list) {
     try {
       // Identifiant numérique (6502) ou code complet (GO7020) : on essaie les deux formes.
       let items = await rolyCatalog([model]);
