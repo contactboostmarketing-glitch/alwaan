@@ -2,7 +2,7 @@ import { createHash, randomBytes } from 'crypto';
 import { NextResponse } from 'next/server';
 import { RELANCE_RATE } from '@/lib/catalog';
 import { getJSON, putJSON } from '@/lib/blobStore';
-import { limited, tooMany } from '@/lib/rateLimit';
+import { blocked, hit, tooMany } from '@/lib/rateLimit';
 import { safeEqual } from '@/lib/secure';
 import { atelierEmail, layout, mailEnabled, sendMail } from '@/lib/mail';
 import type { RelanceCode } from '@/lib/relance';
@@ -33,7 +33,8 @@ const DAY = 864e5;
  * Le code part uniquement par email (adresse réelle obligatoire), jamais affiché à l'écran ; adresses jetables refusées.
  */
 export async function POST(req: Request) {
-  if (await limited(req, 'inscription', 3, 86400)) return tooMany();
+  // Anti-abus : 5 inscriptions réussies par jour et par connexion (les échecs ne comptent pas).
+  if (await blocked(req, 'inscription-ok', 5, 86400)) return tooMany('Trop d\'inscriptions depuis cette connexion aujourd\'hui. Réessayez demain.');
   if (!mailEnabled()) return NextResponse.json({ error: 'Offre momentanément indisponible.' }, { status: 503 });
   const b = await req.json().catch(() => null);
   const email = String(b?.email || '').trim().toLowerCase();
@@ -55,6 +56,7 @@ export async function POST(req: Request) {
     html: layout({ title: 'Bienvenue chez alwaan', intro: `Voici votre code personnel <b>${code}</b> : -10 % sur votre première commande, à saisir dans le panier. Valable 30 jours, une seule fois. Votre logo, votre tenue en direct, dès 1 pièce.`, cta: ['Créer ma tenue en 1 minute', `${SITE_URL}/assistant`] }),
   }).catch((e) => { console.error('[inscription]', e); return 'erreur'; });
   if (sent !== 'envoyé') return NextResponse.json({ error: 'Envoi impossible. Vérifiez votre adresse email.' }, { status: 502 });
+  await hit(req, 'inscription-ok', 5, 86400);
   // Le code n'est jamais renvoyé au navigateur : il faut une vraie boîte mail pour le recevoir.
   return NextResponse.json({ ok: true, byEmail: true });
 }
