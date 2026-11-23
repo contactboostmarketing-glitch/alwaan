@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { CATEGORIES, CLASH, COLOR_NAMES, MAX_DISCOUNT, PRODUCTS, TEXT_COLORS, printDims, TEXT_FONTS, TIERS, defaultColor, getProduct, nextTier, sizesFor, tierFor, zonesFor, defaultZone } from '@/lib/catalog';
+import { CATEGORIES, CAP_TOP, CLASH, COLOR_NAMES, PRODUCTS, TEXT_COLORS, printDims, TEXT_FONTS, defaultColor, getProduct, nextTierOf, sizesFor, tierOf, tiersOf, zonesFor, defaultZone } from '@/lib/catalog';
 import { cartTotals, eur, lineTotal, logoKey, qtyOf, unitAt, type LineConfig } from '@/lib/pricing';
 import { useCart } from './CartProvider';
 import { Garment } from './Garment';
@@ -157,8 +157,10 @@ export function Configurator({ slug }: { slug: string }) {
   const others = cfg.logoId || cfg.logoStatus === 'text'
     ? lines.reduce((a, l, i) => a + (i !== editIndex && logoKey(l) === logoKey(cfg) ? qtyOf(l) : 0), 0) : 0;
   const pool = q + others + extraQ;
-  const cur = tierFor(pool);
-  const nt = nextTier(pool);
+  // Paliers : remise sur le marquage, ou sur le prix tout compris pour les casquettes.
+  const tiers = tiersOf(p), capMode = !!CAP_TOP[slug], MAX_DISCOUNT = tiers[tiers.length - 1][1];
+  const cur = tierOf(p, pool);
+  const nt = nextTierOf(p, pool);
   const at = (n: number) => unitAt(cfg, n);
   const set = (patch: Partial<LineConfig>) => setCfg((c) => ({ ...c, ...patch }));
   const flash = (m: string) => { setToast(m); setTimeout(() => setToast(''), 3200); };
@@ -346,7 +348,7 @@ export function Configurator({ slug }: { slug: string }) {
         <div>
           <h1 className="pdp-title">{pL.name}</h1>
           <p className="muted">{pL.type} · {pL.composition}</p>
-          <p className="from">{t('dès')} <b><Price ht={at(TIERS[TIERS.length - 1][0])} /></b> {t(blank ? 'la pièce, sans marquage' : 'la pièce, logo compris')}</p>
+          <p className="from">{t('dès')} <b><Price ht={at(tiers[tiers.length - 1][0])} /></b> {t(blank ? 'la pièce, sans marquage' : 'la pièce, logo compris')}</p>
         </div>
 
         <div className="blk">
@@ -470,10 +472,10 @@ export function Configurator({ slug }: { slug: string }) {
           {short.length > 0 && colorStocked(stock, slug, cfg.color) && <p className="order-note"><I name="clock" size={15} /> {t('Au-delà du stock, sur commande : +{n} jours ouvrés', { n: ON_ORDER_DAYS })}</p>}
           {others > 0 && <p className="muted small">{t('+ {n} avec ce logo déjà dans le panier, comptées pour la remise.', { n: pcs(others) })}</p>}
           {!blank && q > 0 && zones.some((z) => cfg.zones.includes(z.id) && !z.fixed) && (nt ? (
-            <div className="nudge"><span>+{pcs(nt[0] - pool)} = {t('marquage')} <b>-{Math.round(nt[1] * 100)} %</b></span><button className="btn line small" onClick={reachTier}>{t('Passer à {n}', { n: nt[0] - others })}</button></div>
-          ) : cur[1] === MAX_DISCOUNT ? <div className="nudge ok"><I name="check" size={16} /> {t('Marquage')} -{Math.round(MAX_DISCOUNT * 100)} %</div> : null)}
+            <div className="nudge"><span>+{pcs(nt[0] - pool)} = {capMode ? <b><Price ht={at(nt[0])} suffix={false} />/pc</b> : <>{t('marquage')} <b>-{Math.round(nt[1] * 100)} %</b></>}</span><button className="btn line small" onClick={reachTier}>{t('Passer à {n}', { n: nt[0] - others })}</button></div>
+          ) : cur[1] === MAX_DISCOUNT ? <div className="nudge ok"><I name="check" size={16} /> {capMode ? t('Meilleur prix atteint') : <>{t('Marquage')} -{Math.round(MAX_DISCOUNT * 100)} %</>}</div> : null)}
           {!blank && <div className="tiers">
-            {TIERS.map(([m, d]) => <div key={m} className={m === cur[0] ? 'on' : ''}><b><Price ht={at(m)} suffix={false} /></b>{m}+ pcs{d ? <small>{t('marquage')} -{Math.round(d * 100)} %</small> : null}</div>)}
+            {tiers.map(([m, d]) => <div key={m} className={m === cur[0] ? 'on' : ''}><b><Price ht={at(m)} suffix={false} /></b>{m}+ pcs{d ? <small>{capMode ? '' : `${t('marquage')} `}-{Math.round(d * 100)} %</small> : null}</div>)}
           </div>}
         </div>
 

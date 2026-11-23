@@ -5,6 +5,8 @@ export const EN: Record<string, string> = {
   '+ Logo au dos': '+ Logo on the back',
   '+ {n} avec ce logo déjà dans le panier, comptées pour la remise.': '+ {n} with this logo already in your cart, counted for the discount.',
   'Marquage -40 % dès 30 pièces': '-40% printing from 30 pieces',
+  'dès {n} pièces': 'from {n} pieces',
+  'Meilleur prix atteint': 'Best price reached',
   'dès 30 pièces': 'from 30 pieces',
   'par personne, dès 30 pièces': 'per person, from 30 pieces',
   'Expédié en 7 jours ouvrés': 'Shipped in 7 business days',

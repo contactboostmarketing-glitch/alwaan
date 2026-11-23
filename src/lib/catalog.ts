@@ -98,7 +98,23 @@ export const COEF = 2;
 export const sellPrice = (cost: number) => Math.round(cost * COEF * 100) / 100;
 
 const p = (slug: string, category: string, name: string, type: string, sizes: string, cost: number, shape: Shape, colors: string[], composition: string, bestseller = false): Product =>
-  ({ slug, category, name, type, sizes, cost, price: sellPrice(cost), shape, colors, composition, bestseller });
+  ({ slug, category, name, type, sizes, cost, price: CAP_TOP[slug] ? Math.round((CAP_TOP[slug] - CAP_MARK) * 100) / 100 : sellPrice(cost), shape, colors, composition, bestseller });
+
+/**
+ * Casquettes : prix « tout compris » (casquette + logo face) dégressif selon les pièces au même logo.
+ * Mercury 5,50 € HT à l'unité → 3,00 € HT dès 100 pièces ; les autres modèles en proportion de leur prix d'achat.
+ * Le marquage face est facturé CAP_MARK, la casquette nue (textile vierge) = prix tout compris − CAP_MARK.
+ */
+export const CAP_MARK = 1.5;
+const capTop = (cost: number) => Math.round((5.5 * cost) / 4.2 * 100) / 100;
+export const CAP_TOP: Record<string, number> = { 'casquette-mercury': 5.5, 'casquette-wizer': capTop(5.1), 'casquette-barny': capTop(3.9) };
+/** [pièces minimum, prix tout compris / prix à l'unité] */
+export const CAP_LADDER: [number, number][] = [[1, 1], [10, 4.8 / 5.5], [30, 4 / 5.5], [50, 3.5 / 5.5], [100, 3 / 5.5]];
+export const capPrice = (slug: string, q: number) => {
+  const top = CAP_TOP[slug]; if (!top) return undefined;
+  let r = CAP_LADDER[0][1]; for (const [m, x] of CAP_LADDER) if (q >= m) r = x;
+  return Math.round(top * r * 100) / 100;
+};
 
 /** Référence du modèle chez Roly (photos, stock, tarifs). */
 export const ROLY_MODEL: Record<string, string> = {"polo-pegaso": "6609", "polo-montreal": "6629", "polo-estrella": "6635", "t-shirt-dogo": "6502", "t-shirt-atomic-150": "6424", "t-shirt-fox": "6660", "chemise-moscu-homme": "5506", "chemise-moscu-femme": "5505", "tablier-benoit": "9125", "tablier-mini": "9124", "tablier-batali": "9126", "casquette-mercury": "GO7020", "casquette-wizer": "CP7048", "casquette-barny": "GO1283", "parka-hv-epsilon": "HV9304", "gilet-hv-beta": "9323", "veste-hv-persei": "9313", "sweat-clasica": "1070", "sweat-capuche-urban": "1067", "sweat-zippe-montblanc": "6421", "polaire-himalaya": "1095", "softshell-nebraska": "6436", "veste-oslo": "5092"};
@@ -251,7 +267,7 @@ export function zonesFor(prod: Product): Zone[] {
   const shoulders = ['shoulder-right', 'shoulder-left'];
   let list: Zone[];
   const notApron = ZONES.filter((z) => z.id !== 'pocket');
-  if (prod.shape === 'cap') list = [{ ...ZONES[0], name: 'Face', x: 50, y: 45, w: 30, size: '6 × 6 cm' }]; // casquette (et bonnet) : 6 × 6 cm
+  if (prod.shape === 'cap') list = [{ ...ZONES[0], name: 'Face', x: 50, y: 45, w: 30, size: '6 × 6 cm', ...(CAP_TOP[prod.slug] ? { price: CAP_MARK } : {}) }]; // casquette (et bonnet) : 6 × 6 cm
   // Tablier : poche ou grand devant, l'un ou l'autre (la poche en premier : c'est le prix « dès »).
   else if (prod.shape === 'apron') list = ['pocket', 'chest'].map((id) => ZONES.find((z) => z.id === id)!);
   else if (prod.shape === 'hv') list = notApron.filter((z) => !shoulders.includes(z.id)); // gilet sans manches
@@ -274,8 +290,14 @@ export function tierFor(q: number): [number, number] {
   return t;
 }
 export const nextTier = (q: number) => TIERS.find((x) => x[0] > q);
+/** Paliers d'un produit : [pièces, remise]. Casquettes : remise sur le prix tout compris ; sinon remise sur le marquage. */
+export const tiersOf = (prod: Product): [number, number][] => CAP_TOP[prod.slug] ? CAP_LADDER.map(([m, r]) => [m, Math.round((1 - r) * 100) / 100]) : TIERS;
+export const tierOf = (prod: Product, q: number) => { const ts = tiersOf(prod); let t = ts[0]; for (const x of ts) if (q >= x[0]) t = x; return t; };
+export const nextTierOf = (prod: Product, q: number) => tiersOf(prod).find((x) => x[0] > q);
 /** Prix le plus bas affiché (« dès ») : vêtement + marquage cœur au meilleur palier. */
-export const fromPrice = (prod: Product) => { const z = zonesFor(prod)[0]; return prod.price + z.price * (z.fixed ? 1 : 1 - MAX_DISCOUNT); };
+export const fromPrice = (prod: Product) => { const c = capPrice(prod.slug, Infinity); if (c !== undefined) return c; const z = zonesFor(prod)[0]; return prod.price + z.price * (z.fixed ? 1 : 1 - MAX_DISCOUNT); };
+/** Quantité du prix « dès » (meilleur palier). */
+export const fromQty = (prod: Product) => tiersOf(prod)[tiersOf(prod).length - 1][0];
 /** Prix le plus haut : vêtement + toutes les zones compatibles, sans remise. */
 export const topPrice = (prod: Product) => prod.price + zonesFor(prod).filter((z) => z.id !== 'chest').reduce((a, z) => a + z.price, 0);
 

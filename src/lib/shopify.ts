@@ -4,7 +4,7 @@
 // Variables d'environnement :
 //   SHOPIFY_STORE_DOMAIN       ex. alwaan.myshopify.com
 //   SHOPIFY_STOREFRONT_TOKEN   jeton public Storefront (Back office → Applications → Headless)
-import { COLOR_NAMES, ZONES, getProduct, printDims, zonesFor, type Zone } from './catalog';
+import { COLOR_NAMES, PREMIUM_MARK, ZONES, getProduct, printDims, zonesFor, type Zone } from './catalog';
 import { sign } from './secure';
 import { getStock } from './stock';
 import { ON_ORDER_DAYS, shortSizes, skey } from './stockTypes';
@@ -47,7 +47,10 @@ const opt = (v: Variant, name: string) => v.selectedOptions.find((o) => o.name =
  * Quand le prix de la zone diffère du prix standard (cœur et dos à 5 € sur les textiles vendus plus de 25 € HT),
  * on utilise le produit « marquage-<zone>-premium ».
  */
-export const markHandle = (z: Zone) => `marquage-${z.id}${z.price !== ZONES.find((x) => x.id === z.id)?.price ? '-premium' : ''}`;
+export const markHandle = (z: Zone) => {
+  const std = ZONES.find((x) => x.id === z.id)?.price;
+  return `marquage-${z.id}${z.price === std ? '' : z.price === PREMIUM_MARK ? '-premium' : `-${Math.round(z.price * 100)}`}`;
+};
 
 export type CartLineInput = { merchandiseId: string; quantity: number; attributes: { key: string; value: string }[] };
 

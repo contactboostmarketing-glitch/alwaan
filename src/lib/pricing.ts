@@ -1,7 +1,7 @@
 // Calcul des prix. Le même code tourne dans le navigateur (affichage) et sur le serveur (paiement),
 // le serveur ne fait jamais confiance aux montants envoyés par le client.
 import {
-  DESIGN_FEE, FREE_SHIPPING_HT, NAME_FEE, NAMES_MIN, promoRate, RESELLER_RATE, REWORK_FEE, SHIPPING_HT, expressFee, VAT, getProduct, tierFor, zonesFor,
+  DESIGN_FEE, FREE_SHIPPING_HT, capPrice, NAME_FEE, NAMES_MIN, promoRate, RESELLER_RATE, REWORK_FEE, SHIPPING_HT, expressFee, VAT, getProduct, tierFor, zonesFor,
 } from './catalog';
 
 /** uploaded = logo fourni ; text = pas de logo, seulement un texte imprimé. */
@@ -63,6 +63,9 @@ export function unitBase(l: Pick<LineConfig, 'slug' | 'zones'> & { printNames?: 
 /** Prix unitaire pour `pool` pièces portant le même logo : la remise ne porte que sur le marquage (hors zones à prix fixe). */
 export function unitAt(l: Pick<LineConfig, 'slug' | 'zones'> & { printNames?: boolean; qty?: Record<string, number>; design?: string }, pool: number): number {
   const { garment, marking, fixed } = parts(l);
+  // Casquette avec logo : prix tout compris dégressif (casquette + face), hors suppléments fixes.
+  const cap = marking ? capPrice(l.slug, pool) : undefined;
+  if (cap !== undefined) return round(cap + fixed);
   return round(garment + fixed + marking * (1 - tierFor(pool)[1]));
 }
 

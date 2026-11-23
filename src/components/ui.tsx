@@ -1,7 +1,7 @@
 // Petits composants partagés (serveur sauf mention).
 import Link from 'next/link';
 import type { ReactNode } from 'react';
-import { defaultColor, fromPrice, type Product } from '@/lib/catalog';
+import { defaultColor, fromPrice, fromQty, type Product } from '@/lib/catalog';
 import { colorName, href, productL, tr, type Lang } from '@/i18n';
 import { SITE_URL } from '@/lib/site';
 import { ROLY_WORN } from '@/lib/rolyViews';
@@ -55,7 +55,7 @@ export function ProductCard({ p: base, lang = 'fr', blank = false }: { p: Produc
         : <Garment slug={p.slug} color={defaultColor(p)} />}</div>
       <strong>{p.name}</strong>
       <small>{p.type}</small>
-      <span className="price">{tr(lang, 'dès')} <Price ht={blank ? base.price : fromPrice(p)} />{!blank && <small> {tr(lang, 'dès 30 pièces')}</small>}</span>
+      <span className="price">{tr(lang, 'dès')} <Price ht={blank ? base.price : fromPrice(p)} />{!blank && <small> {fromQty(p) === 30 ? tr(lang, 'dès 30 pièces') : tr(lang, 'dès {n} pièces', { n: fromQty(p) })}</small>}</span>
       <span className="dots" aria-label={tr(lang, '{n} coloris', { n: p.colors.length })}>
         {p.colors.slice(0, 6).map((c) => <i key={c} style={{ background: c }} title={colorName(lang, c)} />)}
         {p.colors.length > 6 && <small>+{p.colors.length - 6}</small>}
