@@ -859,3 +859,6 @@ svg image[href^="https://static.gorfactory.es"],img[src^="https://static.gorfact
   .price-ex tbody td:first-child{grid-column:1/-1;border-bottom:0;padding-bottom:0;font-weight:600}
   .price-ex th,.price-ex td{padding-left:6px;padding-right:6px}
 }
+
+/* Très petits écrans (320 px) : l'en-tête tient sur une ligne sans débordement. */
+@media (max-width:350px){.langsw{display:none}.mode button{padding:5px 6px;font-size:12px}.hd{gap:5px}.logo b{font-size:17px}.acctlink,.walink{width:30px;height:30px}}

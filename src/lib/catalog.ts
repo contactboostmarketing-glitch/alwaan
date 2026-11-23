@@ -124,9 +124,9 @@ export const PRODUCTS: Product[] = [
   p('polo-pegaso', 'polos-personnalises', 'Polo Pegaso', 'Polo piqué premium', 'S–5XL', 4.8, 'polo', ALL.filter((c) => c !== '#d43f8d' && c !== '#9aa0a6'), '65 % polyester, 35 % coton · 210 g/m²', true),
   p('polo-montreal', 'polos-personnalises', 'Polo Montreal', 'Polo bords contrastés', 'S–XXL', 6.25, 'polo', ['#151a2d', '#1d2a5c', '#ffffff', '#c8302f'], '100 % coton piqué · 220 g/m²'),
   p('polo-estrella', 'polos-personnalises', 'Polo Estrella', 'Manches longues', 'S–4XL', 6.51, 'polols', ['#3a5bd0', '#151a2d', '#c8302f', '#ffffff', '#2f8a4d'], '100 % coton · 210 g/m²'),
-  p('t-shirt-dogo', 't-shirts-personnalises', 'T-shirt Dogo', 'Coton premium col rond', 'S–5XL', 2.39, 'tee', ALL.filter((c) => c !== '#d43f8d'), '100 % coton peigné · 180 g/m²', true),
+  p('t-shirt-dogo', 't-shirts-personnalises', 'T-shirt Dogo', 'Coton premium col rond', 'S–5XL', 2.39, 'tee', ALL.filter((c) => c !== '#d43f8d'), '100 % coton · 165 g/m²', true),
   p('t-shirt-atomic-150', 't-shirts-personnalises', 'T-shirt Atomic 150', 'Le plus économique', 'S–5XL', 1.5, 'tee', ['#ffffff', '#f2d33b', '#c8302f', '#3a5bd0', '#2f8a4d', '#151a2d'], '100 % coton · 150 g/m²'),
-  p('t-shirt-fox', 't-shirts-personnalises', 'T-shirt Fox', 'T-shirt chiné', 'S–3XL', 2.7, 'tee', ['#1d2a5c', '#c8302f', '#2f8a4d'], '85 % coton bio, 15 % viscose · 160 g/m²'),
+  p('t-shirt-fox', 't-shirts-personnalises', 'T-shirt Fox', 'T-shirt chiné', 'S–3XL', 2.7, 'tee', ['#1d2a5c', '#c8302f', '#2f8a4d'], '65 % polyester, 35 % coton · 150 g/m²'),
   p('chemise-moscu-homme', 'chemises-personnalisees', 'Chemise Moscu homme', 'Manches longues', 'S–3XL', 10.45, 'shirt', ['#ffffff', '#151a2d'], '97 % coton, 3 % élasthanne', true),
   p('chemise-moscu-femme', 'chemises-personnalisees', 'Chemise Moscu femme', 'Coupe cintrée', 'S–3XL', 10.45, 'shirt', ['#ffffff', '#151a2d'], '97 % coton, 3 % élasthanne'),
   p('tablier-benoit', 'tabliers-personnalises', 'Tablier Benoit', 'Bavette réglable', 'TU', 3.68, 'apron', ['#151a2d', '#8b1e2d', '#1d2a5c', '#b8a98d', '#ffffff'], '65 % polyester, 35 % coton · 210 g/m²', true),
@@ -226,7 +226,7 @@ const DETAILS: Record<string, string[]> = {
  ],
  "t-shirts-personnalises": [
   "Le t-shirt personnalisé est la solution la plus économique pour habiller une équipe, un club ou les participants d'un événement. Il se décline en coton classique, en coton bio ou en tissu technique respirant pour le sport.",
-  "Le grammage fait la différence : 150 g/m² pour un événement ponctuel, 180 g/m² et plus pour un t-shirt porté toute l'année. Les modèles sans couture latérale tombent mieux et restent plus confortables.",
+  "Le grammage fait la différence : 150 g/m² pour un événement ponctuel, 165 g/m² et plus pour un t-shirt porté toute l'année. Les modèles sans couture latérale tombent mieux et restent plus confortables.",
   "L'impression DTF permet d'imprimer un logo en couleurs, une photo ou un visuel d'événement, dès 1 pièce et sans frais de préparation."
  ],
  "chemises-personnalisees": [
