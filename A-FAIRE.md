@@ -47,7 +47,8 @@ Liste des actions en attente (à faire par l'équipe alwaan, ou des informations
 
 ## Tests en réel
 - [ ] Rembourser la commande test #1001 (annulée mais encore « Payée »).
-- [ ] Sendcloud : ajouter la carte bancaire (sinon aucune étiquette) et les dimensions réelles de l'enveloppe e-commerce.
+- [x] Sendcloud : carte bancaire ajoutée (23/11).
+- [ ] Sendcloud : dimensions réelles de l'enveloppe e-commerce (35×45 cm provisoire).
 - [x] Commande payée par carte (#1001 du 23/11/2026, Shopify Payments, annulée ; les commandes annulées sortent du suivi automatiquement).
 - [ ] Commande par virement (pro connecté).
 - [ ] Mon profil : nom, adresse, facture avec société et SIRET.
