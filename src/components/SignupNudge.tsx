@@ -19,10 +19,13 @@ export function SignupNudge() {
     // Offre affichée seulement si le code peut être envoyé par email.
     fetch('/api/inscription').then((r) => r.json()).then((d) => { enabled = !!d.enabled; }).catch(() => {});
     const open = () => { if (enabled && !document.querySelector('.cookie')) setShow(true); };
-    const timer = setTimeout(open, 25000);
-    const onScroll = () => { if (window.scrollY > document.body.scrollHeight * 0.45) open(); };
+    // Ouverture : après 8 s, à 30 % de défilement, ou quand la souris quitte la page par le haut (ordinateur).
+    const timer = setTimeout(open, 8000);
+    const onScroll = () => { if (window.scrollY > document.body.scrollHeight * 0.3) open(); };
+    const onLeave = (e: MouseEvent) => { if (e.clientY <= 0 && !e.relatedTarget) open(); };
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => { clearTimeout(timer); window.removeEventListener('scroll', onScroll); };
+    document.addEventListener('mouseout', onLeave);
+    return () => { clearTimeout(timer); window.removeEventListener('scroll', onScroll); document.removeEventListener('mouseout', onLeave); };
   }, [path]);
   if (!show || HIDE.test(path)) return null;
   const close = () => { setShow(false); try { localStorage.setItem(KEY, String(Date.now())); } catch {} };

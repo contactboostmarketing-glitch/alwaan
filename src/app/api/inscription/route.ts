@@ -3,7 +3,8 @@ import { NextResponse } from 'next/server';
 import { RELANCE_RATE } from '@/lib/catalog';
 import { getJSON, putJSON } from '@/lib/blobStore';
 import { limited, tooMany } from '@/lib/rateLimit';
-import { layout, mailEnabled, sendMail } from '@/lib/mail';
+import { safeEqual } from '@/lib/secure';
+import { atelierEmail, layout, mailEnabled, sendMail } from '@/lib/mail';
 import type { RelanceCode } from '@/lib/relance';
 import { adminEnabled, upsertProspect } from '@/lib/shopifyAdmin';
 import { SITE_URL } from '@/lib/site';
@@ -13,7 +14,15 @@ const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,190}\.[a-z]{2,24}$/i;
 const DISPOSABLE = /@(yopmail|mailinator|guerrillamail|10minutemail|tempmail|temp-mail|trashmail|jetable|getnada|maildrop|sharklasers|dispostable|throwawaymail|mailnesia|fakeinbox|moakt|emailondeck|mohmal|tempail|minuteinbox)\./i;
 
 /** L'offre n'est proposée que si l'envoi d'emails est configuré (le code n'est jamais affiché à l'écran). */
-export function GET() { return NextResponse.json({ enabled: mailEnabled() }); }
+export async function GET(req: Request) {
+  // Diagnostic atelier (clé de synchro) : ?test envoie un email à l'atelier et renvoie la réponse exacte de Resend.
+  const sync = process.env.SYNC_KEY || process.env.ROLY_SYNC_KEY;
+  if (new URL(req.url).searchParams.has('test') && sync && safeEqual(req.headers.get('x-sync-key'), sync)) {
+    const r = await sendMail({ to: atelierEmail(), subject: 'Test d\'envoi alwaan', html: layout({ title: 'Test d\'envoi', intro: 'Les emails du site fonctionnent.' }) }).catch((e) => String((e as Error).message));
+    return NextResponse.json({ enabled: mailEnabled(), from: process.env.MAIL_FROM ? 'MAIL_FROM' : 'défaut (COMPANY_EMAIL)', result: r });
+  }
+  return NextResponse.json({ enabled: mailEnabled() });
+}
 const DAY = 864e5;
 
 /**
