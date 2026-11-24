@@ -15,6 +15,32 @@
 9. **Calendrier médian des embauches** : 1er commercial en mai 2028, 2e en décembre 2028 ; 2e personne à l'atelier en septembre 2028, 3e en septembre 2029, 4e en août 2031 ; assistante commerciale en mai 2029 ; atelier plus grand en septembre 2029 ; 2e ligne d'impression DTF en septembre 2030.
 10. **5 actions des 30 prochains jours** : § 3.6.
 
+## 0 bis. Recalage du 24/11 avec les chiffres du gérant
+
+Données reçues : **120 à 150 pièces par jour et par personne** à l'atelier ; **450 € de frais fixes par mois** hors personnel et hors machines (au lieu des 2 500 € supposés) ; **apport de 5 000 €** pour la publicité, l'aménagement et le stock. Même modèle, sans salaire du gérant. La capacité de 120 ou 150 pièces ne change que la date des embauches d'atelier (la 1re vers août–septembre 2028 au rythme médian) : l'atelier n'est pas une contrainte avant 2028.
+
+| Rythme (contacts qualifiés / mois) | 100 k€ | 250 k€ | 500 k€ | 1 M€ | CA 2027 | CA 2028 | CA 2029 | Trésorerie au plus bas |
+|---|---|---|---|---|---|---|---|---|
+| Prudent (250) | avr. 2029 | sept. 2030 | mars 2033 | après 2038 | 28 k€ | 73 k€ | 170 k€ | **−5,0 k€** (août 2027) |
+| Médian (300) | mars 2028 | nov. 2028 | sept. 2029 | **août 2031** | 78 k€ | 292 k€ | 593 k€ | **−2,6 k€** (janv. 2027) |
+| Médian, 1 000 contacts / mois | sept. 2027 | avr. 2028 | janv. 2029 | **avr. 2030** | 177 k€ | 488 k€ | 889 k€ | −2,3 k€ (déc. 2026) |
+| Rapide (450) | sept. 2027 | janv. 2028 | juil. 2028 | mai 2029 | 222 k€ | 763 k€ | 1 426 k€ | −1,9 k€ (déc. 2026) |
+
+**Lecture.** Avec 450 € de frais fixes, le point bas de trésorerie tombe de 25 k€ à environ 2,6 k€ au rythme médian : **l'apport de 5 000 € suffit pour démarrer**, à condition de ne pas se verser de salaire la première année (au médian, la trésorerie redevient positive en juin 2027 et atteint environ 7 k€ en novembre 2027, juste avant le 1er commercial). Au rythme prudent, le point bas (−5,0 k€ en août 2027) mange tout l'apport : les seuils d'arrêt de la publicité (§ 3.5 de `docs/ads-strategie.md`) doivent alors s'appliquer sans attendre.
+
+**Répartition conseillée des 5 000 € (décembre → février)**
+
+| Poste | Montant | Commentaire |
+|---|---|---|
+| Stock de départ | **841 €** HT (+ ≈ 170 € de TVA avancée, récupérée) | Seulement les 10 produits A du niveau recommandé (`docs/stock-plan.md` § 3.3 : 266 pièces). Les produits B (514 €) attendent la décision du 14/12, avec le renfort de janvier. |
+| Publicité Google (déc. + janv.) | ≈ 1 400 € | Dépense réelle attendue ≈ 540 € en décembre et ≈ 825 € en janvier (la demande pro plafonne la dépense). Les budgets validés restent des plafonds. |
+| Frais fixes (3 mois) | 1 350 € | 450 € par mois. Ajouter ≈ 200 €/mois si un outil de prospection payant est nécessaire (l'agence en a peut-être déjà). |
+| Aménagement de l'atelier | ≤ 800 € | Plan de travail, étagères par référence et par taille, emballages, balance. Le reste attend les premières ventes. |
+| Réserve | ≥ 600 € | Pour un réassort Roly ou un mois de pub en plus. Ne pas y toucher sans commande payée. |
+| **Total** | **≈ 5 000 €** | Les marges des premières ventes (≈ 440 € en décembre, ≈ 1 300 € en janvier au médian) reconstituent la réserve. |
+
+**Point de contrôle** : le 10/12 (déjà prévu pour la pub). Si aucune commande payée et aucun devis : pause de la pub hors marque, pas de renfort de stock le 14/12, et la prospection directe devient la seule priorité (elle ne coûte que du temps).
+
 ---
 
 ## 1. La trajectoire par paliers
