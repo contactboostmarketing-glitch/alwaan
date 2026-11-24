@@ -40,3 +40,5 @@ yarn-error.log*
 
 # netlify
 .netlify
+# logos envoyés en local
+/.data/
